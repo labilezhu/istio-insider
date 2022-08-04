@@ -11,12 +11,15 @@ build:
   tools:
     python: "3.9"
 
-mkdocs:
-  configuration: mkdocs.yml
+# mkdocs:
+#   configuration: mkdocs.yml
+
+sphinx:
+  fail_on_warning: false
 
 # Optionally declare the Python requirements required to build your docs
-python:
-   install:
-   - requirements: docs/requirements.txt
+# python:
+#    install:
+#    - requirements: docs/requirements.txt
 
 formats: all
