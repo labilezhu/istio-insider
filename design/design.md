@@ -1,10 +1,10 @@
 ## book cover
 
-https://arthurbeaulieu.github.io/ORlyGenerator/
+https://.github.io/ORlyGenerator/
 
 ```
-非使用手册，只专注 Istio/Envoy 核心机理
-Istio 深思录
-Istio Insider
+图解 Istio & Envoy 核心机理，eBPF/debug 跟踪验证
+Istio & Envoy 内幕
+Istio & Envoy Insider
 Mark Zhu@istio-insider.mygraphql.com
 ```
