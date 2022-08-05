@@ -2,9 +2,9 @@
 
 # -- Project information
 
-project = 'Lumache'
-copyright = '2021, Graziella'
-author = 'Graziella'
+project = 'Istio & Envoy 内幕'
+copyright = '2021, Mark Zhu'
+author = 'Mark Zhu'
 
 release = '0.1'
 version = '0.1.0'
