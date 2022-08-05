@@ -1,10 +1,10 @@
-![Book Cover](./docs/source/book-cover-800.png)
+![Book Cover](./docs/source/book-cover-mockup.jpg)
 
-## 《Istio 内幕》 简介
+## 《Istio & Envoy 内幕》 简介
 
 ### 这是一本编写中的书
 
-这是一本编写中的书，书名叫 《Istio Insider》，中文名为《Istio 内幕》。
+这是一本编写中的书，书名叫 《Istio Insider》，中文名为《Istio & Envoy 内幕》。
 
 ### 本书是什么
 

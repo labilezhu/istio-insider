@@ -1,6 +1,6 @@
-![Book Cover](./book-cover-800.png)
+![Book Cover](./book-cover-mockup.jpg)
 
-## 《Istio 内幕》 简介
+## 《Istio & Envoy 内幕》 简介
 
 ### 这是一本编写中的书
 
