@@ -1,10 +1,18 @@
+---
+sd_hide_title: true
+---
+
 ![Book Cover](./book-cover-mockup.jpg)
 
-## 《Istio & Envoy 内幕》 简介
+# 《Istio & Envoy 内幕》 前言
 
-### 这是一本编写中的书
 
-这是一本编写中的书，书名叫 《Istio Insider》，中文名为《Istio & Envoy 内幕》。
+   ```{warning}
+   这是一本编写中的书，现在只是草稿阶段。书名为《Istio & Envoy 内幕》，英文名《Istio Insider》。
+   ```
+
+## 《Istio & Envoy 内幕》 概述
+
 
 ### 本书是什么
 
@@ -18,7 +26,7 @@
 - Istio 将来可能是什么样子
 
 
-### 本文不是什么
+### 本书不是什么
 
 写本书的出发点，不是教如何使用 Istio。那些网上已经有太多非常优秀的书、文章、文档了。
 
@@ -32,3 +40,15 @@
 我叫 Mark Zhu，一个中年且头发少的程序员。
 
 Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)
+
+
+## 目录
+
+The following topic areas will help you understand and use the theme.
+
+```{toctree}
+:hidden:
+ch1-mesh-base/index
+ch2-envoy/index
+ch3-control-panel/index
+```
