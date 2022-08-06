@@ -3,7 +3,7 @@
 # -- Project information
 
 project = 'Istio & Envoy 内幕'
-copyright = '2021, Mark Zhu'
+copyright = '2022, Mark Zhu'
 author = 'Mark Zhu'
 
 release = '0.1'

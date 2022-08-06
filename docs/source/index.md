@@ -1,14 +1,10 @@
----
-sd_hide_title: true
----
-
 ![Book Cover](./book-cover-mockup.jpg)
 
 # 前言
 
 
    ```{warning}
-   这是一本编写中的书，现在只是草稿阶段。书名为《Istio & Envoy 内幕》，英文名《Istio Insider》。
+   这是一本编写中的书，现在只是草稿阶段。书名为《Istio & Envoy 内幕》，英文名《Istio & Envoy Insider》。
    ```
 
 ## 本书概述
