@@ -72,7 +72,7 @@ Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)
 
 
 ```{toctree}
-ch1-mesh-base/index
+ch1-istio-arch/index
 ch2-envoy/index
 ch3-control-panel/index
 ch4-istio-ctrl-envoy/index
