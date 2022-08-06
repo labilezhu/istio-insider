@@ -20,7 +20,21 @@ extensions = [
     'myst_parser'
 ]
 
-html_favicon = 'favicon.ico'
+html_title = "Istio & Envoy 内幕"
+html_favicon = '_static/favicon.ico'
+html_logo = "_static/logo.png"
+
+html_theme_options = {
+    "home_page_in_toc": True,
+    "github_url": "https://github.com/labilezhu/istio-insider",
+    "repository_url": "https://github.com/labilezhu/istio-insider",
+    "repository_branch": "master",
+    # "path_to_docs": "docs",
+    "use_repository_button": True,
+    "use_edit_page_button": False,
+    "show_navbar_depth": 8,
+    "logo_only": True,
+}
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
