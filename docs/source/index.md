@@ -11,7 +11,7 @@
 
 ### 本书不是什么
 
-本书不是一本使用手册。更不是从使用都角度，教如何深入浅出学习 Istio。不会布道 Istio 有如何如何强大之功能，更不会教如何使用 Istio。这方面网上已经有太多非常优秀的书、文章、文档了。
+本书不是一本使用手册。更不是从使用者角度，教如何深入浅出学习 Istio。不会布道 Istio 有如何如何强大之功能，更不会教如何使用 Istio。这方面网上已经有太多非常优秀的书、文章、文档了。
 
 > 🤷 : [Yet, another](https://en.wikipedia.org/wiki/Yet_another) Istio User Guide?  
 > 🙅 : No!
@@ -63,7 +63,13 @@ Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)
 - SVG 图片可以点击链接，直接跳转到相应源码网页(或相关文档)，有时会精确到源码行。
 
 ### 参与编写
-如果你也对编写本书的兴趣，欢迎联系我。本书的出发点不是刷简历，也没这个能力。而且，这样的非`短平快` 且 `TL;DR` 书籍注定不会流行的。
+如果你也对编写本书有兴趣，欢迎联系我。本书的出发点不是刷简历，也没这个能力。而且，这样的非`短平快` 且 `TL;DR` 书籍注定是小众货。
+
+
+### Dedication 💞
+First, to my dear parents, for showing me how to live a happy
+and productive life. To my dear wife and our amazing kid – thanks for all your love and patience.
+
 
 ### Copyleft 声明
 无论是文字还是图片，如果转载或修改，请注明原出处。
