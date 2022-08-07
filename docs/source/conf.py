@@ -42,6 +42,11 @@ intersphinx_mapping = {
 }
 intersphinx_disabled_domains = ['std']
 
+myst_enable_extensions = [
+    "html_image",
+    "colon_fence"
+]
+
 templates_path = ['_templates']
 
 # -- Options for HTML output
