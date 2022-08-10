@@ -1,5 +1,5 @@
 
-cd /home/mark/istio-insider
+cd $HOME/istio-insider
 
 git add . && git commit -m "bak" && git push home54
 
