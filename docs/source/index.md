@@ -21,7 +21,9 @@
 
 本书中，我尝试用设计与实现角度，尽量系统地去思考：
 - Istio 为什么是现在的样子
-- 那些魔术配置背后的真相： Linux + Envoy 
+- 那些魔术配置背后的真相： Linux + Envoy
+  - 流量是如何用 Linux 的 netfilter 技术，被拦截到 Envoy 的
+  - istiod 是如何编程 Envoy 去完成`服务网格`的流量策略的
 - Istio 将来可能是什么样子
 
 

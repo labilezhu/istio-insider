@@ -33,7 +33,7 @@ Istio 整体架构不是本书的重点。相信有兴趣看本书的读者也�
 <img src="index.assets/istio-arch.svg" alt="Istio 整体架构">
 
 图：Istio 整体架构图  
-图片来自：https://istio.io/latest/docs/ops/deployment/architecture/  
+来自：https://istio.io/latest/docs/ops/deployment/architecture/  
 :::
 
 
@@ -45,7 +45,7 @@ Istio 整体架构不是本书的重点。相信有兴趣看本书的读者也�
   外号：控制面大脑、战略级的指挥中心、权威认证授权机构。
 
 
-
+后面，我们开始拆解这些组件，和分析它们的交互。
 
 
 
