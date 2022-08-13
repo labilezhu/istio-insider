@@ -44,6 +44,9 @@
 ### 关于作者
 我叫 Mark Zhu，一个中年且头发少的程序员。我不是 Istio 专家，更不是 Istio Committer。连互联网大厂员工也不是。
 
+为什么水平有限还学人家写书？因为这句话：
+> 你不需要很厲害才能開始，但你需要開始才會很厲害。
+
 Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)
 
 
@@ -90,6 +93,10 @@ and productive life. To my dear wife and our amazing kid – thanks for all your
 
 
 ```{toctree}
+:caption: Table of Contents
+:maxdepth: 5
+:includehidden:
+
 ch1-istio-arch/index
 ch2-envoy/index
 ch3-control-panel/index
