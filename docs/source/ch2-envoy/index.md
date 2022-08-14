@@ -36,7 +36,7 @@ Matt Klein 的回答是，这是 Envoy 开始时那时，最好的选择。我�
 *来自：Envoy 原作者 Matt Klein, Lyft 的 [Envoy Internals Deep Dive - Matt Klein, Lyft (Advanced Skill Level)]*
 :::
 
-这是数年前的架构图了，不过现在看来变化不大。
+这是数年前的架构图了，不过现在看来变化不大。这里，我先不说明这个 `Envoy内部` 构架图。我想先说说它的周边环境。
 
 ```{warning}
 需要注意的是，我不打算把 Istio控制面 与 Envoy 完全隔离地分析说明。因为这样的分析现实意义有限。脱离 Istio 说 Envoy，很多时候，就不会明白 Envoy 为何设计成这样。但当我们结合 Istio 使用 Envoy 的场景来说明 Envoy 的设计时，就可以方便了解因由了。

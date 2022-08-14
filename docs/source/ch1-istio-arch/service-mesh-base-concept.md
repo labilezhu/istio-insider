@@ -7,7 +7,7 @@
 
 ## 服务调用关系概念
 
-### upstream/downstream
+### Upstream & Downstream
 
 从 Envoy 的角度看：
 
@@ -17,14 +17,14 @@
 ```{warning}
  需要注意的是，upstream 与 downstream 是个相对于观察者的概念。
 
- 如场景: `service A` ⤚调用➔ `service B`  ⤚调用➔ `service C` :
+ 如场景: `service A` ⤜调用➙ `service B`  ⤜调用➙ `service C` :
 
  - 如果站在 `service C` 上，我们在把` service B` 叫 downstream;
 
  - 如果站在 `service A` 上，我们把 `service B` 叫 upstream。
 ```
 
-### Inbound/Outbound
+### Inbound & Outbound
 
 从 K8s 的 pod 的角度看：
 
@@ -54,5 +54,5 @@
 - `inbound`: 有人译为`入站`。而在现实的 k8s + istio 环境中，可以理解为流量从 pod 外部进入 pod。即服务的被调用流量
 - `outbound`: 有人译为`出站`。而在现实的 k8s + istio 环境中，可以理解为流量从 pod 内部输出到 pod 外部。
 
-> 需要注意的是，对于同一个调用请求。他可以是调用者 service 的 outbound，同时也是被调用者的 inbound。如上图
+> 需要注意的是，对于同一个调用请求。他可以是调用者 service 的 outbound，同时也是被调用者的 inbound。如上图。
 
