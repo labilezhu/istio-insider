@@ -17,7 +17,7 @@
 ```{warning}
  需要注意的是，upstream 与 downstream 是个相对于观察者的概念。
 
- 如场景: `service A` --调用--> `service B`  --调用--> `service C` :
+ 如场景: `service A` ⤚调用➔ `service B`  ⤚调用➔ `service C` :
 
  - 如果站在 `service C` 上，我们在把` service B` 叫 downstream;
 
@@ -44,7 +44,11 @@
 2. fortio-server:8080
 3. fortio-server-l2:8080
 
-图这样排版也是想直接反映 **up**stream 和 **down**stream 字面义。图中需要解释的，或者只有 inbound / outbound 这两个术语。首先，什么是 `bound`。
+其实调用关系就是:
+
+> client ➔ fortio-server:8080 ➔ fortio-server-l2:8080
+
+上图这样排版也是想直接反映 **up**stream 和 **down**stream 字面义。图中需要解释的，或者只有 inbound / outbound 这两个术语。首先，什么是 `bound`。
 
 - `bound`: 字面意为边界。有人译为`站（名词）`。而在现实的 k8s + istio 环境中，可以理解为 pod / service
 - `inbound`: 有人译为`入站`。而在现实的 k8s + istio 环境中，可以理解为流量从 pod 外部进入 pod。即服务的被调用流量
@@ -52,6 +56,3 @@
 
 > 需要注意的是，对于同一个调用请求。他可以是调用者 service 的 outbound，同时也是被调用者的 inbound。如上图
 
-回到我们的例子，其实调用关系就是:
-
-> client --> fortio-server:8080 --> fortio-server-l2:8080
