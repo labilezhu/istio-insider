@@ -1,0 +1,32 @@
+
+# Istio 端口 与 组件
+
+:::{figure-md} Istio端口与组件
+
+<img src="istio-ports-components.assets/istio-ports-components.drawio.svg" alt="Istio端口与组件">
+
+*图：Istio 端口与组件*
+[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-ports-components.drawio.svg)
+:::
+
+```bash
+u_str    LISTEN     etc/istio/proxy/SDS 34782                        * 0            users:(("pilot-agent",pid=3406,fd=13))                                             
+u_str    LISTEN     etc/istio/proxy/XDS 34783                        * 0            users:(("pilot-agent",pid=3406,fd=16))                                             
+u_str    ESTAB      etc/istio/proxy/XDS 1379729                      * 1379728      users:(("pilot-agent",pid=3406,fd=8))                                              
+u_str    ESTAB                        * 1379728                      * 1379729      users:(("envoy",pid=3555,fd=37))                                                   
+u_str    ESTAB      etc/istio/proxy/SDS 45274                        * 46319        users:(("pilot-agent",pid=3406,fd=15))                                             
+u_str    ESTAB                        * 46319                        * 45274        users:(("envoy",pid=3555,fd=19))                                                   
+tcp      LISTEN                 0.0.0.0:15021                  0.0.0.0:*            users:(("envoy",pid=3555,fd=40),("envoy",pid=3555,fd=34),("envoy",pid=3555,fd=22)) 
+tcp      LISTEN                 0.0.0.0:15090                  0.0.0.0:*            users:(("envoy",pid=3555,fd=39),("envoy",pid=3555,fd=33),("envoy",pid=3555,fd=21)) 
+tcp      LISTEN               127.0.0.1:15000                  0.0.0.0:*            users:(("envoy",pid=3555,fd=18))                                                   
+tcp      LISTEN                 0.0.0.0:15001                  0.0.0.0:*            users:(("envoy",pid=3555,fd=41),("envoy",pid=3555,fd=35),("envoy",pid=3555,fd=31)) 
+tcp      LISTEN               127.0.0.1:15004                  0.0.0.0:*            users:(("pilot-agent",pid=3406,fd=17))                                             
+tcp      LISTEN                 0.0.0.0:15006                  0.0.0.0:*            users:(("envoy",pid=3555,fd=42),("envoy",pid=3555,fd=36),("envoy",pid=3555,fd=32)) 
+tcp      ESTAB           172.21.206.227:40560            10.108.217.90:15012        users:(("pilot-agent",pid=3406,fd=19))                                             
+tcp      ESTAB           172.21.206.227:43240            10.108.217.90:15012        users:(("pilot-agent",pid=3406,fd=14))                                             
+tcp      LISTEN                       *:15020                        *:*            users:(("pilot-agent",pid=3406,fd=12))                                             
+tcp      ESTAB                127.0.0.1:35256                127.0.0.1:15020        users:(("envoy",pid=3555,fd=43))                                                   
+tcp      ESTAB                127.0.0.1:35238                127.0.0.1:15020        users:(("envoy",pid=3555,fd=20))                                                   
+tcp      ESTAB       [::ffff:127.0.0.1]:15020       [::ffff:127.0.0.1]:35238        users:(("pilot-agent",pid=3406,fd=6))                                              
+tcp      ESTAB       [::ffff:127.0.0.1]:15020       [::ffff:127.0.0.1]:35256        users:(("pilot-agent",pid=3406,fd=18))                                             
+```

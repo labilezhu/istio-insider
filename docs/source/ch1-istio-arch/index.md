@@ -51,6 +51,7 @@ Istio 整体架构不是本书的重点。相信有兴趣看本书的读者也�
 ```{toctree}
 :hidden:
 service-mesh-base-concept
+istio-ports-components
 istio-data-panel-arch
 ```
 
