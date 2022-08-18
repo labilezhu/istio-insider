@@ -52,6 +52,8 @@ templates_path = ['_templates']
 # -- Options for HTML output
 
 html_theme = 'sphinx_book_theme'
+numfig = False
+language = 'zh_CN'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'

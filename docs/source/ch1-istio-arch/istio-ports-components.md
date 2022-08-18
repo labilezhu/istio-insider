@@ -1,15 +1,20 @@
 
 # Istio 端口 与 组件
 
-:::{figure-md} Istio端口与组件
+Istio 的每个组件都监听一堆端口。对于初学者，可能很难弄明白每个端口的作用。{ref}`图：Istio端口与组件` 说明 Istio 在默认的部署下，各组件的通讯端口。
+
+
+:::{figure-md} 图：Istio端口与组件
 
 <img src="istio-ports-components.assets/istio-ports-components.drawio.svg" alt="Istio端口与组件">
 
-*图：Istio 端口与组件*
-[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-ports-components.drawio.svg)
+*图：Istio 端口与组件*  
 :::
+*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-ports-components.drawio.svg)*
 
 ```bash
+$ ss -ln
+
 u_str    LISTEN     etc/istio/proxy/SDS 34782                        * 0            users:(("pilot-agent",pid=3406,fd=13))                                             
 u_str    LISTEN     etc/istio/proxy/XDS 34783                        * 0            users:(("pilot-agent",pid=3406,fd=16))                                             
 u_str    ESTAB      etc/istio/proxy/XDS 1379729                      * 1379728      users:(("pilot-agent",pid=3406,fd=8))                                              
