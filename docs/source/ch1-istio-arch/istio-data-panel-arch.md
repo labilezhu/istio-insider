@@ -1,17 +1,21 @@
 # Istio 数据面架构
 
+如果要了解一个系统的核心机理，那么首先应该看看系统的主要数据流。Istio 也不例外。下面我们看看 Istio数据面的部署架构。
 
-
-:::{figure-md} Istio数据面架构
+:::{figure-md} 图：Istio数据面架构
 
 <img src="istio-data-panel-arch.assets/istio-data-panel-arch.drawio.svg" alt="Inbound与Outbound概念">
 
 *图：Istio 数据面架构*
-[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-data-panel-arch.drawio.svg)
 :::
+*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-data-panel-arch.drawio.svg)*
 
-上图就是调用链: `client ➔ fortio-server:8080 ➔ fortio-server-l2:8080` 的数据面关系图。
-图中的数字是端口号。 `kernel netfilter`  是一些 ip 连接的拦截与转发规则，可以这样查看：
+{ref}`图：Istio数据面架构` 就是调用链: `client ➔ fortio-server:8080 ➔ fortio-server-l2:8080` 的数据面关系图。图中的数字是端口号。 
+
+
+## netfilter/iptables
+
+{ref}`图：Istio数据面架构`  中的 `kernel netfilter`  是一些 TCP 连接的拦截与转发规则，可以这样查看：
 
 ```bash
 export WORKNODE=xzy #关注的 POD 运行的 worknode
@@ -26,7 +30,9 @@ done <<< "$ENVOY_PIDS"
 
 sudo nsenter -n -t $TARGET_ENVOY_PID iptables-save
 ```
+
 输出：
+
 ```
 *nat
 :PREROUTING ACCEPT [1112:66720]

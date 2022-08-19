@@ -1,5 +1,5 @@
+sudo apt install python3
 sudo apt-get install pip
-sudo apt install python3.9
 
 export https_proxy=xxxxx
 # pip install --upgrade sphinx-book-theme
@@ -7,8 +7,8 @@ export https_proxy=xxxxx
 # pip install --upgrade configparser
 # pip install --upgrade sphinx
 
-apt-get install python3-venv
-python -m venv .venv 
+sudo apt-get install python3-venv
+python3 -m venv .venv 
 source .venv/bin/activate
 
 python3 -m pip install sphinx-book-theme

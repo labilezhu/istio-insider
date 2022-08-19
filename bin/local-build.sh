@@ -1,3 +1,3 @@
 cd $HOME/istio-insider/docs
 make html
-echo browse $HOME/istio-insider/docs/build/html/index.html
+echo google-chrome $HOME/istio-insider/docs/build/html/index.html

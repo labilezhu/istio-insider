@@ -1,7 +1,7 @@
 
 # Istio 端口 与 组件
 
-Istio 的每个组件都监听一堆端口。对于初学者，可能很难弄明白每个端口的作用。{ref}`图：Istio端口与组件` 说明 Istio 在默认的部署下，各组件的通讯端口。
+Istio 的每个组件都监听一堆端口。对于初学者，可能很难弄明白每个端口的作用。这里，用 {ref}`图：Istio端口与组件` 说明 Istio 在默认的部署下，各组件的通讯端口和相关的功能。
 
 
 :::{figure-md} 图：Istio端口与组件
@@ -12,7 +12,11 @@ Istio 的每个组件都监听一堆端口。对于初学者，可能很难弄�
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-ports-components.drawio.svg)*
 
+可以用以下方式查看监听的端口：
+
 ```bash
+
+$ nsenter -n -t $PID_OF_ENVOY
 $ ss -ln
 
 u_str    LISTEN     etc/istio/proxy/SDS 34782                        * 0            users:(("pilot-agent",pid=3406,fd=13))                                             

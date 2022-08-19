@@ -46,5 +46,6 @@ Matt Klein 的回答是，这是 Envoy 开始时那时，最好的选择。我�
 
 ```{toctree}
 :hidden:
-envoy-at-process-level
+envoy@istio-conf-eg
+envoy@istio-process-level
 ```
