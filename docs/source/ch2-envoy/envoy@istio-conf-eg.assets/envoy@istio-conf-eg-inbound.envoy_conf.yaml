@@ -5,59 +5,59 @@ configs:
         id: sidecar~172.21.206.230~fortio-server.mark~mark.svc.cluster.local
         cluster: fortio-server.mark
         metadata:
+          ISTIO_PROXY_SHA: 7ae8e27f274b33dc2f4d83100aea5971ed6698d3
+          PROV_CERT: var/run/secrets/istio/root-cert.pem
+          LABELS:
+            app: fortio-server
+            security.istio.io/tlsMode: istio
+            service.istio.io/canonical-revision: latest
+            app.kubernetes.io/name: fortio-server
+            service.istio.io/canonical-name: fortio-server
+          ENVOY_STATUS_PORT: 15021
           SERVICE_ACCOUNT: default
           ANNOTATIONS:
-            sidecar.istio.io/status: '{"initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["workload-socket","workload-certs","istio-envoy","istio-data","istio-podinfo","istio-token","istiod-ca-cert"],"imagePullSecrets":null,"revision":"default"}'
-            prometheus.io/path: /stats/prometheus
-            kubectl.kubernetes.io/default-container: main-app
-            kubernetes.io/config.seen: "2022-08-28T00:40:09.016234527Z"
+            kubernetes.io/config.source: api
+            prometheus.io/port: "15020"
             prometheus.io/scrape: "true"
             kubectl.kubernetes.io/last-applied-configuration: |
               {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"labels":{"app":"fortio-server","app.kubernetes.io/name":"fortio-server"},"name":"fortio-server","namespace":"mark"},"spec":{"containers":[{"args":["server","-M","8070 http://fortio-server-l2:8080"],"command":["/usr/bin/fortio"],"image":"docker.io/fortio/fortio","imagePullPolicy":"Always","name":"main-app","ports":[{"containerPort":8080,"name":"http","protocol":"TCP"},{"containerPort":8070,"name":"http-m","protocol":"TCP"},{"containerPort":8079,"name":"grpc","protocol":"TCP"}]}],"imagePullSecrets":[{"name":"docker-registry-key"}],"nodeSelector":{"topology.istio.io/subzone":"worker005","topology.kubernetes.io/region":"us-east-1","topology.kubernetes.io/zone":"worker005"},"restartPolicy":"Always"}}
             cni.projectcalico.org/podIP: 172.21.206.230/32
-            prometheus.io/port: "15020"
-            kubernetes.io/config.source: api
             cni.projectcalico.org/podIPs: 172.21.206.230/32
             kubectl.kubernetes.io/default-logs-container: main-app
-          ISTIO_VERSION: 1.14.3
-          MESH_ID: cluster.local
-          NAME: fortio-server
-          ENVOY_PROMETHEUS_PORT: 15090
-          INTERCEPTION_MODE: REDIRECT
-          PROV_CERT: var/run/secrets/istio/root-cert.pem
-          OWNER: kubernetes://apis/v1/namespaces/mark/pods/fortio-server
-          ISTIO_PROXY_SHA: 7ae8e27f274b33dc2f4d83100aea5971ed6698d3
-          ENVOY_STATUS_PORT: 15021
-          WORKLOAD_NAME: fortio-server
+            kubernetes.io/config.seen: "2022-08-28T00:40:09.016234527Z"
+            sidecar.istio.io/status: '{"initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["workload-socket","workload-certs","istio-envoy","istio-data","istio-podinfo","istio-token","istiod-ca-cert"],"imagePullSecrets":null,"revision":"default"}'
+            kubectl.kubernetes.io/default-container: main-app
+            prometheus.io/path: /stats/prometheus
           APP_CONTAINERS: main-app
-          CLUSTER_ID: Kubernetes
-          POD_PORTS: '[{"name":"http","containerPort":8080,"protocol":"TCP"},{"name":"http-m","containerPort":8070,"protocol":"TCP"},{"name":"grpc","containerPort":8079,"protocol":"TCP"}]'
-          PROXY_CONFIG:
-            proxyAdminPort: 15000
-            controlPlaneAuthPolicy: MUTUAL_TLS
-            tracing:
-              zipkin:
-                address: zipkin.istio-system:9411
-            serviceCluster: istio-proxy
-            statusPort: 15020
-            parentShutdownDuration: 60s
-            configPath: ./etc/istio/proxy
-            terminationDrainDuration: 5s
-            concurrency: 2
-            statNameLength: 189
-            binaryPath: /usr/local/bin/envoy
-            drainDuration: 45s
-            discoveryAddress: istiod.istio-system.svc:15012
-          INSTANCE_IPS: 172.21.206.230
+          INTERCEPTION_MODE: REDIRECT
+          MESH_ID: cluster.local
           PILOT_SAN:
             - istiod.istio-system.svc
           NAMESPACE: mark
-          LABELS:
-            security.istio.io/tlsMode: istio
-            app.kubernetes.io/name: fortio-server
-            service.istio.io/canonical-name: fortio-server
-            service.istio.io/canonical-revision: latest
-            app: fortio-server
+          ENVOY_PROMETHEUS_PORT: 15090
+          CLUSTER_ID: Kubernetes
+          ISTIO_VERSION: 1.14.3
+          OWNER: kubernetes://apis/v1/namespaces/mark/pods/fortio-server
+          INSTANCE_IPS: 172.21.206.230
+          POD_PORTS: '[{"name":"http","containerPort":8080,"protocol":"TCP"},{"name":"http-m","containerPort":8070,"protocol":"TCP"},{"name":"grpc","containerPort":8079,"protocol":"TCP"}]'
+          PROXY_CONFIG:
+            parentShutdownDuration: 60s
+            concurrency: 2
+            discoveryAddress: istiod.istio-system.svc:15012
+            proxyAdminPort: 15000
+            controlPlaneAuthPolicy: MUTUAL_TLS
+            serviceCluster: istio-proxy
+            terminationDrainDuration: 5s
+            statNameLength: 189
+            configPath: ./etc/istio/proxy
+            statusPort: 15020
+            binaryPath: /usr/local/bin/envoy
+            drainDuration: 45s
+            tracing:
+              zipkin:
+                address: zipkin.istio-system:9411
+          WORKLOAD_NAME: fortio-server
+          NAME: fortio-server
         locality: {}
         user_agent_name: envoy
         user_agent_build_version:
@@ -66,11 +66,11 @@ configs:
             minor_number: 22
             patch: 3
           metadata:
-            build.label: dev
+            build.type: RELEASE
             revision.status: Clean
             ssl.version: BoringSSL
+            build.label: dev
             revision.sha: 7ae8e27f274b33dc2f4d83100aea5971ed6698d3
-            build.type: RELEASE
         extensions:
           - name: envoy.access_loggers.file
             category: envoy.access_loggers
@@ -843,12 +843,12 @@ configs:
         layers:
           - name: global config
             static_layer:
-              overload.global_downstream_max_connections: "2147483647"
-              re2.max_program_size.error_level: "32768"
-              envoy.reloadable_features.require_strict_1xx_and_204_response_headers: "false"
-              envoy.reloadable_features.no_extension_lookup_by_name: "false"
-              envoy.deprecated_features:envoy.config.listener.v3.Listener.hidden_envoy_deprecated_use_original_dst: "true"
               envoy.reloadable_features.http_reject_path_with_fragment: "false"
+              envoy.reloadable_features.no_extension_lookup_by_name: "false"
+              overload.global_downstream_max_connections: "2147483647"
+              envoy.reloadable_features.require_strict_1xx_and_204_response_headers: "false"
+              envoy.deprecated_features:envoy.config.listener.v3.Listener.hidden_envoy_deprecated_use_original_dst: "true"
+              re2.max_program_size.error_level: "32768"
           - name: admin
             admin_layer: {}
     last_updated: "2022-08-28T00:41:06.552Z"
@@ -4671,24 +4671,6 @@ configs:
     static_endpoint_configs:
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: zipkin
-          endpoints:
-            - locality: {}
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 10.97.176.41
-                        port_value: 9411
-                    health_check_config: {}
-                    hostname: zipkin.istio-system
-                  health_status: HEALTHY
-                  metadata: {}
-                  load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
           cluster_name: xds-grpc
           endpoints:
             - locality: {}
@@ -4704,17 +4686,19 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: prometheus_stats
+          cluster_name: zipkin
           endpoints:
             - locality: {}
               lb_endpoints:
                 - endpoint:
                     address:
                       socket_address:
-                        address: 127.0.0.1
-                        port_value: 15000
+                        address: 10.97.176.41
+                        port_value: 9411
                     health_check_config: {}
+                    hostname: zipkin.istio-system
                   health_status: HEALTHY
+                  metadata: {}
                   load_balancing_weight: 1
           policy:
             overprovisioning_factor: 140
@@ -4749,7 +4733,52 @@ configs:
                   load_balancing_weight: 1
           policy:
             overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: prometheus_stats
+          endpoints:
+            - locality: {}
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 127.0.0.1
+                        port_value: 15000
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
     dynamic_endpoint_configs:
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|14250||jaeger-collector.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.156
+                        port_value: 14250
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: jaeger;istio-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: inbound|8079||
+          policy:
+            overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
           cluster_name: outbound|8000||httpbin.default.svc.cluster.local
@@ -4757,7 +4786,7 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|15012||istiod.istio-system.svc.cluster.local
+          cluster_name: outbound|15014||istiod.istio-system.svc.cluster.local
           endpoints:
             - locality:
                 region: us-east-6
@@ -4768,7 +4797,7 @@ configs:
                     address:
                       socket_address:
                         address: 172.30.207.154
-                        port_value: 15012
+                        port_value: 15014
                     health_check_config: {}
                   health_status: HEALTHY
                   metadata:
@@ -4781,32 +4810,7 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: PassthroughCluster
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|6379||my-release-2-redis-cluster-headless.monitoring.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: BlackHoleCluster
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: InboundPassthroughClusterIpv4
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|16379||my-release-2-redis-cluster-headless.monitoring.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|443||metrics-server.kube-system.svc.cluster.local
+          cluster_name: outbound|80||tracing.istio-system.svc.cluster.local
           endpoints:
             - locality:
                 region: us-east-6
@@ -4816,21 +4820,89 @@ configs:
                 - endpoint:
                     address:
                       socket_address:
-                        address: 172.30.207.152
-                        port_value: 4443
+                        address: 172.30.207.156
+                        port_value: 16686
                     health_check_config: {}
                   health_status: HEALTHY
                   metadata:
                     filter_metadata:
                       istio:
-                        workload: metrics-server;kube-system;;;Kubernetes
+                        workload: jaeger;istio-system;;;Kubernetes
                   load_balancing_weight: 1
               load_balancing_weight: 1
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|3000||grafana.istio-system.svc.cluster.local
+          cluster_name: outbound|9080||ratings.default.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|9090||kiali.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.137
+                        port_value: 9090
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: kiali;istio-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|9090||prometheus.istio-system.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|15021||istio-ingressgateway.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.143
+                        port_value: 15021
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: istio-ingressgateway;istio-system;istio-ingressgateway;latest;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8070||fortio-server.idm-mark.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8080||fortio-server.idm-mark.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8079||fortio-server.mark.svc.cluster.local
           endpoints:
             - locality:
                 region: us-east-1
@@ -4840,26 +4912,452 @@ configs:
                 - endpoint:
                     address:
                       socket_address:
-                        address: 172.21.206.237
-                        port_value: 3000
+                        address: 172.21.206.230
+                        port_value: 8079
                     health_check_config: {}
                   health_status: HEALTHY
                   metadata:
                     filter_metadata:
                       istio:
-                        workload: grafana;istio-system;;;Kubernetes
+                        workload: fortio-server;mark;fortio-server;latest;Kubernetes
+                      envoy.transport_socket_match:
+                        tlsMode: istio
                   load_balancing_weight: 1
               load_balancing_weight: 1
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8080||fortio-server-l2.default.svc.cluster.local
+          cluster_name: inbound|8070||
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8079||fortio-server-l2.default.svc.cluster.local
+          cluster_name: outbound|4194||kubelet.kube-system.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8000||httpbin.mark.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-1
+                zone: worker005
+                sub_zone: worker005
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.21.206.236
+                        port_value: 80
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      envoy.transport_socket_match:
+                        tlsMode: istio
+                      istio:
+                        workload: httpbin;mark;httpbin;v1;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|443||istio-ingressgateway.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.143
+                        port_value: 8443
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: istio-ingressgateway;istio-system;istio-ingressgateway;latest;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|53||kube-dns.kube-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-1
+                zone: worker005
+                sub_zone: worker005
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.21.206.234
+                        port_value: 53
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: coredns;kube-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.151
+                        port_value: 53
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: coredns;kube-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8079||fortio-server-l2.idm-mark.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8079||fortio-server-l2.mark.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-1
+                zone: worker005
+                sub_zone: worker005
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.21.206.227
+                        port_value: 8079
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      envoy.transport_socket_match:
+                        tlsMode: istio
+                      istio:
+                        workload: fortio-server-l2;mark;fortio-server-l2;latest;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|9080||productpage.default.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|10255||kubelet.kube-system.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|15010||istiod.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.154
+                        port_value: 15010
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: istiod;istio-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|443||kubernetes.default.svc.cluster.local
+          endpoints:
+            - locality: {}
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 192.168.122.51
+                        port_value: 6443
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: ;;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|443||istiod.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.154
+                        port_value: 15017
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: istiod;istio-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|9080||reviews.default.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8070||fortio-server.mark.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-1
+                zone: worker005
+                sub_zone: worker005
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.21.206.230
+                        port_value: 8070
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      envoy.transport_socket_match:
+                        tlsMode: istio
+                      istio:
+                        workload: fortio-server;mark;fortio-server;latest;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8080||fortio-server-l2.idm-mark.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8080||fortio-server.mark.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-1
+                zone: worker005
+                sub_zone: worker005
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.21.206.230
+                        port_value: 8080
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: fortio-server;mark;fortio-server;latest;Kubernetes
+                      envoy.transport_socket_match:
+                        tlsMode: istio
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: inbound|8080||
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|80||istio-ingressgateway.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.143
+                        port_value: 8080
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: istio-ingressgateway;istio-system;istio-ingressgateway;latest;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|9411||zipkin.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.156
+                        port_value: 9411
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: jaeger;istio-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|9153||kube-dns.kube-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-1
+                zone: worker005
+                sub_zone: worker005
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.21.206.234
+                        port_value: 9153
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: coredns;kube-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.151
+                        port_value: 9153
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: coredns;kube-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8079||fortio-server.idm-mark.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|8080||fortio-server-l2.mark.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-1
+                zone: worker005
+                sub_zone: worker005
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.21.206.227
+                        port_value: 8080
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      envoy.transport_socket_match:
+                        tlsMode: istio
+                      istio:
+                        workload: fortio-server-l2;mark;fortio-server-l2;latest;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|9080||details.default.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|10250||kubelet.kube-system.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|14268||jaeger-collector.istio-system.svc.cluster.local
+          endpoints:
+            - locality:
+                region: us-east-6
+                zone: worker006
+                sub_zone: worker006
+              lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: 172.30.207.156
+                        port_value: 14268
+                    health_check_config: {}
+                  health_status: HEALTHY
+                  metadata:
+                    filter_metadata:
+                      istio:
+                        workload: jaeger;istio-system;;;Kubernetes
+                  load_balancing_weight: 1
+              load_balancing_weight: 1
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
@@ -4914,46 +5412,7 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|9080||ratings.default.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|9090||prometheus.istio-system.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|14268||jaeger-collector.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.156
-                        port_value: 14268
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: jaeger;istio-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|10250||kubelet.kube-system.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|9153||kube-dns.kube-system.svc.cluster.local
+          cluster_name: outbound|3000||grafana.istio-system.svc.cluster.local
           endpoints:
             - locality:
                 region: us-east-1
@@ -4963,75 +5422,46 @@ configs:
                 - endpoint:
                     address:
                       socket_address:
-                        address: 172.21.206.234
-                        port_value: 9153
+                        address: 172.21.206.237
+                        port_value: 3000
                     health_check_config: {}
                   health_status: HEALTHY
                   metadata:
                     filter_metadata:
                       istio:
-                        workload: coredns;kube-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.151
-                        port_value: 9153
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: coredns;kube-system;;;Kubernetes
+                        workload: grafana;istio-system;;;Kubernetes
                   load_balancing_weight: 1
               load_balancing_weight: 1
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8080||fortio-server-l2.mark.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-1
-                zone: worker005
-                sub_zone: worker005
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.21.206.227
-                        port_value: 8080
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      envoy.transport_socket_match:
-                        tlsMode: istio
-                      istio:
-                        workload: fortio-server-l2;mark;fortio-server-l2;latest;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
+          cluster_name: outbound|8079||fortio-server-l2.default.svc.cluster.local
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8079||fortio-server.idm-mark.svc.cluster.local
+          cluster_name: outbound|8080||fortio-server-l2.default.svc.cluster.local
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: inbound|8080||
+          cluster_name: outbound|16379||my-release-2-redis-cluster-headless.monitoring.svc.cluster.local
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|80||istio-ingressgateway.istio-system.svc.cluster.local
+          cluster_name: outbound|6379||my-release-2-redis-cluster-headless.monitoring.svc.cluster.local
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: BlackHoleCluster
+          policy:
+            overprovisioning_factor: 140
+      - endpoint_config:
+          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
+          cluster_name: outbound|443||metrics-server.kube-system.svc.cluster.local
           endpoints:
             - locality:
                 region: us-east-6
@@ -5041,107 +5471,26 @@ configs:
                 - endpoint:
                     address:
                       socket_address:
-                        address: 172.30.207.143
-                        port_value: 8080
+                        address: 172.30.207.152
+                        port_value: 4443
                     health_check_config: {}
                   health_status: HEALTHY
                   metadata:
                     filter_metadata:
                       istio:
-                        workload: istio-ingressgateway;istio-system;istio-ingressgateway;latest;Kubernetes
+                        workload: metrics-server;kube-system;;;Kubernetes
                   load_balancing_weight: 1
               load_balancing_weight: 1
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|9080||details.default.svc.cluster.local
+          cluster_name: InboundPassthroughClusterIpv4
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|9411||zipkin.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.156
-                        port_value: 9411
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: jaeger;istio-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8080||fortio-server-l2.idm-mark.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8070||fortio-server.mark.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-1
-                zone: worker005
-                sub_zone: worker005
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.21.206.230
-                        port_value: 8070
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: fortio-server;mark;fortio-server;latest;Kubernetes
-                      envoy.transport_socket_match:
-                        tlsMode: istio
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8080||fortio-server.mark.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-1
-                zone: worker005
-                sub_zone: worker005
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.21.206.230
-                        port_value: 8080
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      envoy.transport_socket_match:
-                        tlsMode: istio
-                      istio:
-                        workload: fortio-server;mark;fortio-server;latest;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|443||istiod.istio-system.svc.cluster.local
+          cluster_name: outbound|15012||istiod.istio-system.svc.cluster.local
           endpoints:
             - locality:
                 region: us-east-6
@@ -5152,7 +5501,7 @@ configs:
                     address:
                       socket_address:
                         address: 172.30.207.154
-                        port_value: 15017
+                        port_value: 15012
                     health_check_config: {}
                   health_status: HEALTHY
                   metadata:
@@ -5165,356 +5514,7 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|9080||productpage.default.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|443||kubernetes.default.svc.cluster.local
-          endpoints:
-            - locality: {}
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 192.168.122.51
-                        port_value: 6443
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: ;;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|10255||kubelet.kube-system.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|15010||istiod.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.154
-                        port_value: 15010
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: istiod;istio-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|443||istio-ingressgateway.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.143
-                        port_value: 8443
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: istio-ingressgateway;istio-system;istio-ingressgateway;latest;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8079||fortio-server-l2.idm-mark.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|53||kube-dns.kube-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-1
-                zone: worker005
-                sub_zone: worker005
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.21.206.234
-                        port_value: 53
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: coredns;kube-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.151
-                        port_value: 53
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: coredns;kube-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8079||fortio-server-l2.mark.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-1
-                zone: worker005
-                sub_zone: worker005
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.21.206.227
-                        port_value: 8079
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: fortio-server-l2;mark;fortio-server-l2;latest;Kubernetes
-                      envoy.transport_socket_match:
-                        tlsMode: istio
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8079||fortio-server.mark.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-1
-                zone: worker005
-                sub_zone: worker005
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.21.206.230
-                        port_value: 8079
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      envoy.transport_socket_match:
-                        tlsMode: istio
-                      istio:
-                        workload: fortio-server;mark;fortio-server;latest;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|4194||kubelet.kube-system.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: inbound|8070||
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8000||httpbin.mark.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-1
-                zone: worker005
-                sub_zone: worker005
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.21.206.236
-                        port_value: 80
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: httpbin;mark;httpbin;v1;Kubernetes
-                      envoy.transport_socket_match:
-                        tlsMode: istio
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|15021||istio-ingressgateway.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.143
-                        port_value: 15021
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: istio-ingressgateway;istio-system;istio-ingressgateway;latest;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8070||fortio-server.idm-mark.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8080||fortio-server.idm-mark.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|9080||reviews.default.svc.cluster.local
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|80||tracing.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.156
-                        port_value: 16686
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: jaeger;istio-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|9090||kiali.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.137
-                        port_value: 9090
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: kiali;istio-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: inbound|8079||
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|14250||jaeger-collector.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.156
-                        port_value: 14250
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: jaeger;istio-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
-          policy:
-            overprovisioning_factor: 140
-      - endpoint_config:
-          '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|15014||istiod.istio-system.svc.cluster.local
-          endpoints:
-            - locality:
-                region: us-east-6
-                zone: worker006
-                sub_zone: worker006
-              lb_endpoints:
-                - endpoint:
-                    address:
-                      socket_address:
-                        address: 172.30.207.154
-                        port_value: 15014
-                    health_check_config: {}
-                  health_status: HEALTHY
-                  metadata:
-                    filter_metadata:
-                      istio:
-                        workload: istiod;istio-system;;;Kubernetes
-                  load_balancing_weight: 1
-              load_balancing_weight: 1
+          cluster_name: PassthroughCluster
           policy:
             overprovisioning_factor: 140
   - '@type': type.googleapis.com/envoy.admin.v3.ListenersConfigDump

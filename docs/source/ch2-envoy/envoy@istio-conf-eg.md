@@ -14,6 +14,11 @@ curl 'localhost:15000/config_dump?include_eds' | \
 yq eval -P > envoy@istio-conf-eg-inbound.envoy_conf.yaml
 ```
 
+```{note}
+这里下载 {download}`envoy@istio-conf-eg-inbound.envoy_conf.yaml <envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.envoy_conf.yaml>` .
+```
+
+分析上面获取到的 Envoy 配置，可以 “推断” 到下面 Inbound 数据流图：
 
 :::{figure-md} 图：Istio里的 Envoy Inbound 配置举例
 
@@ -24,5 +29,6 @@ yq eval -P > envoy@istio-conf-eg-inbound.envoy_conf.yaml
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy@istio-conf-eg-inbound.drawio.svg)*
 
 
+喜欢较真的程序员，对 “推断” 的事情有天然的不安感。那么，我们想法子 debug 一下，验证一下图的可靠性。
 
 
