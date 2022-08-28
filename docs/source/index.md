@@ -71,7 +71,7 @@ https://github.com/labilezhu/istio-insider/issues
 
 
 ```{toctree}
-:caption: Table of Contents
+:caption: 目录
 :maxdepth: 5
 :includehidden:
 
@@ -80,4 +80,14 @@ ch1-istio-arch/index
 ch2-envoy/index
 ch3-control-panel/index
 ch4-istio-ctrl-envoy/index
+```
+
+## 附录
+
+```{toctree}
+:caption: 附录
+:maxdepth: 5
+:includehidden:
+
+appendix-lab-env/index.md
 ```

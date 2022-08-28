@@ -2,6 +2,10 @@
 
 如果要了解一个系统的核心机理，那么首先应该看看系统的主要数据流。Istio 也不例外。下面我们看看 Istio数据面的部署架构。
 
+```{note}
+本节的实验环境说明见于： {ref}`appendix-lab-env/appendix-lab-env-base:简单分层实验环境`
+```
+
 :::{figure-md} 图：Istio数据面架构
 
 <img src="istio-data-panel-arch.assets/istio-data-panel-arch.drawio.svg" alt="Inbound与Outbound概念">

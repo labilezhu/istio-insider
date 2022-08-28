@@ -17,8 +17,11 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.autosectionlabel',
     'myst_parser'
 ]
+
+autosectionlabel_prefix_document = True
 
 html_title = "Istio & Envoy 内幕"
 html_favicon = '_static/favicon.ico'
