@@ -64,7 +64,7 @@ and productive life. To my dear wife and our amazing kid – thanks for all your
 
 ### 意见反馈
 由于自称是交互图书，读者的反馈当然非常重要。如果你发现书中的错误，或者有更好的建议，不妨来这里提 Issue:  
-https://github.com/labilezhu/istio-insider/issues
+[https://github.com/labilezhu/istio-insider/issues](https://github.com/labilezhu/istio-insider/issues)
 
 
 ## 目录

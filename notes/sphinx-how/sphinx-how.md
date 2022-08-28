@@ -13,6 +13,9 @@
 #### Cross-referencing using roles
 > https://docs.readthedocs.io/en/stable/guides/cross-referencing-with-sphinx.html#cross-referencing-using-roles
 
+```{note}
+本节的实验环境说明见于： {ref}`appendix-lab-env/appendix-lab-env-base:简单分层实验环境`
+```
 
 
 #### Automatically label sections[¶](https://docs.readthedocs.io/en/stable/guides/cross-referencing-with-sphinx.html#automatically-label-sections)

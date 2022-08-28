@@ -12,6 +12,10 @@ Istio 的每个组件都监听一堆端口。对于初学者，可能很难弄�
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-ports-components.drawio.svg)*
 
+上图需要说明的是：
+- istio-proxy 容器与 应用容器(app container) 共享同一 Linux `network namespace`。 
+- `network namespace` 是内核内用于隔离多个不同网络配置的技术。其中一个配置就是 netfilter，即我们常说的 iptables。我们将在后面说说它的故事。
+
 可以用以下方式查看监听的端口：
 
 ```bash
