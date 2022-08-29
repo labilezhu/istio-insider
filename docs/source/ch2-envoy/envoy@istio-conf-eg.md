@@ -96,12 +96,14 @@ ESTAB 0      0          localhost:15020                             localhost:52
 ESTAB 0      0          localhost:15020                             localhost:51978       
 ```
 
-如果你的环境中发现已经有连接，那么
+解释一下上面的命令。`-t` 是只看 tcp 连接。`-r` 是尝试对 ip 地址反向解释回域名。
+
+如果你的环境中发现已经有连接，那么，强制断开它。因为后面要分析一下建立新连接的日志。这里有个 强制断开连接的 ss 命令的秘技：
 ```bash
 k exec -it netshoot -- ss -K 'dst 172-21-206-230.fortio-server.mark.svc.cluster.local'
 ```
 
-其中 `172-21-206-230.fortio-server.mark.svc.cluster.local` 就是 k8s 给这个 fortio-server POD 的域名了。
+其中 `dst 172-21-206-230.fortio-server.mark.svc.cluster.local` 是个过滤器条件，用于指定执行断开的连接。命令的意思是断开`对端目标地址`为 `172-21-206-230.fortio-server.mark.svc.cluster.local` 的连接。`172-21-206-230.fortio-server.mark.svc.cluster.local`就是 k8s 给自动这个 fortio-server POD 的域名了。
 
 3. 修改日志级别：
 ```bash
