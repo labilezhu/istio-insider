@@ -47,7 +47,17 @@
 为什么水平有限还学人家写书？因为这句话：
 > 你不需要很厲害才能開始，但你需要開始才會很厲害。
 
-Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)
+Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)  
+为方便读者关注 Blog 与本书的更新，开了个同步的 `微信公众号`：
+
+:::{figure-md} 微信公众号:Mark的Cloud与BPF沉思录
+
+<img src="_static/my-wechat-blog-qr.png" alt="my-wechat-blog-qr.png">
+
+*微信公众号:Mark的Cloud与BPF沉思录*
+:::
+
+
 
 
 ### 参与编写

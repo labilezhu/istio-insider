@@ -5,8 +5,18 @@
 开始前，请确保您已经看过： {ref}`appendix-lab-env/index:实验环境总述`
 ```
 
+安装成功后的架构图见：
 
-## 安装服务
+:::{figure-md} 图:简单分层实验环境部署
+
+<img src="/ch1-istio-arch/istio-data-panel-arch.assets/istio-data-panel-arch.drawio.svg" alt="Inbound与Outbound概念">
+
+*图:简单分层实验环境部署*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-data-panel-arch.drawio.svg)*
+
+
+## 安装过程
 
 
 ### fortio
@@ -44,10 +54,6 @@ spec:
       - containerPort: 8079
         protocol: TCP
         name: grpc   
-    nodeSelector:
-        topology.kubernetes.io/region: us-east-1
-        topology.kubernetes.io/zone: worker005
-        topology.istio.io/subzone: worker005
 
 ---
 
@@ -114,8 +120,6 @@ spec:
       - containerPort: 8079
         protocol: TCP
         name: grpc   
-    nodeSelector:
-        topology.kubernetes.io/zone: worker005
 
 ---
 
@@ -144,3 +148,6 @@ spec:
 EOF
 
 ```
+
+
+

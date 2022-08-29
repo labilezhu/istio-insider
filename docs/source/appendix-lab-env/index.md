@@ -79,8 +79,6 @@ spec:
       protocol: TCP
     securityContext:
         privileged: true
-  nodeSelector:
-    kubernetes.io/hostname: worknode5
 EOF
 
 ```
