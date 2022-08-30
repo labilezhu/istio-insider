@@ -3,7 +3,7 @@
 # 前言
 
 
-```{warning}
+```{attention}
 这是一本编写中的书，现在只是草稿阶段。书名为《Istio & Envoy 内幕》，英文名《Istio & Envoy Insider》。
 ```
 

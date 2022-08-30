@@ -37,7 +37,7 @@ yq eval -P > envoy@istio-conf-eg-inbound.envoy_conf.yaml
 分析上面获取到的 Envoy 配置，可以 “推断” 到下面 Inbound 数据流图：
 
 :::{figure-md} 图：Istio里的 Envoy Inbound 配置举例
-
+:class: full-width
 <img src="envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.drawio.svg" alt="Inbound与Outbound概念">
 
 *图：Istio里的 Envoy Inbound配置举例*
@@ -98,12 +98,14 @@ ESTAB 0      0          localhost:15020                             localhost:51
 
 解释一下上面的命令。`-t` 是只看 tcp 连接。`-r` 是尝试对 ip 地址反向解释回域名。
 
+````{tip}
 如果你的环境中发现已经有连接，那么，强制断开它。因为后面要分析一下建立新连接的日志。这里有个 强制断开连接的 ss 命令的秘技：
 ```bash
 k exec -it netshoot -- ss -K 'dst 172-21-206-230.fortio-server.mark.svc.cluster.local'
 ```
-
 其中 `dst 172-21-206-230.fortio-server.mark.svc.cluster.local` 是个过滤器条件，用于指定执行断开的连接。命令的意思是断开`对端目标地址`为 `172-21-206-230.fortio-server.mark.svc.cluster.local` 的连接。`172-21-206-230.fortio-server.mark.svc.cluster.local`就是 k8s 给自动这个 fortio-server POD 的域名了。
+````
+
 
 3. 修改日志级别：
 ```bash

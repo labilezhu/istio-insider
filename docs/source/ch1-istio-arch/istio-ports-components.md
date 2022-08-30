@@ -5,6 +5,7 @@ Istio 的每个组件都监听一堆端口。对于初学者，可能很难弄�
 
 
 :::{figure-md} 图：Istio端口与组件
+:class: full-width
 
 <img src="istio-ports-components.assets/istio-ports-components.drawio.svg" alt="Istio端口与组件">
 
