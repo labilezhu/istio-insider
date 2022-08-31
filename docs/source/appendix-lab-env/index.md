@@ -2,7 +2,7 @@
 
 这里列出了本书用到的实现环境和相关的重要配置。
 
-- Istio: 1.14  
+- Istio: 1.14 , Envoy 版本： 1.22 patch 3
 - Kubernetes: 1.20  
 - 操作系统： Ubuntu 22.04.1 LTS
 - shell: Oh My ZSH

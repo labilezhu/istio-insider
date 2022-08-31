@@ -77,7 +77,7 @@ fortio-server   172.21.206.230:8079,172.21.206.230:8070,172.21.206.230:8080   8d
 
 
 
-2. 开一个专用终端窗口，监控日志：
+2. 开一个专用 `监控日志终端窗口`，：
 ```bash
 k logs -f fortio-server -c istio-proxy
 ```
@@ -103,7 +103,7 @@ ESTAB 0      0          localhost:15020                             localhost:51
 ```bash
 k exec -it netshoot -- ss -K 'dst 172-21-206-230.fortio-server.mark.svc.cluster.local'
 ```
-其中 `dst 172-21-206-230.fortio-server.mark.svc.cluster.local` 是个过滤器条件，用于指定执行断开的连接。命令的意思是断开`对端目标地址`为 `172-21-206-230.fortio-server.mark.svc.cluster.local` 的连接。`172-21-206-230.fortio-server.mark.svc.cluster.local`就是 k8s 给自动这个 fortio-server POD 的域名了。
+其中 `dst 172-21-206-230.fortio-server.mark.svc.cluster.local` 是个过滤器条件，用于指定执行断开的连接。命令的意思是断开`对端目标地址`为 `172-21-206-230.fortio-server.mark.svc.cluster.local` 的连接。`172-21-206-230.fortio-server.mark.svc.cluster.local`就是 k8s 自动给这个 fortio-server POD 的域名了。
 ````
 
 
@@ -116,27 +116,14 @@ k exec fortio-server -c istio-proxy -- curl -XPOST curl -XPOST 'http://localhost
 
 
 
-在 k8s cluster 内发起请求：
+4. 在 k8s cluster 内发起请求：
 ```bash
-k exec -it netshoot -- ss -tr
-
-
-#sudo ss -K  'dport 22'
-
-
 sleep 5 && k exec -it netshoot -- curl -v http://fortio-server:8080/
 ```
 
+5. 查看连接
 ```bash
-labile@labile-T30 ➜ labile $ k get endpoints fortio-server
-NAME            ENDPOINTS                                                     AGE
-fortio-server   172.21.206.230:8079,172.21.206.230:8070,172.21.206.230:8080   8d
-
-```
-
-
-```bash
-$ k exec -it netshoot -- ss -trn
+$ k exec -it netshoot -- ss -trn | grep fortio
 
 State  Recv-Q  Send-Q     Local Address:Port                                             Peer Address:Port   Process  
 ...
@@ -144,15 +131,14 @@ ESTAB  0       0               netshoot:52352     172-21-206-230.fortio-server.m
 ...
 ```
 
-```
-k exec -it netshoot -- ss -trn
+6. 查看日志
+这时，在之前打开的 `监控日志终端窗口` 中，应该可以看到日志：
 
-k exec -it netshoot -- ping 172-21-206-230.fortio-server.mark.svc.cluster.local
+:::{figure-md} 图：Istio里的 Envoy Inbound 组件与日志
+:class: full-width
+<img src="envoy@istio-conf-eg.assets/log-envoy@istio-conf-eg-inbound.drawio.svg" alt="Inbound与Outbound概念">
 
-k exec -it netshoot -- ss -tr 'dst 172-21-206-230.fortio-server.mark.svc.cluster.local'
-
-k exec -it netshoot -- ss -K 'dst 172-21-206-230.fortio-server.mark.svc.cluster.local'
-
-```
-
+*图：Istio里的 Envoy Inbound 组件与日志*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Flog-envoy@istio-conf-eg-inbound.drawio.svg)*
 
