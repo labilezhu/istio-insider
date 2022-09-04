@@ -26,7 +26,7 @@
 
 kubectl -n mark delete pod fortio-server
 
-kubectl -n mark apply -f - <<EOF
+kubectl -n mark apply -f - <<"EOF"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -34,6 +34,16 @@ metadata:
     labels:
         app.kubernetes.io/name: fortio-server
         app: fortio-server
+
+    annotations:
+      proxy.istio.io/config: |-
+        proxyStatsMatcher:
+          inclusionRegexps:
+          - "cluster\\..*fortio.*" #proxy upstream(outbound)
+          - "cluster\\..*inbound.*" #proxy upstream(inbound)
+          - "http\\..*"
+          - "listener\\..*"
+
 spec:
     restartPolicy: Always
     imagePullSecrets:
@@ -41,7 +51,7 @@ spec:
     containers:
     - name: main-app
       image: docker.io/fortio/fortio
-      imagePullPolicy: Always
+      imagePullPolicy: IfNotPresent
       command: ["/usr/bin/fortio"]
       args: ["server", "-M", "8070 http://fortio-server-l2:8080"]
       ports:
@@ -92,7 +102,7 @@ EOF
 
 kubectl -n mark delete pod fortio-server-l2
 
-kubectl -n mark apply -f - <<EOF
+kubectl -n mark apply -f - <<"EOF"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -103,6 +113,14 @@ metadata:
       app.kubernetes.io/name: fortio-server-l2
       app: fortio-server-l2
       sidecar.istio.io/inject: "true"
+    annotations:
+      proxy.istio.io/config: |-
+        proxyStatsMatcher:
+          inclusionRegexps:
+          - "cluster\\..*fortio.*" #proxy upstream(outbound)
+          - "cluster\\..*inbound.*" #proxy upstream(inbound)
+          - "http\\..*"
+          - "listener\\..*"
 spec:
     restartPolicy: Always
     imagePullSecrets:
@@ -110,7 +128,7 @@ spec:
     containers:
     - name: main-app
       image: docker.io/fortio/fortio
-      imagePullPolicy: Always
+      imagePullPolicy: IfNotPresent
       command: ["/usr/bin/fortio"]
       args: ["server"]
       ports:
