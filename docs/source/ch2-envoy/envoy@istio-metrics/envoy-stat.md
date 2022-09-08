@@ -63,7 +63,6 @@ Envoy 发出三种类型的值作为统计信息：
 在 Envoy 的内部实现中，Counters 和 Gauges 被分批并定期刷新以提高性能。Histograms 在接收时写入。
 
 
-
 ## 指标释义
 
 从指标的产出地点来划分，可以分为：
@@ -71,12 +70,47 @@ Envoy 发出三种类型的值作为统计信息：
 - http connection manager(HCM) ： 面向 `upstream` & `downstream` 的 L7 层指标
 - listeners : 面向 `downstream` 的 L3/L4 层指标
 - server(全局)
+- watch dog
+
+下面我只选择了部分关键的性能指标来简单说明。
 
 ### cluster manager
 
 [Envoy 文档:cluster manager stats](https://www.envoyproxy.io/docs/envoy/latest/configuration/upstream/cluster_manager/cluster_stats)
 
-上面文档已经说得比较详细了。我只补充一些在性能调优时需要关注的方面。
+上面文档已经说得比较详细了。我只补充一些在性能调优时需要关注的方面。那么，一般需要关注什么指标？
+
+我们从著名的 [Utilization Saturation and Errors (USE)](https://www.brendangregg.com/usemethod.html) 方法学来分析。
+
+利用率(Utilization):
+ - `upstream_cx_total` (Counter): 连接数
+ - `upstream_rq_active`
+
+饱和度(Saturation):
+ - `upstream_rq_time` (Histogram): 响应时间
+ - `upstream_cx_connect_ms` (Histogram)
+ - `upstream_cx_rx_bytes_buffered`
+ - `upstream_cx_tx_bytes_buffered`
+ - `upstream_rq_pending_total`
+ - `upstream_rq_pending_active` (Gauge)
+
+错误(Error):
+ - `upstream_cx_connect_fail` (Counter): 连接失败数
+ - `upstream_cx_connect_timeout` (Counter): 连接超时数
+ - `upstream_cx_overflow` (Counter): 集群连接断路器溢出的总次数
+ - `upstream_cx_pool_overflow`
+ - `upstream_cx_destroy_local_with_active_rq`
+ - `upstream_cx_destroy_remote_with_active_rq`
+ - `upstream_rq_timeout`
+ - `upstream_rq_retry`
+ - `upstream_rq_rx_reset`
+ - `upstream_rq_tx_reset`
+
+其它：
+ - `upstream_rq_total` (Counter): TPS (吞吐)
+ - `upstream_cx_destroy_local` (Counter): Envoy 主动断开的连接计数
+ - `upstream_cx_destroy_remote` (Counter): Envoy 被动断开的连接计数
+ - `upstream_cx_length_ms` (Histogram)
 
 
 
@@ -85,21 +119,91 @@ Envoy 发出三种类型的值作为统计信息：
 
 [Envoy 文档:http connection manager(HCM) stats](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/stats)
 
-可以认为，这是 downstream 的 HTTP(L7) 层的指标。
+可以认为，这是面向 `downstream` & 部分 `upstream` 的 L7 层指标
+
+利用率(Utilization):
+ - `downstream_cx_total` 
+ - `downstream_cx_active`
+ - `downstream_cx_http1_active`
+ - `downstream_rq_total`
+ - `downstream_rq_http1_total`
+ - `downstream_rq_active`
+ - ``
+
+
+饱和度(Saturation):
+ - `downstream_cx_rx_bytes_buffered` 
+ - `downstream_cx_tx_bytes_buffered`
+ - `downstream_flow_control_paused_reading_total`
+ - `downstream_flow_control_resumed_reading_total`
+
+
+错误(Error):
+ - `downstream_cx_destroy_local_active_rq`
+ - `downstream_cx_destroy_remote_active_rq`
+ - `downstream_rq_rx_reset`
+ - `downstream_rq_tx_reset`
+ - `downstream_rq_too_large`
+ - `downstream_rq_max_duration_reached`
+ - `downstream_rq_timeout`
+ - `downstream_rq_overload_close`
+ - `rs_too_large`
+
+其它：
+ - `downstream_cx_destroy_remote` 
+ - `downstream_cx_destroy_local`
+ - `downstream_cx_length_ms`
 
 ### listeners
 
-[Envoy 文档:listener stats](https://www.envoyproxy.io/docs/envoy/latest/configuration/listeners/stat)
+[Envoy 文档:listener stats](https://www.envoyproxy.io/docs/envoy/latest/configuration/listeners/stats)
 
 可以认为，这是 downstream 的 L3/L4 层的指标。
 
+利用率(Utilization):
+ - `downstream_cx_total` 
+ - `downstream_cx_active`
 
+
+饱和度(Saturation):
+ - `downstream_pre_cx_active`
+ 
+
+错误(Error):
+ - `downstream_cx_transport_socket_connect_timeout`
+ - `downstream_cx_overflow` 
+ - `no_filter_chain_match`
+ - `downstream_listener_filter_error`
+ - `no_certificate`
+
+其它：
+ - `downstream_cx_length_ms` 
 
 
 ### server
 
-> https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/statistics
+Envoy 基础信息指标
 
+[Envoy 文档:server stats](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/statistics)
+
+利用率(Utilization):
+ - `concurrency` 
+
+
+错误(Error):
+ - `days_until_first_cert_expiring`
+
+
+### watch dog
+
+[Envoy 文档: Watchdog](https://www.envoyproxy.io/docs/envoy/latest/operations/performance)
+
+Envoy 还包括一个可配置的看门狗系统，它可以在 Envoy 没有响应时增加统计数据并选择性地终止服务器。 系统有两个独立的看门狗配置，一个用于主线程，一个用于工作线程； 因为不同的线程有不同的工作负载。 这些统计数据有助于从高层次上理解 Envoy 的事件循环是否因为它正在做太多工作、阻塞或没有被操作系统调度而没有响应。
+
+饱和度(Saturation):
+ - `watchdog_mega_miss`(Counter): mega 未命中数
+ - `watchdog_miss`(Counter): 未命中数
+ 
 
 ## 配置说明
 
@@ -144,7 +248,7 @@ Envoy 发出三种类型的值作为统计信息：
 - stats\_flush\_on\_admin
 ([bool](https://developers.google.com/protocol-buffers/docs/proto#scalar)) 仅当在 `管理界面(admin interface)` 上查询时才将统计信息刷新到 `sink`。 如果设置，则不会创建刷新计时器。 只能设置 `stats_flush_on_admin` 或 `stats_flush_interval` 之一。
 
-##### config.metrics.v3.StatsConfig
+#### config.metrics.v3.StatsConfig
 
 [Envoy 文档:config-metrics-v3-statsconfig](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/stats.proto#config-metrics-v3-statsconfig)
 
@@ -167,7 +271,7 @@ Envoy 发出三种类型的值作为统计信息：
   ([config.metrics.v3.StatsMatcher](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/stats.proto#envoy-v3-api-msg-config-metrics-v3-statsmatcher)) 指定 Envoy 要产出哪些指标。支持 `包含`/`排除` 规则指定。 如果未提供，则所有指标都将产出。 阻止某些指标集的统计可以提高一点 Envoy 运行性能。
 
 
-##### config.metrics.v3.StatsMatcher
+#### config.metrics.v3.StatsMatcher
 
 [Envoy 文档:config-metrics-v3-statsmatcher](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/stats.proto#config-metrics-v3-statsmatcher)
 
@@ -190,6 +294,6 @@ Envoy 发出三种类型的值作为统计信息：
 - inclusion_list
   ([type.matcher.v3.ListStringMatcher](https://www.envoyproxy.io/docs/envoy/latest/api-v3/type/matcher/v3/string.proto#envoy-v3-api-msg-type-matcher-v3-liststringmatcher)) 包含列表
 
-[[type.matcher.v3.ListStringMatcher proto\]](https://github.com/envoyproxy/envoy/blob/255af425e1d51066cc8b69a39208b70e18d07073/api/envoy/type/matcher/v3/string.proto#L72)
+
 
 

@@ -39,5 +39,5 @@ Sphinx will create explicit targets for all your sections, the name of target ha
 
 List all ref taget
 ```bash
-python -m sphinx.ext.intersphinx ./docs/build/html/objects.inv
+python3.10 -m sphinx.ext.intersphinx ./docs/build/html/objects.inv
 ```
