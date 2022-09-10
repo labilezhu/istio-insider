@@ -167,7 +167,7 @@ Envoy 发出三种类型的值作为统计信息：
 
 饱和度(Saturation):
  - `downstream_pre_cx_active`
- 
+
 
 错误(Error):
  - `downstream_cx_transport_socket_connect_timeout`
@@ -203,7 +203,34 @@ Envoy 还包括一个可配置的看门狗系统，它可以在 Envoy 没有响�
 饱和度(Saturation):
  - `watchdog_mega_miss`(Counter): mega 未命中数
  - `watchdog_miss`(Counter): 未命中数
- 
+
+如果你对 watchdog 机制的兴趣，可以参考：
+> https://github.com/envoyproxy/envoy/issues/11391
+> https://github.com/envoyproxy/envoy/issues/11388
+
+ ### Event loop 
+ [Envoy 文档: Event loop](https://www.envoyproxy.io/docs/envoy/latest/operations/performance)
+
+Envoy 架构旨在通过在少量线程上运行事件循环来优化可扩展性和资源利用率。 `“main”` 线程负责控制面处理，每个 `“worker”` 线程分担数据面的一部分任务。 Envoy 公开了两个统计信息来监控所有这些线程事件循环的性能。
+
+跑一轮循环的耗时：事件循环的每次迭代都会执行一些任务。任务数量会随着负载的变化而变化。但是，如果一个或多个线程具有异常长尾循环执行耗时，则可能存在性能问题。例如，负责可能在工作线程之间分配不均，或者插件中可能存在长时间阻塞操作阻碍了任务进度。
+
+轮询延迟：在事件循环的每次迭代中，事件调度程序都会轮询 I/O 事件，并在某些 `I/O 事件就绪` 或 发生 `超时` 时 “唤醒” 线程，以先发生者为准。在 `超时` 的情况下，我们可以测量轮询后预期唤醒时间与实际唤醒时间的差值；这种差异称为 “`轮询延迟`”。看到一些小的 `轮询延迟` 是正常的，通常等于内核调度程序的 “时间片(time slice”)” 或 “量子(quantum)” ——这取决于运行 Envoy 的操作系统 —— 但如果这个数字大大高于其正常观察到的基线，它表示内核调度程序可能发生延迟。
+
+可以通过将 [enable_dispatcher_stats](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/bootstrap/v3/bootstrap.proto#envoy-v3-api-field-config-bootstrap-v3-bootstrap-enable-dispatcher-stats) 设置为 `true` 来启用这些统计信息。
+
+- `main` 线程的事件调度器有一个以 `server.dispatcher.` 为根的统计树。 
+- 每个 `worker` 线程的事件调度器都有一个以 `listener_manager.worker_<id>.dispatcher.` 为根的统计树。
+
+每棵树都有以下统计信息：
+
+| Name             | Type      | Description                          |
+| ---------------- | --------- | ------------------------------------ |
+| loop_duration_us | Histogram | 以微秒为单位的事件循环持续时间 |
+| poll_delay_us    | Histogram | 以微秒为单位的轮询延迟       |
+
+请注意，此处不包括任何辅助(非 main 与 worker)线程。
+
 
 ## 配置说明
 
@@ -213,7 +240,6 @@ Envoy 还包括一个可配置的看门狗系统，它可以在 Envoy 没有响�
 本节参考：
 [Envoy 文档](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/stats.proto)
 ```
-
 
 ### config.bootstrap.v3.Bootstrap
 
@@ -234,7 +260,7 @@ Envoy 还包括一个可配置的看门狗系统，它可以在 Envoy 没有响�
 ```
 
 ```{hint}
-什么是 `stats sink` 本书不作说明。Istio 默认没定制相关配置。以下只说关注的部分配置。
+什么是 `stats sink`？ 本书不作说明。Istio 默认没定制相关配置。以下只说关注的部分配置。
 ```
 
 
@@ -293,7 +319,6 @@ Envoy 还包括一个可配置的看门狗系统，它可以在 Envoy 没有响�
 
 - inclusion_list
   ([type.matcher.v3.ListStringMatcher](https://www.envoyproxy.io/docs/envoy/latest/api-v3/type/matcher/v3/string.proto#envoy-v3-api-msg-type-matcher-v3-liststringmatcher)) 包含列表
-
 
 
 
