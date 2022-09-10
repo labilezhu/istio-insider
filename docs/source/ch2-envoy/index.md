@@ -1,4 +1,4 @@
-# Envoy Proxy(草稿)
+# Envoy Proxy
 
 要深入了解 Istio ，那么先得了解流量的核心 Envoy Proxy。这里有三个认知层次：
 1. 了解原生的 可编程代理 `Envoy Proxy` 架构
