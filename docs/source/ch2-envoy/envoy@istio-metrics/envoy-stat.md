@@ -273,7 +273,7 @@ Watch Dog 和 Event loop 都是解决与监控事件处理延迟与时效的工�
 - stats\_flush\_on\_admin
 ([bool](https://developers.google.com/protocol-buffers/docs/proto#scalar)) 仅当在 `管理界面(admin interface)` 上查询时才将统计信息刷新到 `sink`。 如果设置，则不会创建刷新计时器。 只能设置 `stats_flush_on_admin` 或 `stats_flush_interval` 之一。
 
-#### config.metrics.v3.StatsConfig
+### config.metrics.v3.StatsConfig
 
 [Envoy 文档:config-metrics-v3-statsconfig](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/stats.proto#config-metrics-v3-statsconfig)
 
@@ -296,7 +296,7 @@ Watch Dog 和 Event loop 都是解决与监控事件处理延迟与时效的工�
   ([config.metrics.v3.StatsMatcher](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/stats.proto#envoy-v3-api-msg-config-metrics-v3-statsmatcher)) 指定 Envoy 要产出哪些指标。支持 `包含`/`排除` 规则指定。 如果未提供，则所有指标都将产出。 阻止某些指标集的统计可以提高一点 Envoy 运行性能。
 
 
-#### config.metrics.v3.StatsMatcher
+### config.metrics.v3.StatsMatcher
 
 [Envoy 文档:config-metrics-v3-statsmatcher](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/stats.proto#config-metrics-v3-statsmatcher)
 

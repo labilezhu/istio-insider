@@ -41,4 +41,5 @@ Istio 的 istio-proxy 的数据面指标是 基于 Envoy 的指标构架实现�
 :maxdepth: 1
 envoy-stat.md
 istio-stat.md
+envoy-stat-impl.md
 ```
