@@ -2,9 +2,6 @@
 
 ## Envoy 指标概述
 
-```{note}
-本节参考了： https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/observability/statistics
-```
 
 Envoy 的主要目标之一是使网络易于理解。 Envoy 会根据其配置方式产生大量统计信息。一般来说，统计数据(指标)分为三类：
 
@@ -128,7 +125,6 @@ Envoy 发出三种类型的值作为统计信息：
  - `downstream_rq_total`
  - `downstream_rq_http1_total`
  - `downstream_rq_active`
- - ``
 
 
 饱和度(Saturation):
@@ -231,6 +227,9 @@ Envoy 架构旨在通过在少量线程上运行事件循环来优化可扩展�
 
 请注意，此处不包括任何辅助(非 main 与 worker)线程。
 
+```{hint}
+Watch Dog 和 Event loop 都是解决与监控事件处理延迟与时效的工具，这里有很多细节和故事，甚至可以说到 Linux Kernel。希望本书后面有时间，可以和大家一起学习和分析这些有趣的细节。
+```
 
 ## 配置说明
 
@@ -322,3 +321,8 @@ Envoy 架构旨在通过在少量线程上运行事件循环来优化可扩展�
 
 
 
+```{note}
+本节参考了： https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/observability/statistics
+
+下一节，将以 Istio 如何使用上面的配置为例，举例说明。
+```
