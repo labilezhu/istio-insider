@@ -88,9 +88,14 @@ Envoy 发出三种类型的值作为统计信息：
  - `upstream_cx_connect_ms` (Histogram)
  - `upstream_cx_rx_bytes_buffered`
  - `upstream_cx_tx_bytes_buffered`
- - `upstream_rq_pending_total`
+ - `upstream_rq_pending_total` (Counter)
  - `upstream_rq_pending_active` (Gauge)
-
+ - `circuit_breakers.*cx_open`
+ - `circuit_breakers.*cx_pool_open`
+ - `circuit_breakers.*rq_pending_open`
+ - `circuit_breakers.*rq_open`
+ - `circuit_breakers.*rq_retry_open`
+ 
 错误(Error):
  - `upstream_cx_connect_fail` (Counter): 连接失败数
  - `upstream_cx_connect_timeout` (Counter): 连接超时数
@@ -102,6 +107,7 @@ Envoy 发出三种类型的值作为统计信息：
  - `upstream_rq_retry`
  - `upstream_rq_rx_reset`
  - `upstream_rq_tx_reset`
+ - `upstream_rq_pending_overflow` (Counter) : 溢出连接池或请求（主要针对 HTTP/2 及更高版本）熔断并失败的请求总数
 
 其它：
  - `upstream_rq_total` (Counter): TPS (吞吐)
