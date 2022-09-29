@@ -554,6 +554,7 @@ bootstrap:
 要做好监控，首先要深入了解指标原理。而要了解指标原理，当然要知道指标是产生流程中的什么位置，什么组件。看完上面关于 Envoy 与 Istio 的指标说明后。可以大概得到以下结论：
 
 :::{figure-md} 图：Istio-Proxy 指标地图
+:class: full-width
 
 <img src="/ch2-envoy/envoy@istio-metrics/index.assets/envoy@istio-metrics.drawio.svg" alt="Inbound与Outbound概念">
 
