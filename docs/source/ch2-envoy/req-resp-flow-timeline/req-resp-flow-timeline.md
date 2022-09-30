@@ -23,6 +23,11 @@
 要实现这些特性，请求与响应的流程自然不可能简单。
 按本书的习惯，先上图。后面，对这个图一步步展开和说明。
 
+```{hint}
+互动图书：
+ - 建议用 Draw.io 打开。图中包含大量的链接，链接到每一个组件、配置项、指标的文档说明。
+ - 双屏，一屏看图，一屏看文档，是本书的正确阅读姿势。如果你在用手机看，那么，忽略我吧 🤦
+```
 
 :::{figure-md} 图：Envoy 请求与响应时序线
 :class: full-width
@@ -33,10 +38,27 @@
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline.drawio.svg)*
 
-```{hint}
-互动图书：
-建议用 Draw.io 打开。图中包含大量的链接，链接到每一个组件、配置项、指标的文档说明。双屏，一屏看图，一屏看文档，是本书的正确阅读姿势。如果你在用手机看，那么，忽略我吧 🤦
-```
+
+上图分两部分，上半部分是请求在组件间的流转图。下半部分是请求与响应的时序线，以及相关的 timeout 配置与产生的指标。
+
+先说说请求组件流转部分，过程分为：
+1. downstream 与 listener 建立连接
+2. HCM(HTTP Connection Manager) 读取 `Request`
+3. HCM内的 `Router Filter` 根据地 `Request` ，判断转发目标： `upstream cluster`
+4. `upstream cluster` 的 `load balancing`模块根据目标 `upstream cluster` 中`主机(host)`的健康情况、负载均衡策略，选择 `目标 host`
+5. `目标 host` 如果有 `connection pool`中的 `connection` 可用且空闲，且 `upstream cluster` 的`已经绑定了连接的处理中的请求数`小于`max_requests`时：
+   1. 请求绑定到空闲连接，并
+6. 否则：
+   1. 如果 `等待请求(pending_requests)` 未超过 `max_pending_requests`，则加入 `pending_requests` 队列
+   2. 如果 `pending_requests` 超过 `max_pending_requests`，则请求响应 5xx，并打开熔断模式
+7. `Request` 到`upstream`
+8. 如果协议是一个 `Request` & `Reponse` 式的协议（如 HTTP）
+   1. 代理通常会接收`upstream`的`Response`
+   2. 做一些逻辑，必要时修改 `Response` 
+   3. 转发 `Response` 给 `downstream`
+
+
+
 
 ## 一些有趣的扩展阅读
 
