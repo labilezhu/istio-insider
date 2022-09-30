@@ -62,6 +62,11 @@
 
 - **Response Flags**: Additional details about the response or connection from proxy. In case of Envoy, see `%RESPONSE_FLAGS%` in [Envoy Access Log](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#config-access-log-format-response-flags) for more detail.
 
+例如，想统计 upstream circuit breaker 相关的 失败请求数：
+```
+sum(istio_requests_total{response_code="503", response_flags="UO"}) by (source_workload, destination_workload, response_code)
+```
+
 - **Canonical Service**: A workload belongs to exactly one canonical service, whereas it can belong to multiple services. A canonical service has a name and a revision so it results in the following labels.
 
   ```yaml
