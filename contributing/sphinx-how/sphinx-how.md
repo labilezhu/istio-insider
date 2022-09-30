@@ -13,8 +13,15 @@
 #### Cross-referencing using roles
 > https://docs.readthedocs.io/en/stable/guides/cross-referencing-with-sphinx.html#cross-referencing-using-roles
 
+##### ref role
+
 ```{note}
 本节的实验环境说明见于： {ref}`appendix-lab-env/appendix-lab-env-base:简单分层实验环境`
+```
+
+##### doc role
+```
+{doc}`ch2-envoy/req-resp-flow-timeline/req-resp-flow-timeline`
 ```
 
 
