@@ -48,3 +48,8 @@ List all ref taget
 ```bash
 python3.10 -m sphinx.ext.intersphinx ./docs/build/html/objects.inv
 ```
+
+### admonitions
+
+> https://sphinx-book-theme.readthedocs.io/en/stable/reference/kitchen-sink/paragraph-markup.html#admonitions
+
