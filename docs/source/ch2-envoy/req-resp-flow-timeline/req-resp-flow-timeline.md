@@ -33,6 +33,10 @@
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline.drawio.svg)*
 
+```{hint}
+互动图书：
+建议用 Draw.io 打开。图中包含大量的链接，链接到每一个组件、配置项、指标的文档说明。双屏，一屏看图，一屏看文档，是本书的正确阅读姿势。如果你在用手机看，那么，忽略我吧 🤦
+```
 
 ## 一些有趣的扩展阅读
 
