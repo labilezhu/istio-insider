@@ -1,20 +1,25 @@
+---
+typora-root-url: ../..
+---
+
 # Envoy 请求与响应调度 
 
-🎤 正式开编前。想说说我(Mark) 为何去研究 Envoy 的请求与响应调度。因为一个工作需要，需要对 Istio 网格节点故障快速恢复做一些调研。我翻阅了大量的 Istio/Envoy 文档、大咖 Blog。看到很多很杂乱的信息：
+🎤 正式开编前。想说说写本节的一些故事缘由。为何去研究 Envoy 的请求与响应调度？  
+
+缘起于一个客户需求，需要对 Istio 网格节点故障快速恢复做一些调研。为此，我翻阅了大量的 Istio/Envoy 文档、大咖 Blog。看了很多很杂乱的信息：
  - 健康检测
  - 熔断
  - Envoy 中的各个神秘又关系千丝万缕的 timeout 配置
- - Retry
+ - 请求 Retry
  - `TCP keepalive`、`TCP_USER_TIMEOUT` 配置
 
-杂乱到最后，我不得不写个文章去梳理一下信息：[Istio 网格节点故障快速恢复初探](https://blog.mygraphql.com/zh/posts/low-tec/network/tcp-close/tcp-half-open/) 。 但信息是梳理了，基础原理却没理顺。可以我下决心去钻研一下 Envoy 的文档。是的，其实 Envoy 的文档已经写得比较细致。只是：
+杂乱到最后，我不得不写个文章去梳理一下信息：[Istio 网格节点故障快速恢复初探](https://blog.mygraphql.com/zh/posts/low-tec/network/tcp-close/tcp-half-open/) 。 但信息是梳理了，基础原理却没理顺。于是，我下决心去钻研一下 Envoy 的文档。是的，其实 Envoy 的文档已经写得比较细致。只是：
  - 信息散落在一个个网页中，无法用时序和流程的方法组织起来，构成一个有机的整体。
  - 不去了解这个整体协作关系，只是一个一个参数分开来看，是无法理性去权衡这些参数的。
- - 指标与指标，指标与参数，与是有关系的
- - 而上面的关系，都可以通过请求与响应调度流程来串联起来
+ - 指标与指标，指标与参数，关系复杂
+ - 而上面的关系，都可以通过请求与响应调度流程串联起来
 
-基于上面原因。我从文档、参数、指标推导出以下流程。暂时未在代码中验证，请谨慎参考。
-
+基于上面原因。我从文档、参数、指标推导出以下流程。<mark>注意：暂时未在代码中验证，请谨慎参考。</mark>
 
 ## 请求与响应调度
 
@@ -30,20 +35,32 @@
 的确，这也是 Envoy 代理 HTTP 协议的概要流程。但 Envoy 还要实现很多特性：
 1. 高效的 `downstream` / `upstream` 传输 ➡️ 需要`连接复用`与`连接池`
 2. 灵活配置的转发目标服务策略 ➡️ 需要 `Router`配置策略与实现逻辑
-3. 弹性服务 (resilient microservices)
+3. 弹性服务 (resilient micro-services)
    1. 负载均衡
    2. 突发流量的削峰平谷 ➡️ 请求排队： pending request
    3. 应对异常 upstream、熔断器、保护服务不雪崩 ➡️ 各种 timeout 配置、 Health checking 、 Outlier detection 、 Circuit breaking
    4. 弹性重试 ➡️ retry
 4. 可观察性 ➡️ 无处不在的性能指标
-5. 动态编程配置 ➡️ xDS: EDS/LDS/...
+5. 动态编程配置接口 ➡️ xDS: EDS/LDS/...
 
 要实现这些特性，请求与响应的流程自然不可能简单。  
 
-```{tip}
-看到这里，读者可能有疑问，这可本节的标题叫 “请求与响应调度” ？ 难度 Envoy 需要类似 Linux Kernel 调度线程一样，去调度接收到的 Request 吗？ 
-对的，你说到点上了。Envoy 是`事件驱动`的设计，相对于 `非事件驱动` 的程序什么时候做什么事是可以更灵活调度的。外部的可读与可写事件，定时的重试机制等等是事件源，请求是任务，需要在事件发生时，去调度任务的执行。
+```{hint}
+看到这里，读者可能有疑问，本节的标题叫 “请求与响应调度” ？ 难度 Envoy 需要类似 Linux Kernel 调度线程一样，去调度处理 Request 吗？   
+
+对的，你说到点上了。
 ```
+
+Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对于 `非事件驱动` 的程序，可以用更少的线程，更灵活地控制在什么时候做什么任务，即更灵活的调度逻辑。且更绝的是：由于线程间共享的数据不多，线程的数据并发控制同时被大大简化。
+
+在本节中，事件类型最少有：
+
+ - 外部的网络可读、可写、连接关闭事件
+ - 各类定时器
+   - 重试定时
+   - 各种超时配置定时
+
+由于使用了无限的请求分配到有限的线程的模式，加上请求可能需要重试，所以线程一定要有一系列的逻辑，来 “排序” 什么请求应该先处理。什么请求由于 `超时` 或资源使用 `超过配置上限` 而应立即返回失败。
 
 按本书的习惯，先上图。后面，对这个图一步步展开和说明。
 
@@ -62,10 +79,61 @@
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline-schedule.drawio.svg)*
 
+上图是尝试说明 `Envoy 请求与响应调度 ` 过程，以及串联相关的组件。其中可以看到一些组件：
 
-上图是请求在组件间的流转图。
+- Listener - 应答 downstream 连接请求
+- HTTP Connection Manager(HCM) - HTTP 的核心组件，推动 http 流的读取、解释、路由(Router)
+- HCM-router - HTTP 路由核心组件，职责是:
+  - 判定 HTTP 下一跳的目标 cluster，即 upsteam cluster
+  - 重试
+- Load balancing - upstream cluster 内的负载均衡
+- pending request queue - `等待连接池可用连接的请求队列`
+- requests bind to connection - 已经分配到连接的请求
+- connection pool - worker 线程与 upstream host 专用的连接池
+- health checker/Outlier detection - upsteam host 健康监视
 
-先说说请求组件流转部分，流程图可以视为（未原全验证，存在部分推理）：
+和一些  `Circuit breaking(熔断开关) `上限条件：
+
+- max_retries - 最大重试并发上限
+- max_pending_requests -  `pending request queue` 的队列上限
+- max_request - 最大并发请求数上限
+- max_connections - upstream cluster 的最大连接上限
+
+需要注意的是，上面的参数是对于整个 upstream cluster 的，即是所有 worker thread、upstream host 汇总的上限。
+
+以及相关的监控指标：
+
+资源过载形的指标：
+
+- [downstream_cx_overflow](https://www.envoyproxy.io/docs/envoy/v1.15.2/configuration/listeners/stats#listener:~:text=downstream_cx_overflow)
+- upstream_rq_retry_overflow
+- upstream_rq_pending_overflow
+- upstream_cx_overflow
+
+资源饱和度指标：
+
+- upstream_rq_pending_active
+- upstream_rq_pending_total
+- upstream_rq_active
+
+错误形的指标：
+
+- upstream_rq_retry
+- ejections_acive
+- ejections_*
+- ssl.connection_error
+
+信息形的指标：
+
+- upstream_cx_total
+- upstream_cx_active
+- upstream_cx_http*_total
+
+由于图中已经说明了指标与组件以及配置的系统，这里就不再文字叙述了。图中也提供了到指标文档和相关配置的链接。
+
+
+
+先说说请求组件流转部分，流程图可以视为（未完全验证，存在部分推理）：
 
 :::{figure-md} 图：Envoy 请求调度流程图
 :class: full-width
