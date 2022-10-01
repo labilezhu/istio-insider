@@ -79,6 +79,8 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline-schedule.drawio.svg)*
 
+### 相关组件
+
 上图是尝试说明 `Envoy 请求与响应调度 ` 过程，以及串联相关的组件。其中可以看到一些组件：
 
 - Listener - 应答 downstream 连接请求
@@ -90,7 +92,7 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 - pending request queue - `等待连接池可用连接的请求队列`
 - requests bind to connection - 已经分配到连接的请求
 - connection pool - worker 线程与 upstream host 专用的连接池
-- health checker/Outlier detection - upsteam host 健康监视
+- health checker/Outlier detection - upsteam host 健康监视，发现异常 host 并隔离。
 
 和一些  `Circuit breaking(熔断开关) `上限条件：
 
@@ -101,7 +103,9 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 
 需要注意的是，上面的参数是对于整个 upstream cluster 的，即是所有 worker thread、upstream host 汇总的上限。
 
-以及相关的监控指标：
+### 相关的监控指标
+
+我们用类似著名的 [Utilization Saturation and Errors (USE)](https://www.brendangregg.com/usemethod.html) 方法学来分类指标。
 
 资源过载形的指标：
 
@@ -129,11 +133,11 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 - upstream_cx_active
 - upstream_cx_http*_total
 
-由于图中已经说明了指标与组件以及配置的系统，这里就不再文字叙述了。图中也提供了到指标文档和相关配置的链接。
+由于图中已经说明了指标、组件、配置项的关系，这里就不再文字叙述了。图中也提供了到指标文档和相关配置的链接。
 
+### Envoy 请求调度流程
 
-
-先说说请求组件流转部分，流程图可以视为（未完全验证，存在部分推理）：
+先说说请求组件流转部分，流程图可以从相关的文档推理为（未完全验证，存在部分推理）：
 
 :::{figure-md} 图：Envoy 请求调度流程图
 :class: full-width
@@ -144,10 +148,23 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline-flowchart.drawio.svg)*
 
-
 ## 请求与响应调度时序线
 
-下图是请求与响应的时序线，以及相关的 timeout 配置与产生的指标，以及它们的关系。
+本节开头说了，写本节的直接缘由是: 需要对 Istio 网格节点故障快速恢复做一些调研。`快速恢复` 的前提是：
+
+- 对已经发送到 `故障 upstream host` 或绑定到 `故障 upstream host` 的请求，快速响应失败
+- 用 `Outlier detection / health checker`  识别出   `故障 upstream host` ，并把它移出负载均衡列表
+
+所有问题都依赖于一个问题：如何定义和发现 `upstream host` 出了故障？
+
+- 网络分区或对端崩溃或负载过高
+  - 大多数情况下，分布式系统只能通过超时来发现这种问题。所以，要发现 `故障 upstream host` 或 `故障 request` ，需要配置
+- 对端有响应，L7 层的失败（如 HTTP 500），或 L3 层的失败（如 TCP REST/No router to destination/ICMP error）
+  - 这是可以快速发现的失败
+
+对于 `网络分区或对端崩溃或负载过高`，需要 timeout 发现的情况，Envoy 提供了丰富的 timeout 配置。丰富到有时让人不知道应该用哪个才是合理的。甚至配置一不小心，就配置出一些逻辑上长短与实现设计矛盾的值。所以，我尝试用理清楚 `请求与响应调度时序线` ，然后看相关 timeout 配置关联到这个时间线的哪个点，那么整个逻辑就清楚了。配置也更容易合理化了。
+
+下图是请求与响应的时序线，以及相关的 timeout 配置与产生的指标，以及它们的联系。
 
 :::{figure-md} 图：Envoy 请求与响应时序线
 :class: full-width
@@ -157,7 +174,6 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 *图：Envoy 请求与响应时序线*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline.drawio.svg)*
-
 
 ## 一些有趣的扩展阅读
 
