@@ -175,6 +175,57 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline.drawio.svg)*
 
+
+
+简单说明一下时间线：
+
+1. 如果 downstream 复用了之前的连接，可以跳过 2 & 3
+2. downstream发起 新连接(TCP 握手)
+3. TLS 握手
+4. Envoy 接收 downstream request header & body
+5. Envoy 执行路由(Router)规则，判定下一跳的 upstream cluster
+6. Envoy 执行 Load Balancing 算法 ，判定下一跳的 upstream cluster 的 upstream host
+7. 如果 Envoy 已经有空闲连接到 upstream host，则跳过 8 & 9
+8. Envoy 向 upstream host 发起新连接(TCP 握手)
+9. Envoy 向 upstream host 发起TLS 握手
+10. Envoy 向 upstream host 转发送 requst header & body
+11. Envoy 接收 upstream host 响应的 response header & body
+12. upstream host 连接开始 idle
+13. Envoy 向 downstream 转发送 response header & body
+14. downstream host 连接开始 idle
+
+相应地，图中也标注了相关超时配置与时间线步骤的关系，从开始计时顺序排列如下
+
+- max_connection_duration
+- transport_socket_connect_timeout
+  - 指标 `listener.downstream_cx_transport_socket_connect_timeout`
+
+- request_headers_timeout
+
+- requst_timeout
+
+- Envoy 的 route.timeout 即 Istio 的 [`Istio request timeout(outbound)`](https://istio.io/latest/docs/tasks/traffic-management/request-timeouts/)
+
+  注意，这个超时值是把 请求处理时实际的 retry 的总时间也算上的。
+
+  - 指标 `cluster.upstream_rq_timeout`
+  - 指标 `vhost.vcluster.upstream_rq_timeout`
+
+- max_connection_duration
+
+- connection_timeout
+  - 指标 `upstream_cx_connect_timeout`
+
+- transport_socket_connect_timeout
+
+- httpprotocoloptions.idle_timeout
+
+## 总结
+
+想要 Envoy 在压力与异常情况下，有个比较符合预期的表现，需要给 Envoy 一些合理于具体应用环境与场景的配置。而要配置好这堆参数的前提，是对相关处理流程与逻辑的洞察。 上面把 `请求与响应调度` 与 `请求与响应调度时序线`  都过了一遍。希望对了解这些方面有一定的帮助。
+
+不只是 Envoy ，其实所有做代理的中间件，可能最核心的东西都在这一块了。所以，不要期望一下把知识完全吃透。这里，也只是希望让读者在这些流程上，有一个线索，然后通过线索去学习，方可不迷失方向。
+
 ## 一些有趣的扩展阅读
 
 > - https://www.istioworkshop.io/09-traffic-management/06-circuit-breaker/
