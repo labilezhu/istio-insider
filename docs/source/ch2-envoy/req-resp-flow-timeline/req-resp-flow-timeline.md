@@ -96,10 +96,10 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 
 和一些  `Circuit breaking(熔断开关) `上限条件：
 
-- max_retries - 最大重试并发上限
-- max_pending_requests -  `pending request queue` 的队列上限
-- max_request - 最大并发请求数上限
-- max_connections - upstream cluster 的最大连接上限
+- `max_retries` - 最大重试并发上限
+- `max_pending_requests` -  `pending request queue` 的队列上限
+- `max_request` - 最大并发请求数上限
+- `max_connections` - upstream cluster 的最大连接上限
 
 需要注意的是，上面的参数是对于整个 upstream cluster 的，即是所有 worker thread、upstream host 汇总的上限。
 
@@ -107,7 +107,7 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 
 我们用类似著名的 [Utilization Saturation and Errors (USE)](https://www.brendangregg.com/usemethod.html) 方法学来分类指标。
 
-资源过载形的指标：
+资源过载型的指标：
 
 - [downstream_cx_overflow](https://www.envoyproxy.io/docs/envoy/v1.15.2/configuration/listeners/stats#listener:~:text=downstream_cx_overflow)
 - upstream_rq_retry_overflow
@@ -120,14 +120,14 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 - upstream_rq_pending_total
 - upstream_rq_active
 
-错误形的指标：
+错误型的指标：
 
 - upstream_rq_retry
 - ejections_acive
 - ejections_*
 - ssl.connection_error
 
-信息形的指标：
+信息型的指标：
 
 - upstream_cx_total
 - upstream_cx_active
@@ -158,7 +158,7 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 所有问题都依赖于一个问题：如何定义和发现 `upstream host` 出了故障？
 
 - 网络分区或对端崩溃或负载过高
-  - 大多数情况下，分布式系统只能通过超时来发现这种问题。所以，要发现 `故障 upstream host` 或 `故障 request` ，需要配置
+  - 大多数情况下，分布式系统只能通过超时来发现这种问题。所以，要快速发现 `故障 upstream host` 或 `故障 request` ，需要配置合理的 timeout
 - 对端有响应，L7 层的失败（如 HTTP 500），或 L3 层的失败（如 TCP REST/No router to destination/ICMP error）
   - 这是可以快速发现的失败
 
@@ -228,5 +228,5 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 
 ## 一些有趣的扩展阅读
 
-> - https://www.istioworkshop.io/09-traffic-management/06-circuit-breaker/
-> - https://tech.olx.com/demystifying-istio-circuit-breaking-27a69cac2ce4 
+> - [https://www.istioworkshop.io/09-traffic-management/06-circuit-breaker/](https://www.istioworkshop.io/09-traffic-management/06-circuit-breaker/)
+> - [https://tech.olx.com/demystifying-istio-circuit-breaking-27a69cac2ce4](https://tech.olx.com/demystifying-istio-circuit-breaking-27a69cac2ce4)
