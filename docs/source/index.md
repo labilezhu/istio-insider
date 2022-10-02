@@ -7,6 +7,9 @@
 这是一本编写中的书，现在只是草稿阶段。书名为《Istio & Envoy 内幕》，英文名《Istio & Envoy Insider》。
 ```
 
+There is English version too: [https://istio-insider.mygraphql.com/en/latest/](https://istio-insider.mygraphql.com/en/latest/)
+
+
 ## 本书概述
 
 ### 本书不是什么
