@@ -29,12 +29,12 @@ yq eval -P > envoy@istio-conf-eg-inbound.envoy_conf.yaml
 ```
 
 ```{note}
-这里下载 {download}`envoy@istio-conf-eg-inbound.envoy_conf.yaml <envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.envoy_conf.yaml>` .
+这里下载 {download}`envoy@istio-conf-eg-inbound.envoy_conf.yaml </ch2-envoy/envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.envoy_conf.yaml>` .
 ```
 
 下面先不展开说明配置文件，直接看分析过程，最后，会回归到这个配置中。
 
-## 数据流 “推断”
+## Inbound 数据流 “推断”
 
 分析上面获取到的 Envoy 配置，可以 “推断” 到下面 Inbound 数据流图：
 
@@ -224,14 +224,27 @@ envoy pool	[C12991] destroying stream: 0 remaining
 
 :::{figure-md} 图：Istio里的 Envoy Inbound 组件与日志
 :class: full-width
-<img src="envoy@istio-conf-eg.assets/log-envoy@istio-conf-eg-inbound.drawio.svg" alt="Inbound与Outbound概念">
+<img src="envoy@istio-conf-eg.assets/log-envoy@istio-conf-eg-inbound.drawio.svg" alt="图：Istio里的 Envoy Inbound 组件与日志">
 
 *图：Istio里的 Envoy Inbound 组件与日志*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Flog-envoy@istio-conf-eg-inbound.drawio.svg)*
 
 
+## Outbound 数据流 “推断”
 
-### 用 bpftrace 检查数据流
+分析上面获取到的 Envoy 配置，可以 “推断” 到下面 Outbound 数据流图：
+
+:::{figure-md} 图：Istio里的 Envoy Outbound 配置举例
+:class: full-width
+<img src="envoy@istio-conf-eg.assets/envoy@istio-conf-eg-outbound.drawio.svg" alt="图：Istio里的 Envoy Outbound 配置举例">
+
+*图：Istio里的 Envoy Outbound 配置举例*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy@istio-conf-eg-outbound.drawio.svg)*
+
+
+
+## 用 bpftrace 检查数据流
 
 见我的 Blog: [逆向工程与云原生现场分析 Part3 —— eBPF 跟踪 Istio/Envoy 事件驱动模型、连接建立、TLS 握手与 filter_chain 选择](https://blog.mygraphql.com/zh/posts/low-tec/trace/trace-istio/trace-istio-part3/)

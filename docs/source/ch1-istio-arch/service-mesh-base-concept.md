@@ -24,6 +24,12 @@
  - 如果站在 `service A` 上，我们把 `service B` 叫 upstream。
 ```
 
+### Upstream Cluster & Downstream Cluster
+
+`Upstream Cluster` / `Downstream Cluster` 主要是 Envoy 中的概念。  
+
+一般来说，一个 `Upstream` / `Downstream` 指代一个具体的主机(Host)。而 `Upstream Cluster` / `Downstream Cluster` 是指运行同一服务的，同构的的一群主机。在 k8s 环境下，一般就是对应同一 `k8s Deployment` 的所有 POD 了。
+
 ### Inbound & Outbound
 
 从 K8s 的 pod 的角度看：
