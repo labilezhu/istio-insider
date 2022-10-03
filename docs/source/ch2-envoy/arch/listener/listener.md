@@ -47,11 +47,11 @@ Inbound:
 -  ...
 
 Outbound:
-- Bind soket 的 Listener
+- Bind socket 的 Listener
   - 端口：15001
     - 名字：virtualOutbound
     - 职责：主要的 Outbound Listener。转发 iptable 劫持的流量到下面的 Listener
-- 不 Bind soket 的 Listener
+- 不 Bind socket 的 Listener
   - 名字：0.0.0.0_8080
   - 职责：所有监听 8080 端口的 upstream cluster 流量，都会经由这个 Listener 出去。
   - 配置
