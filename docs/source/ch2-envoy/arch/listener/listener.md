@@ -57,7 +57,7 @@ Outbound:
   - 配置
     - bind_to_port: false
 
-可见，Istio 给 Listener 的名字，取得有点不太好理解。实际监听 TCP 端口的，叫 `virtualInbound`/`virtualOutbound，不监听` TCP 端口的，反而没有 `virtual` 这个前缀。
+可见，Istio 给 Listener 的名字，取得有点不太好理解。实际监听 TCP 端口的，叫 `virtualInbound`/`virtualOutbound`，不监听 TCP 端口的，反而没有 `virtual` 这个前缀。
 
 
 ## Listener 内部组件
