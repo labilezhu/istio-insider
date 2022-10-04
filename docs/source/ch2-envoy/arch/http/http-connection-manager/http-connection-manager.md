@@ -1,6 +1,6 @@
-# http connection manager(草稿)
+# http connection manager
 
-为了扩展性，Envoy 的 http connection manager 也设计成经典的 filter chain 实现。这个和 Listener Filter Chain 有一点类似：
+为了扩展性，Envoy 的 http connection manager 采用了经典的 filter chain 设计模式。这个和 Listener Filter Chain 有一点类似：
 
 :::{figure-md} 图：http connection manager 设计模型
 :class: full-width 
@@ -10,7 +10,20 @@
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fhttp-connection-manager.drawio.svg)*
 
-http filter 抽象对象定义：
+
+请求 filter 流如下：
+
+![](./http-connection-manager.assets/lor-http-decode.svg)
+*图源：[life_of_a_request](https://www.envoyproxy.io/docs/envoy/latest/intro/life_of_a_request#http-filter-chain-processing)*
+
+响应 filter 流如下：
+
+![](./http-connection-manager.assets/lor-http-encode.svg)
+*图源：[life_of_a_request](https://www.envoyproxy.io/docs/envoy/latest/intro/life_of_a_request#http-filter-chain-processing)*
+
+
+
+## http filter 抽象对象定义
 
 :::{figure-md} 图：http filter 抽象对象
 :class: full-width
@@ -21,7 +34,7 @@ http filter 抽象对象定义：
 *[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fhttp-filter-abstract.drawio.svg)*
 
 
-代码上的 http filter C++类关系：
+## http filter C++类关系
 
 :::{figure-md} 图：http filter C++类关系
 :class: full-width
