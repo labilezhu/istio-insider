@@ -34,7 +34,7 @@ Istio 的 istio-proxy 的数据面指标是 基于 Envoy 的指标构架实现�
 
 *图：Envoy@Istio的指标*
 :::
-*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy@istio-metrics.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy@istio-metrics.drawio.svg)*
 
 
 
@@ -45,7 +45,7 @@ Istio 的 istio-proxy 的数据面指标是 基于 Envoy 的指标构架实现�
 
 *图：Envoy 请求与响应时序线上的指标*
 :::
-*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline.drawio.svg)*
 
 
 ```{toctree}

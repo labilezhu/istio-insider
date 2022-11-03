@@ -8,7 +8,7 @@ Router 流程简述:
 
 *图：Router 流程简述*
 :::
-*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Frouter-filter-base-flow.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Frouter-filter-base-flow.drawio.svg)*
 
 ## 扩展阅读
 

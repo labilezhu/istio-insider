@@ -11,7 +11,7 @@ Istio 的每个组件都监听一堆端口。对于初学者，可能很难弄�
 
 *图：Istio 端口与组件*  
 :::
-*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-ports-components.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-ports-components.drawio.svg)*
 
 上图需要说明的是：
 - istio-proxy 容器与 应用容器(app container) 共享同一 Linux `network namespace`。 

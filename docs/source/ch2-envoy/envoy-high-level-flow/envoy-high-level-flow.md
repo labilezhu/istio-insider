@@ -11,7 +11,7 @@
 
 *图:Istio 里的 Envoy 配置 - 部署*
 :::
-*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-data-panel-arch.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-data-panel-arch.drawio.svg)*
 
 
 这里，我们只分析 `fortio-server(pod)` 内的事情。从 POD 的流量角度来讲，它可以再分为两部分：
@@ -41,7 +41,7 @@
 
 *从 Envoy 概念看 upstream 与 downstream 抽象流程*
 :::
-*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy-high-level-flow-abstract.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy-high-level-flow-abstract.drawio.svg)*
 
 
 

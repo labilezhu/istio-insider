@@ -12,7 +12,7 @@
 
 *图：Istio 数据面架构*
 :::
-*[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-data-panel-arch.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-data-panel-arch.drawio.svg)*
 
 {ref}`图：Istio数据面架构` 就是调用链: `client ➔ fortio-server:8080 ➔ fortio-server-l2:8080` 的数据面关系图。图中的数字是端口号。 
 
