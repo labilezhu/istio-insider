@@ -220,6 +220,8 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 
 - httpprotocoloptions.idle_timeout
 
+
+
 ## 总结
 
 想要 Envoy 在压力与异常情况下，有个比较符合预期的表现，需要给 Envoy 一些合理于具体应用环境与场景的配置。而要配置好这堆参数的前提，是对相关处理流程与逻辑的洞察。 上面把 `请求与响应调度` 与 `请求与响应调度时序线`  都过了一遍。希望对了解这些方面有一定的帮助。
@@ -230,3 +232,4 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 
 > - [https://www.istioworkshop.io/09-traffic-management/06-circuit-breaker/](https://www.istioworkshop.io/09-traffic-management/06-circuit-breaker/)
 > - [https://tech.olx.com/demystifying-istio-circuit-breaking-27a69cac2ce4](https://tech.olx.com/demystifying-istio-circuit-breaking-27a69cac2ce4)
+> - [https://www.envoyproxy.io/docs/envoy/latest/faq/configuration/timeouts](https://www.envoyproxy.io/docs/envoy/latest/faq/configuration/timeouts)

@@ -95,6 +95,9 @@ ch3-control-panel/index
 ch4-istio-ctrl-envoy/index
 dev-istio/dev-istio
 performance/performance.md
+disruptions/disruptions.md
+observability/observability.md
+troubleshooting/troubleshooting.md
 ```
 
 ## 附录
