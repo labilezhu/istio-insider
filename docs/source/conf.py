@@ -18,8 +18,11 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.autosectionlabel',
-    'myst_parser'
+    'myst_parser',
+    'sphinx_sitemap'
 ]
+
+html_baseurl = 'https://istio-insider.mygraphql.com/zh_CN/latest/'
 
 autosectionlabel_prefix_document = True
 
