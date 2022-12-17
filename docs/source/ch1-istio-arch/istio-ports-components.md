@@ -92,7 +92,7 @@ COMMIT
 
 #### Sidecar 抓包
 
-{ref}`图：Istio端口与组件` 中包含了一些在 Istio 中时行 tcpdump 的说明。在此不再赘述。相补充一下是的 tcpdump 的抓包点。因为，这个点影响了，tcpdump 的过滤条件与输出。主要是这个点与 iptables 的 redirect 规则生效的前后问题。
+{ref}`图：Istio端口与组件` 中包含了一些在 Istio 中时行 tcpdump 的说明。在此不再赘述。要补充一下是的 tcpdump 的抓包点。因为，这个点影响了，tcpdump 的过滤条件与输出。主要是这个点与 iptables 的 redirect 规则生效的前后问题。
 
 > tcpdump capture pinpoint:
 >
