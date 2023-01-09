@@ -232,7 +232,6 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 ```{toctree}
 :maxdepth: 3
 http-timeout.md
-connection-life.md
 ```
 
 

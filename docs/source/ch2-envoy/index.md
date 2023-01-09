@@ -42,7 +42,7 @@ Matt Klein 的回答是，这是 Envoy 开始时那时，最好的选择。我�
 需要注意的是，我不打算把 Istio控制面 与 Envoy 完全隔离地分析说明。因为这样的分析现实意义有限。脱离 Istio 说 Envoy，很多时候，就不会明白 Envoy 为何设计成这样。但当我们结合 Istio 使用 Envoy 的场景来说明 Envoy 的设计时，就可以方便了解因由了。
 ```
 
-##
+## 目录
 
 ```{toctree}
 :hidden:
@@ -51,6 +51,7 @@ envoy-high-level-flow/envoy-high-level-flow.md
 envoy@istio-process-level.md
 arch/arch.md
 req-resp-flow-timeline/req-resp-flow-timeline.md
+connection-life/connection-life.md
 circuit-breaking/circuit-breaking.md
 envoy@istio-metrics/index.md
 ```
