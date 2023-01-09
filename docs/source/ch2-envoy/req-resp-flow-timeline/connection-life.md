@@ -49,13 +49,22 @@
 > [Github Issue: Envoy (re)uses connection after receiving FIN from upstream #6815](https://github.com/envoyproxy/envoy/issues/6815)
 > With Envoy serving as HTTP/1.1 proxy, sometimes Envoy tries to reuse a connection even after receiving FIN from upstream. In production I saw this issue even with couple of seconds from FIN to next request, and Envoy never returned FIN ACK (just FIN from upstream to envoy, then PUSH with new HTTP request from Envoy to upstream). Then Envoy returns 503 UC even though upstream is up and operational.
 
-本质上是 kernel 中的 socket 状态已经被对端发过来的 `FIN` 更新为 `CLOSE_WAIT` 状态，但 Envoy 程序中未更新，socket 与 HTTP Request 的早前的绑定还在。Envoy 在 write socket 时一定会失败。
+本质上是：
 
-Envoy 已经在这个问题上做了优化，对，只能减少可能，不可能完全避免：
+1. Upstream 对端调用 `close(fd)` 关闭了 socket。这注定了如果 kernel 还在这个 TCP 连接上收到数据，就会丢弃且以 RST 回应。
+2. Upstream 对端发出了 `FIN` 
+3. Upstream socket 状态更新为 `FIN_WAIT_1` 或 `FIN_WAIT_2`。
+
+对于 Envoy 端，有两种可能：
+
+- Envoy 所在 kernel 中的 socket 状态已经被对端发过来的 `FIN` 更新为 `CLOSE_WAIT` 状态，但 Envoy 程序(user-space)中未更新，socket 与 HTTP Request 的早前的绑定还在。Envoy 在 write socket 时一定会失败。失败说明是类似 `Upstream connection closed`. 
+- Envoy 所在 kernel 因网络延迟等问题，还未收到 `FIN`。但 Envoy 程序 re-use 了这个 socket ，并发送 HTTP Request(假设拆分为多个 IP 包) 。在第一个 IP 包到达 Upstream 对端时，Upstream 返回了 RST。于是 Envoy 后继的 socket write 均失败。失败说明是类似 `Upstream connection reset`. 
+
+Envoy 社区在这个问题有一些讨论，只能减少可能，不可能完全避免：
 > [Github Issue: HTTP1 conneciton pool attach pending request to half-closed connection #2715](https://github.com/envoyproxy/envoy/issues/2715)
 > The HTTP1 connection pool attach pending request when a response is complete. Though the upstream server may already closed the connection, this will result the pending request attached to it end up with 503.
 >
-> 应对之法：
+> 协议与配置上的应对之法：
 >
 > HTTP/1.1 has this inherent timing issue. As I already explained, this is solved in practice by 
 >
@@ -64,4 +73,70 @@ Envoy 已经在这个问题上做了优化，对，只能减少可能，不可�
 > b) having a reasonable idle timeout. 
 >
 > The feature @ramaraochavali is adding will allow setting the idle timeout to less than upstream idle timeout to help with this case. Beyond that, you should be using `router level retries`.
+
+说到底，这种问题由于 HTTP/1.1 的设计缺陷，不可能完全避免。对于等幂的操作，还得依赖于 retry 机制。
+
+
+
+#### Envoy 实现上的避免
+
+实现上，Envoy 社区曾经想用让 upstream 连接经历多次 epool event cycle 再复用的方法得到连接状态更新的事件。但这个方案不太好：
+
+> [Github PR: Delay connection reuse for a poll cycle to catch closed connections.#7159(Not Merged)](https://github.com/envoyproxy/envoy/pull/7159#issuecomment-499594146)
+>
+> So poll cycles are not an elegant way to solve this, when you delay N cycles, EOS may arrive in N+1-th cycle. The number is to be determined by the deployment so if we do this it should be configurable.
+>
+> As noted in #2715, a retry (at Envoy level or application level) is preferred approach, #2715 (comment). Regardless of POST or GET, the status code 503 has a retry-able semantics defined in RFC 7231. 
+>
+> 但最后，是用 connection re-use delay timer 的方法去实现：
+>
+> All well behaving HTTP/1.1 servers indicate they are going to close the connection if they are going to immediately close it (Envoy does this). As I have said over and over again here and in the linked issues, this is well known timing issue with HTTP/1.1.
+>
+> So to summarize, the options here are to:
+>
+> Drop this change
+> Implement it correctly with an optional re-use delay timer.
+
+最后的方法是：
+
+> [Github PR: http: delaying attach pending requests #2871(Merged)](https://github.com/envoyproxy/envoy/pull/2871)
+>
+> Another approach to [#2715](https://github.com/envoyproxy/envoy/issues/2715), attach pending request in next event after `onResponseComplete`.
+>
+> 即系限制一个 Upstream 连接在一个 epoll event cycle 中，只能承载一个 HTTP Request。即一个连接不能在同一个 epoll event cycle 中被多个 HTTP Request re-use 。这样可以减少 kernel 中已经是 `CLOSE_WAIT` 状态（取到 FIN） 的请求，Envoy user-space 未感知到且 re-use 来发请求的可能性。
+>
+> [https://github.com/envoyproxy/envoy/pull/2871/files](https://github.com/envoyproxy/envoy/pull/2871/files)
+>
+> ```cpp
+> @@ -209,25 +215,48 @@ void ConnPoolImpl::onResponseComplete(ActiveClient& client) {
+>     host_->cluster().stats().upstream_cx_max_requests_.inc();
+>     onDownstreamReset(client);
+>   } else {
+> -    processIdleClient(client);
+>     // Upstream connection might be closed right after response is complete. Setting delay=true
+>     // here to attach pending requests in next dispatcher loop to handle that case.
+>     // https://github.com/envoyproxy/envoy/issues/2715
+> +    processIdleClient(client, true);
+>   }
+> }
+> ```
+>
+> 一些描述：[https://github.com/envoyproxy/envoy/issues/23625#issuecomment-1301108769](https://github.com/envoyproxy/envoy/issues/23625#issuecomment-1301108769)
+>
+> There's an inherent race condition that an upstream can close a connection at any point and Envoy may not yet know, assign it to be used, and find out it is closed. We attempt to avoid that by returning all connections to the pool to give the kernel a chance to inform us of `FINs` but can't avoid the race entirely. 
+>
+> 实现细节上，这个 Github PR 本身还有一个 bug ，在后面修正了：
+> [Github Issue: Missed upstream disconnect leading to 503 UC#6190](https://github.com/envoyproxy/envoy/issues/6190)
+>
+> [Github PR: http1: enable reads when final pipeline response received#6578](https://github.com/envoyproxy/envoy/pull/6578/files)
+
+
+
+
+
+
+
+
+
+
 
