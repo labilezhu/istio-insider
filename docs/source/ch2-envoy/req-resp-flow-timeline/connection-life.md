@@ -5,7 +5,7 @@
 > HTTP/1.1 规范有这个设计：
 > HTTP Proxy 是 L7 层的代理，应该和 L3/L4 层的连接生命周期分开。
 
-所以，像从 Downstream 来的 `Connection: Close` 、 `Connection: Keepalive` 这种 Header， Envoy 不会 Forward 到 Upstream 。 Downstream 连接的生命周期，当然会遵从 `Connection: xyz` 的指示控制。但 Upstream 的连接生命周期不会被 Downstream 的连接生命周期影响。 即，是两个独立的连接生命周期管理。
+所以，像从 Downstream 来的 `Connection: Close` 、 `Connection: Keepalive` 这种 Header， Envoy 不会 Forward 到 Upstream 。 Downstream 连接的生命周期，当然会遵从 `Connection: xyz` 的指示控制。但 Upstream 的连接生命周期不会被 Downstream 的连接生命周期影响。 即，这是两个独立的连接生命周期管理。
 
 > [Github Issue: HTTP filter before and after evaluation of Connection: Close header sent by upstream#15788](https://github.com/envoyproxy/envoy/issues/15788#issuecomment-811429722) 说明了这个问题：
 > This doesn't make sense in the context of Envoy, where downstream and upstream are decoupled and can use different protocols. I'm still not completely understanding the actual problem you are trying to solve?
@@ -24,23 +24,124 @@
 
 
 
+本质上是：
+
+1. Envoy 调用 `close(fd)` 关闭了 socket。这注定了如果 kernel 还在这个 TCP 连接上收到 TCP 数据包，就会丢弃且以 `RST` 回应。
+2. Envoy 发出了 `FIN` 
+3. Envoy socket kernel 状态更新为 `FIN_WAIT_1` 或 `FIN_WAIT_2`。
+
+对于 Downstream 端，有两种可能：
+
+- Downstream 所在 kernel 中的 socket 状态已经被 Envoy 发过来的 `FIN` 更新为 `CLOSE_WAIT` 状态，但 Downstream 程序(user-space)中未更新（即未感知到  `CLOSE_WAIT` 状态）。
+- Downstream 所在 kernel 因网络延迟等问题，还未收到 `FIN`。
+
+所以 Downstream 程序 re-use 了这个 socket ，并发送 HTTP Request(假设拆分为多个 IP 包) 。结果都是在某个 IP 包到达 Envoy kernel 时，Envoy kernel 返回了 RST。于是 Downstream kernel 在收到 RST 后，也关闭了socket。所以从某个 socket write 开始均会失败。失败说明是类似 `Upstream connection reset`. 这里需要注意的是， socket `write()` 是个异步的过程，不会等待对端的 ACK  就返回了。
+
+- 一种可能是，某个 `write()` 时发现失败。这更多是 http keepalive 的 http client library 的行为。或者是 HTTP Body 远远大于 socket sent buffer 时，分多 IP 包的行为。
+- 一种可能是，直到 `close()` 时，要等待 ACK 了，才发现失败。这更多是非 http keepalive 的 http client library 的行为。或者是 http keepalive 的 http client library 的最后一个请求时的行为。
+
+
+
 从 HTTP 层面来看，有两种场景可能出现这个问题：
 
-* 服务端过早关闭连接(Server Prematurely/Early Closes Connection)
+* 服务端过早关闭连接(Server Prematurely/Early Closes Connection)。
 
-  Downsteam 在 write HTTP  Header 后，再 write HTTP Body。然而，Envoy 在未读完 HTTP Body 前，就已经 Write Response 且 `close(fd) `了 socket。这叫 `服务端过早关闭连接(Server Prematurely/Early Closes Connection)`。别以为 Envoy 不会出现未完全读完 Request 就 write Response and close socket 的情况。因为有时候，只需要 Header 就可以判断一个请求是非法的。所以大部分是返回 4xx/5xx 的 status code。
+  Downsteam 在 write HTTP  Header 后，再 write HTTP Body。然而，Envoy 在未读完 HTTP Body 前，就已经 Write Response 且 `close(fd) `了 socket。这叫 `服务端过早关闭连接(Server Prematurely/Early Closes Connection)`。别以为 Envoy 不会出现未完全读完 Request 就 write Response and close socket 的情况。最少有几个可能性：
 
-  而这时， Downstream 的 socket 状态可能是 `CLOSE_WAIT`。是还可以 write 的状态。但这个 HTTP Body 如果被 Envoy 的 Kernel 收到，由于 socket 已经执行过 `close(fd) `， socket 的文件 fd 已经关闭，所以 Kernel 直接丢弃 HTTP Body 且返回 `RST` 给对端（因为 socket 的文件 fd 已经关闭，已经没进程可能读取到数据了）。这时，可怜的 Downstream 就会说：`Connection rest` 之类的错误。
+  - 只需要 Header 就可以判断一个请求是非法的。所以大部分是返回 4xx/5xx 的 status code。
+  - HTTP Request Body 超过了 Envoy 的最大限制 `max_request_bytes`
 
-  * 减少这种 race condition 的可行方法是：delay close socket。 Envoy 已经有相关的配置：[delayed_close_timeout](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#:~:text=is%20not%20specified.-,delayed_close_timeout,-(Duration)%20The)
+  这时，有两个情况：
 
-* Downstream 未感知到 HTTP Keepalive 的 Envoy 连接已经关闭
+  - Downstream 的 socket 状态可能是 `CLOSE_WAIT`。还可以 `write()` 的状态。但这个 HTTP Body 如果被 Envoy 的 Kernel 收到，由于 socket 已经执行过 `close(fd) `， socket 的文件 fd 已经关闭，所以 Kernel 直接丢弃 HTTP Body 且返回 `RST` 给对端（因为 socket 的文件 fd 已经关闭，已经没进程可能读取到数据了）。这时，可怜的 Downstream 就会说：`Connection reset by peer` 之类的错误。
 
-  上面提到的 Keepalive 连接复用的时候。Envoy 已经调用内核的 `close(fd) `  把 socket 变为 `FIN_WAIT_1/FIN_WAIT_2` 的 状态，且已经发出 `FIN`。但 Downstream 未收到，或已经收到但应用未感知到，且同时 reuse 了这个 http keepalive 连接来发送 HTTP Request。在 TCP 协议层面看来，这是个 `half-close` 连接，未 close 的一端的确是可以发数据到对端的。但已经调用过 `close(fd)` 的 kernel (Envoy端) 在收到数据包时，直接丢弃且返回 `RST` 给对端（因为 socket 的文件 fd 已经关闭，已经没进程可能读取到数据了）。这时，可怜的 Downstream 就会说：`Connection rest` 之类的错误。
+  - Envoy  调用 `close(fd)` 时，kernel 发现 kernel 的 socket buffer 未被 user-space 完全消费。这种情况下， kernel 会发送 `RST` 给 Downstream。最终，可怜的 Downstream 就会在尝试 `write(fd)` 或 `read(fd)` 时说：`Connection reset by peer` 之类的错误。
+
+    > 见：[Github Issue: http: not proxying 413 correctly#2929](https://github.com/envoyproxy/envoy/issues/2929#top)
+    >
+    > ```
+    > +----------------+      +-----------------+
+    > |Listner A (8000)|+---->|Listener B (8080)|+----> (dummy backend)
+    > +----------------+      +-----------------+
+    > ```
+    >
+    > This issue is happening, because Envoy acting as a server (i.e. listener B in @lizan's example) **closes downstream connection with pending (unread) data, which results in TCP RST packet being sent downstream**.
+    >
+    > Depending on the timing, downstream (i.e. listener A in @lizan's example) might be able to receive and proxy complete HTTP response before receiving **TCP RST packet (which erases low-level TCP buffers)**, in which case client will receive response sent by upstream (413 Request Body Too Large in this case, but this issue is not limited to that response code), otherwise client will receive 503 Service Unavailable response generated by listener A (which actually isn't the most appropriate response code in this case, but that's a separate issue).
+    >
+    > The common solution for this problem is to half-close downstream connection using ::`shutdown(fd_, SHUT_WR)` and then read downstream until EOF (to confirm that the other side received complete HTTP response and closed connection) or `short timeout`.
+
+  
+
+  减少这种 race condition 的可行方法是：delay close socket。 Envoy 已经有相关的配置：[delayed_close_timeout](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#:~:text=is%20not%20specified.-,delayed_close_timeout,-(Duration)%20The)
+
+* Downstream 未感知到 HTTP Keepalive 的 Envoy 连接已经关闭，re-use 了连接。
+
+  上面提到的 Keepalive 连接复用的时候。Envoy 已经调用内核的 `close(fd) `  把 socket 变为 `FIN_WAIT_1/FIN_WAIT_2` 的 状态，且已经发出 `FIN`。但 Downstream 未收到，或已经收到但应用未感知到，且同时 reuse 了这个 http keepalive 连接来发送 HTTP Request。在 TCP 协议层面看来，这是个 `half-close` 连接，未 close 的一端的确是可以发数据到对端的。但已经调用过 `close(fd)` 的 kernel (Envoy端) 在收到数据包时，直接丢弃且返回 `RST` 给对端（因为 socket 的文件 fd 已经关闭，已经没进程可能读取到数据了）。这时，可怜的 Downstream 就会说：`Connection reset by peer` 之类的错误。
 
   * 减少这种 race condition 的可行方法是：让 Upstream 对端配置比 Envoy 更小的 timeout 时间。让 Upsteam 主动关闭连接。
 
+#### Envoy 实现上的缓解
 
+##### 缓解 服务端过早关闭连接(Server Prematurely/Early Closes Connection)
+
+
+
+> [Github Issue: http: not proxying 413 correctly #2929](https://github.com/envoyproxy/envoy/issues/2929)
+>
+> In the case envoy is proxying large HTTP request, even upstream returns 413, the client of proxy is getting 503.
+
+
+
+> [Github PR: network: delayed conn close #4382](https://github.com/envoyproxy/envoy/pull/4382)，增加了 `delayed_close_timeout` 配置。
+>
+> Mitigate client read/close race issues on downstream HTTP connections by adding a new connection
+> close type '`FlushWriteAndDelay`'. This new close type flushes the write buffer on a connection **but**
+> **does not immediately close after emptying the buffer** (unlike `ConnectionCloseType::FlushWrite`).
+>
+> A timer has been added to track delayed closes for both '`FlushWrite`' and '`FlushWriteAndDelay`'. Upon
+> triggering, the socket will be closed and the connection will be cleaned up.
+>
+> Delayed close processing can be disabled by setting the newly added HCM '`delayed_close_timeout`'
+> config option to 0.
+>
+> Risk Level: Medium (changes common case behavior for closing of downstream HTTP connections)
+> Testing: Unit tests and integration tests added.
+
+
+
+
+
+但上面的 PR 在缓解了问题的同时也影响了性能：
+
+> [Github Issue: HTTP/1.0 performance issues #19821](https://github.com/envoyproxy/envoy/issues/19821#issuecomment-1031536302)
+>
+> I was about to say it's probably delay-close related.
+>
+> So HTTP in general can frame the response with one of three ways: content length, chunked encoding, or frame-by-connection-close.
+>
+> If you don't haven an explicit content length, HTTP/1.1 will chunk, but HTTP/1.0 can only frame by `connection close`(FIN).
+>
+> Meanwhile, there's another problem which is that if a client is sending data, and the request has not been completely read, a proxy responds with an error and closes the connection, many clients will get a TCP RST (due to uploading after FIN(`close(fd)`)) and not actually read the response. That race is avoided with `delayed_close_timeout`.
+>
+> It sounds like Envoy could do better detecting if a request is complete, and if so, framing with immediate close and I can pick that up. In the meantime if there's any way to have your backend set a `content length` that should work around the problem, or you can lower delay close in the interim.
+
+于是需要再 Fix:
+
+> [Github PR: http: reduce delay-close issues for HTTP/1.1 and below #19863](https://github.com/envoyproxy/envoy/pull/19863)
+>
+> Skipping delay close for:
+>
+> - HTTP/1.0 framed by connection close (as it simply reduces time to end-framing) 
+>
+> - as well as HTTP/1.1 if the request is fully read (so there's no FIN-RST race)。即系如果
+>
+> Addresses the Envoy-specific parts of #19821
+> Runtime guard: `envoy.reloadable_features.skip_delay_close`
+>
+> 同时出现在 [Envoy 1.22.0 的 Release Note](https://www.envoyproxy.io/docs/envoy/latest/version_history/v1.22/v1.22.0) 里：
+>
+> **http**: avoiding `delay-close` for HTTP/1.0 responses framed by `connection: close` as well as HTTP/1.1 if the request is fully read. This means for responses to such requests, the FIN will be sent immediately after the response. This behavior can be temporarily reverted by setting `envoy.reloadable_features.skip_delay_close` to false. If clients are seen to be receiving sporadic partial responses and flipping this flag fixes it, please notify the project immediately.
 
 
 
@@ -49,16 +150,29 @@
 > [Github Issue: Envoy (re)uses connection after receiving FIN from upstream #6815](https://github.com/envoyproxy/envoy/issues/6815)
 > With Envoy serving as HTTP/1.1 proxy, sometimes Envoy tries to reuse a connection even after receiving FIN from upstream. In production I saw this issue even with couple of seconds from FIN to next request, and Envoy never returned FIN ACK (just FIN from upstream to envoy, then PUSH with new HTTP request from Envoy to upstream). Then Envoy returns 503 UC even though upstream is up and operational.
 
+
+
+> [Istio: 503's with UC's and TCP Fun Times](https://karlstoney.com/2019/05/31/istio-503s-ucs-and-tcp-fun-times/)
+
+
+
 本质上是：
 
-1. Upstream 对端调用 `close(fd)` 关闭了 socket。这注定了如果 kernel 还在这个 TCP 连接上收到数据，就会丢弃且以 RST 回应。
+1. Upstream 对端调用 `close(fd)` 关闭了 socket。这注定了如果 kernel 还在这个 TCP 连接上收到数据，就会丢弃且以 `RST` 回应。
 2. Upstream 对端发出了 `FIN` 
 3. Upstream socket 状态更新为 `FIN_WAIT_1` 或 `FIN_WAIT_2`。
 
 对于 Envoy 端，有两种可能：
 
-- Envoy 所在 kernel 中的 socket 状态已经被对端发过来的 `FIN` 更新为 `CLOSE_WAIT` 状态，但 Envoy 程序(user-space)中未更新，socket 与 HTTP Request 的早前的绑定还在。Envoy 在 write socket 时一定会失败。失败说明是类似 `Upstream connection closed`. 
-- Envoy 所在 kernel 因网络延迟等问题，还未收到 `FIN`。但 Envoy 程序 re-use 了这个 socket ，并发送 HTTP Request(假设拆分为多个 IP 包) 。在第一个 IP 包到达 Upstream 对端时，Upstream 返回了 RST。于是 Envoy 后继的 socket write 均失败。失败说明是类似 `Upstream connection reset`. 
+- Envoy 所在 kernel 中的 socket 状态已经被对端发过来的 `FIN` 更新为 `CLOSE_WAIT` 状态，但 Envoy 程序(user-space)中未更新。
+- Envoy 所在 kernel 因网络延迟等问题，还未收到 `FIN`。
+
+但 Envoy 程序 re-use 了这个 socket ，并发送(`write(fd)`) HTTP Request(假设拆分为多个 IP 包) 。
+
+这里又有两个可能：
+
+- 在某一个 IP 包到达 Upstream 对端时，Upstream 返回了 `RST`。于是 Envoy 后继的 socket `write` 均可能会失败。失败说明是类似 `Upstream connection reset`. 
+- 因为 socket `write` 是有 send buffer 的，是个异步操作。可能只在收到 RST 的下一个  epoll event cycle 中，发生 `EV_CLOSED` 事件，Envoy 才发现这个 socket 被 close 了。失败说明是类似 `Upstream connection reset`. 
 
 Envoy 社区在这个问题有一些讨论，只能减少可能，不可能完全避免：
 > [Github Issue: HTTP1 conneciton pool attach pending request to half-closed connection #2715](https://github.com/envoyproxy/envoy/issues/2715)
@@ -78,7 +192,7 @@ Envoy 社区在这个问题有一些讨论，只能减少可能，不可能完�
 
 
 
-#### Envoy 实现上的避免
+#### Envoy 实现上的缓解
 
 实现上，Envoy 社区曾经想用让 upstream 连接经历多次 epool event cycle 再复用的方法得到连接状态更新的事件。但这个方案不太好：
 
@@ -130,7 +244,61 @@ Envoy 社区在这个问题有一些讨论，只能减少可能，不可能完�
 >
 > [Github PR: http1: enable reads when final pipeline response received#6578](https://github.com/envoyproxy/envoy/pull/6578/files)
 
+这里有个插曲，Istio 在 2019 年是自己 fork 了一个 envoy 源码的，自己去解决这个问题：[Istio Github PR: Fix connection reuse by delaying a poll cycle. #73](https://github.com/istio/envoy/pull/73) 。不过最后，Istio 还是回归原生的 Envoy，只加了一些必要的 Envoy Filter Native C++ 实现。
 
+
+
+#### Istio 配置上缓解
+
+> [Istio Github Issue: Almost every app gets UC errors, 0.012% of all requests in 24h period#13848](https://github.com/istio/istio/issues/13848#issuecomment-1362008204)
+
+```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: passthrough-retries
+  namespace: myapp
+spec:
+  workloadSelector:
+    labels:
+      app: myapp
+  configPatches:
+  - applyTo: HTTP_ROUTE
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: MERGE
+      value:
+        route:
+          retry_policy:
+            retry_back_off:
+              base_interval: 10ms
+            retry_on: reset
+            num_retries: 2
+```
+
+或
+
+```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: qqq-destination-rule
+spec:
+  host: qqq.aaa.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      http:
+        idleTimeout: 3s
+        maxRetries: 3
+```
 
 
 
