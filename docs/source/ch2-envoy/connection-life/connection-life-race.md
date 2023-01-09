@@ -146,6 +146,14 @@
 
 
 
+> 一个经典场景的时序图：from [https://medium.com/@phylake/why-idle-timeouts-matter-1b3f7d4469fe](https://medium.com/@phylake/why-idle-timeouts-matter-1b3f7d4469fe)
+>
+> ![image-20230109214624665](connection-life-race.assets/image-20230109214624665.png)
+>
+> 图中 Reverse Proxy 可以理解为 Envoy.
+
+
+
 本质上是：
 
 1. Upstream 对端调用 `close(fd)` 关闭了 socket。这注定了如果 kernel 还在这个 TCP 连接上收到数据，就会丢弃且以 `RST` 回应。
