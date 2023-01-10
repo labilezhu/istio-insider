@@ -133,9 +133,14 @@
 > Addresses the Envoy-specific parts of #19821
 > Runtime guard: `envoy.reloadable_features.skip_delay_close`
 >
-> 同时出现在 [Envoy 1.22.0 的 Release Note](https://www.envoyproxy.io/docs/envoy/latest/version_history/v1.22/v1.22.0) 里：
+> 同时出现在 [Envoy 1.22.0 的 Release Note](https://www.envoyproxy.io/docs/envoy/latest/version_history/v1.22/v1.22.0) 里。需要注意的是，为了不影响性能，delayed_close_timeout 在很多情况下是不会生效的：：
 >
-> **http**: avoiding `delay-close` for HTTP/1.0 responses framed by `connection: close` as well as HTTP/1.1 if the request is fully read. This means for responses to such requests, the FIN will be sent immediately after the response. This behavior can be temporarily reverted by setting `envoy.reloadable_features.skip_delay_close` to false. If clients are seen to be receiving sporadic partial responses and flipping this flag fixes it, please notify the project immediately.
+> **http**: avoiding `delay-close` for:
+>
+> - HTTP/1.0 responses framed by `connection: close` 
+> - as well as HTTP/1.1 if the request is fully read. 
+>
+> This means for responses to such requests, the FIN will be sent immediately after the response. This behavior can be temporarily reverted by setting `envoy.reloadable_features.skip_delay_close` to false. If clients are seen to be receiving sporadic partial responses and flipping this flag fixes it, please notify the project immediately.
 
 
 
