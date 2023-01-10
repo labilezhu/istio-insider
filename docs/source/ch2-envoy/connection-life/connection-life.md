@@ -162,7 +162,7 @@ The default timeout is 1000 ms if this option is not specified.
 
 
 
-## Envoy Connection 竞态条件
+## Envoy 连接关闭后的竞态条件
 
 ```{toctree}
 connection-life-race.md

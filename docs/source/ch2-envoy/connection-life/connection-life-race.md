@@ -1,4 +1,4 @@
-# HTTP Connection Life Race Condition
+# Envoy 连接关闭后的竞态条件
 
 ## Envoy 与 Downstream/Upstream 连接状态不同步
 
