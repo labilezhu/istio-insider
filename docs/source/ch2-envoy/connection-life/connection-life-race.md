@@ -16,7 +16,11 @@
 
 本质上是：
 
-1. Envoy 调用 `close(fd)` 关闭了 socket。这注定了如果 kernel 还在这个 TCP 连接上收到 TCP 数据包，就会丢弃且以 `RST` 回应。
+1. Envoy 调用 `close(fd)` 关闭了 socket。同时关闭了 fd。
+   - 如果 `close(fd)` 时：
+     - kernel 的 socket recv buffer 有数据未加载到 user-space ，那么 kernel 会发送 RST 给 downstream。原因是这数据是已经 TCP ACK 过的，而应用却丢弃了。
+     - 否则，kernel 发送 FIN 给 downstream.
+   - 由于关闭了 fd，这注定了如果 kernel 还在这个 TCP 连接上收到 TCP 数据包，就会丢弃且以 `RST` 回应。
 2. Envoy 发出了 `FIN` 
 3. Envoy socket kernel 状态更新为 `FIN_WAIT_1` 或 `FIN_WAIT_2`。
 
