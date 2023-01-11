@@ -1,5 +1,9 @@
 # Envoy 连接关闭后的竞态条件
 
+由于下面使用到了 socket 一些比较底层和冷门的知识点。如 close socket 的一些临界状态和异常逻辑。如果不太了解，建议先阅读我写的：
+
+[《Mark’s DevOps 雜碎》](https://devops-insider.mygraphql.com/zh_CN/latest/index.html) 中 [《Socket Close/Shutdown 的临界状态与异常逻辑》](https://devops-insider.mygraphql.com/zh_CN/latest/kernel/network/socket/socket-close/socket-close.html) 一文。
+
 ## Envoy 与 Downstream/Upstream 连接状态不同步
 
 以下大部分情况，算是个发生可能性低的 race condition。但，在大流量下，再少的可能性也是有遇到的时候。`Design For  Failure` 是程序员的天职。
