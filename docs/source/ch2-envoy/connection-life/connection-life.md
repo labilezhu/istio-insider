@@ -1,4 +1,4 @@
-# HTTP Connection 连接生命周期管理
+# HTTP 连接生命周期管理
 
 ## Upstream/Downstream 连接解藕
 
