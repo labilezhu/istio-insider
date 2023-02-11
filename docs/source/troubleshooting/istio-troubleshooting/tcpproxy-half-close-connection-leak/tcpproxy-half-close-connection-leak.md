@@ -39,18 +39,28 @@
 
 Conntrack by default will not DNAT some invalid tcp packet.
 
-
 ## Environment
 
+Istio: istio-1.16.2
+
+Kubernetes: 1.25
+
+CNI: Calico
+
 ### Testing POD
+
 ```
 IP: 172.29.73.7
 POD Name: fortio-server-l2-0
 pod running at worker node: sle
+
+Worker Node:
+Kernel: 5.14.21-150400.24.21-default
+Linux distros: SUSE Linux Enterprise Server 15 SP4
 ```
 
-
 ### TCP service pod
+
 ```
 IP: 172.21.206.198
 POD Name: netshoot-0
@@ -234,7 +244,7 @@ After timeout, socket `LAST-ACK 172.29.73.7:44410  172.21.206.198:7777 (own by n
 - socket `FIN-WAIT-2 127.0.0.1:15001   172.29.73.7:44410   users:(("envoy"))` which from sidecar to App leaked.
 - socket `CLOSE-WAIT 172.29.73.7:38072  172.21.206.198:7777  users:(("envoy"))`  which from sidecar to upstream service leaked.
 - Ephemeral port 44410 can be reused by new socket connection to 172.21.206.198:7777 .
-  - When App create new connection and randomly selects the collision ephemeral port(44410) to connect any upstream service, a `connect timed out` issue may be happen. I will explain why later.
+  - When App create new connection and randomly selects the collision ephemeral port(44410) to connect any upstream service(including TCP/HTTP service), a `connect timed out` issue may be happen. Because of conntrack TCP window check and mark the RST response to `Challenge ACK` as  `Invalid` and wil not delivery to Envoy. I will explain why later.
 
-
+Good news is:`Envoy TCPProxy Filter` has an [`idle_timeout`](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/tcp_proxy/v3/tcp_proxy.proto) setting which by default is 1 hour. So above problem will have a 1 hour leak window before being GC.
 
