@@ -18,6 +18,13 @@
 
 ## 安装过程
 
+```bash
+kubectl create secret docker-registry docker-registry-key --docker-server=https://index.docker.io/v1/ --docker-username=labile --docker-password=<your-pword> --docker-email=labile.zhu@gmail.com
+
+
+kubectl get secret docker-registry-key --output=yaml
+
+```
 
 ### fortio
 
@@ -186,4 +193,66 @@ EOF
 ```
 
 
+#### fortio-server-worknode6
 
+```yaml
+
+kubectl -n mark apply -f - <<"EOF"
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fortio-server-worknode6
+  labels:
+    app: fortio-server-worknode6
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fortio-server-worknode6
+  template:
+    metadata:
+      labels:
+          app.kubernetes.io/name: fortio-server-worknode6
+          app: fortio-server-worknode6
+      annotations:
+        proxy.istio.io/config: |-
+          proxyStatsMatcher:
+            inclusionRegexps:
+            - "cluster\\..*fortio.*" #proxy upstream(outbound)
+            - "cluster\\..*inbound.*" #proxy upstream(inbound)
+            - "http\\..*"
+            - "listener\\..*"
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: docker-registry-key
+      containers:
+      - name: main-app
+        image: docker.io/fortio/fortio
+        imagePullPolicy: IfNotPresent
+        command: ["/usr/bin/fortio"]
+        args: ["server", "-M", "8070 http://fortio-server-worknode6:8080"]
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: http      
+        - containerPort: 8070
+          protocol: TCP
+          name: http-m   
+        - containerPort: 8079
+          protocol: TCP
+          name: grpc  
+          
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "worknode6" 
+
+EOF
+```

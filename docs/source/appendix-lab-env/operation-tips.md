@@ -25,6 +25,8 @@ export fortio_server_l2_0=172.29.73.7
 
 ### env
 
+#### Ubuntu workernode
+
 ```log
 ➜  ~ uname -a 
 Linux worknode5 5.4.0-137-generic #154-Ubuntu SMP Thu Jan 5 17:03:22 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
@@ -49,8 +51,6 @@ cat: /proc/sys/net/netfilter/nf_conntrack_tcp_ignore_invalid_rst: No such file o
 0
 
 ```
-
-
 
 
 

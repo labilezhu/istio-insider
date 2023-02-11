@@ -30,6 +30,7 @@ export fortio_server_l2_0=172.29.73.7
 
 ### env
 
+#### SUSE SLE workernode
 
 ```log
 fortio-server-l2-0:/home/labile # uname -r
@@ -49,6 +50,7 @@ fortio-server-l2-0:/home/labile # cat /proc/sys/net/netfilter/nf_conntrack_tcp_b
 
 ```
 
+Another tested worker node:
 
 ```log
 uname -rr                                                                 
