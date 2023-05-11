@@ -1,11 +1,4 @@
-# gdb 调试 istio proxy (envoy)"
-
-
-出于各种原因，需要 debug istio-proxy (envoy)，记录一下步骤，希望地球上的有缘人有用。
-
-## 编译生成执行文件
-
-### 下载 code
+## clone code
 
 我用的是 release-1.14。
 
@@ -15,10 +8,11 @@ cd $HOME/istio-testing/
 git clone https://github.com/istio/proxy.git work
 cd work
 export PROXY_HOME=`pwd`
-git checkout -b release-1.14 origin/release-1.14
+git checkout tags/1.17.2 -b 1.17.2
 ```
 
-### 容器中编译
+
+## 容器中编译
 
 编译大项目，是个环境相关的工作。对于我这小白，还是直接用 Istio 官方 CI 的编译用的容器。好处是：
 1. 环境和 Istio 官方 一致，避免各位版本坑。理论上生成的可执行文件是一样的
@@ -26,8 +20,6 @@ git checkout -b release-1.14 origin/release-1.14
 
 
 > 注：build-tools-proxy 容器 image 列表可以在 [https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy](https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy) 获得。请对应你要编译的 istio-proxy 版本来选择 image。方法是用网页中的 Filter 功能。 以下仅以 release-1.14 为例子。
-
-
 
 
 ```bash
@@ -40,7 +32,7 @@ docker run --init  --log-driver none --privileged --name istio-testing --hostnam
     -v $PROXY_HOME:/work \
     -v $HOME/istio-testing/home/.cache:/home/.cache \
     -w /work \
-    -d gcr.io/istio-testing/build-tools-proxy:release-1.14-latest-amd64 bash -c '/bin/sleep 300d'
+    -d gcr.io/istio-testing/build-tools-proxy:release-1.17-latest-amd64 bash -c '/bin/sleep 300d'
 
 #进入容器
 docker exec -it istio-testing bash
@@ -62,7 +54,22 @@ build-tools: # ls -lh $PROXY_HOME/bazel-out/k8-dbg/bin/src/envoy/envoy
 
 debug执行文件中包含大量信息，size 很大。
 
-## 启动和 debug
+### Build 输出目录
+```bash
+bazel-bin -> /home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/execroot/io_istio_proxy/bazel-out/k8-dbg/bin
+bazel-out -> /home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/execroot/io_istio_proxy/bazel-out
+bazel-proxy -> /home/.cache/bazel/_bazel_root/9fdd49e4743c3f8ee04d8f2b39e01600/execroot/io_istio_proxy
+bazel-testlogs -> /home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/execroot/io_istio_proxy/bazel-out/k8-dbg/testlogs
+bazel-work -> /home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/execroot/io_istio_proxy
+
+# 主依赖下载目录：
+bazel-work/external
+
+# 依赖的 envoy 源码 目录
+bazel-work/external/envoy
+```
+
+## 运行 envoy
 
 ```bash
 #进入容器
@@ -73,13 +80,21 @@ curl -L -O https://github.com/labilezhu/pub-diy/raw/main/low-tec/trace/trace-ist
 
 #运行
 /work/bazel-out/k8-dbg/bin/src/envoy/envoy -c envoy-demo.yaml
-
-#调试 attach
-gdb -p `pgrep envoy`
-
 ```
 
-## Ref.
 
-- [How to build istio/proxy#28476](https://github.com/istio/istio/issues/28476)
-- [How to build istio/proxy part 2#37471](https://github.com/istio/istio/issues/37471)
+## Coding on istio proxy container
+
+因为在容器内 build istio-proxy 的过程下载的依赖源码、中间文件（在 /home/.cache ），均在容器中，所以，在容器中开启 vscode 才是最方便的代码浏览方法。
+
+1. In VSCode: Run command: `Remote Containers: Attach to running container`
+2. select `istio-testing` container.
+
+
+
+### VSCode extensions
+
+ - C++
+ - C++ Extension Pack
+ - Bazel
+
