@@ -15,7 +15,7 @@ cd $HOME/istio-testing/
 git clone https://github.com/istio/proxy.git work
 cd work
 export PROXY_HOME=`pwd`
-git checkout -b release-1.14 origin/release-1.14
+git checkout tags/1.17.2 -b 1.17.2
 ```
 
 ### 容器中编译
@@ -25,7 +25,7 @@ git checkout -b release-1.14 origin/release-1.14
 2. 内置工具，使用方便，
 
 
-> 注：build-tools-proxy 容器 image 列表可以在 [https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy](https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy) 获得。请对应你要编译的 istio-proxy 版本来选择 image。方法是用网页中的 Filter 功能。 以下仅以 release-1.14 为例子。
+> 注：build-tools-proxy 容器 image 列表可以在 [https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy](https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy) 获得。请对应你要编译的 istio-proxy 版本来选择 image。方法是用网页中的 Filter 功能。 以下仅以 release-1.17 为例子。
 
 
 
@@ -40,14 +40,14 @@ docker run --init  --log-driver none --privileged --name istio-testing --hostnam
     -v $PROXY_HOME:/work \
     -v $HOME/istio-testing/home/.cache:/home/.cache \
     -w /work \
-    -d gcr.io/istio-testing/build-tools-proxy:release-1.14-latest-amd64 bash -c '/bin/sleep 300d'
+    -d gcr.io/istio-testing/build-tools-proxy:release-1.17-latest-amd64 bash -c '/bin/sleep 300d'
 
 #进入容器
 docker exec -it istio-testing bash
 
 # 开始编译
 cd /work
-make build BAZEL_STARTUP_ARGS='' BAZEL_BUILD_ARGS='-s  --explain=explain.txt --config=debug' BAZEL_TARGETS='//src/envoy:envoy'
+make build BAZEL_STARTUP_ARGS='' BAZEL_BUILD_ARGS='-s  --explain=explain.txt --config=debug' BAZEL_TARGETS=':envoy'
 
 ```
 
