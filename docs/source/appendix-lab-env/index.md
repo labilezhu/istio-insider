@@ -141,6 +141,8 @@ spec:
         version: v1
     spec:
       serviceAccountName: httpbin
+      imagePullSecrets:
+      - name: docker-registry-key
       containers:
       - image: docker.io/kennethreitz/httpbin
         imagePullPolicy: IfNotPresent

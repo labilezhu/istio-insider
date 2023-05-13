@@ -2,7 +2,7 @@
 
 ## envoy_cc_binary
 
-### src/envoy/BUILD
+### /BUILD
 > https://cloudnative.to/blog/use-clion-read-envoy-source/
 > istio-proxy 代码库中主要只包含了在 istio 里用到的一些 envoy 扩展，代码量不大，源码主要分布在 src 与 extensions 目录，但编译需要很久，因为它实际编译的是 envoy，只是利用 bazel 将自身代码作为扩展编译进 envoy（得益于 envoy 的扩展机制），从这个 bazel 的 BUILD 文件 就能看得出来：
 
@@ -23,12 +23,16 @@ envoy_cc_binary(
         "//extensions/metadata_exchange:metadata_exchange_lib",
         "//extensions/stackdriver:stackdriver_plugin",
         "//extensions/stats:stats_plugin",
-        "//src/envoy/http/alpn:config_lib",
-        "//src/envoy/http/authn:filter_lib",
-        "//src/envoy/tcp/forward_downstream_sni:config_lib",
-        "//src/envoy/tcp/metadata_exchange:config_lib",
-        "//src/envoy/tcp/sni_verifier:config_lib",
-        "//src/envoy/tcp/tcp_cluster_rewrite:config_lib",
+        "//source/extensions/filters/http/alpn:config_lib",
+        "//source/extensions/filters/http/authn:filter_lib",
+        "//source/extensions/filters/http/connect_baggage",
+        "//source/extensions/filters/http/istio_stats",
+        "//source/extensions/filters/listener/set_internal_dst_address:filter_lib",
+        "//source/extensions/filters/network/forward_downstream_sni:config_lib",
+        "//source/extensions/filters/network/istio_authn:config_lib",
+        "//source/extensions/filters/network/metadata_exchange:config_lib",
+        "//source/extensions/filters/network/sni_verifier:config_lib",
+        "//source/extensions/filters/network/tcp_cluster_rewrite:config_lib",
         "@envoy//source/exe:envoy_main_entry_lib",
     ],
 )

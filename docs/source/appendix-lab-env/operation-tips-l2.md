@@ -6,7 +6,7 @@ ssh $WORKER_NODE_OF_POD
 
 sudo su
 
-export POD="fortio-server-l2-0"
+export POD="fortio-server-0"
 ENVOY_PIDS=$(pgrep envoy)
 while IFS= read -r ENVOY_PID; do
     HN=$(sudo nsenter -u -t $ENVOY_PID hostname)

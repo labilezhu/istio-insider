@@ -1,6 +1,6 @@
 ## clone code
 
-我用的是 release-1.14。
+我用的是 release-1.17。
 
 ```bash
 mkdir -p $HOME/istio-testing/
@@ -48,8 +48,8 @@ make build BAZEL_STARTUP_ARGS='' BAZEL_BUILD_ARGS='-s  --explain=explain.txt --c
 
 完成后，查看生成文件：
 ```bash
-build-tools: # ls -lh $PROXY_HOME/bazel-out/k8-dbg/bin/src/envoy/envoy
--r-xr-xr-x 1 root root 1.2G Feb 18 21:46 $PROXY_HOME/bazel-out/k8-dbg/bin/src/envoy/envoy
+build-tools: # ls -lh /work/bazel-out/k8-dbg/bin/envoy
+-r-xr-xr-x 1 root root 1.2G Feb 18 21:46 /work/bazel-out/k8-dbg/bin/envoy
 ```
 
 debug执行文件中包含大量信息，size 很大。
@@ -79,7 +79,7 @@ docker exec -it istio-testing bash
 curl -L -O https://github.com/labilezhu/pub-diy/raw/main/low-tec/trace/trace-istio/bpftrace/envoy-demo.yaml
 
 #运行
-/work/bazel-out/k8-dbg/bin/src/envoy/envoy -c envoy-demo.yaml
+/work/bazel-out/k8-dbg/bin/envoy -c envoy-demo.yaml
 ```
 
 
