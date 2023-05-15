@@ -151,7 +151,7 @@ FROM docker.io/istio/proxyv2:1.17.2
 COPY envoy /usr/local/bin/envoy
 
 RUN apt-get -y update \
-  && sudo apt install lldb
+  && apt-get install -y gdbserver
 EOF
 
 docker build . -f ./gdb-istio-proxy.Dockerfile -t proxyv2:1.17.2-debug
@@ -404,8 +404,7 @@ echo $POD_PID
 export PID=$POD_PID
 
 sudo nsenter -t $PID -u -p -m bash #NO -n
-
-sudo lldb-server platform --server --listen *:2159
+gdbserver :2159 --attach `pgrep envoy`
 
 # gdbserver --debug --remote-debug :2159  --attach  `pgrep envoy`
 
@@ -440,33 +439,27 @@ target remote 192.168.122.55:2159
 {
     "version": "0.2.0",
     "configurations": [
-
         {
-            "name": "AttachLLDBLocal",
-            "type": "lldb",
-            "request": "attach",
+            "name": "Attach to gdbserver",
+            "type": "cppdbg",
+            "request": "launch",
             "program": "/work/bazel-out/k8-dbg/bin/envoy",
-            "pid": "2694",
-            "sourceMap": {
-                "/proc/self/cwd": "/work/bazel-work",
-                "/home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/sandbox/linux-sandbox/263/execroot/io_istio_proxy": "/work/bazel-work"
-            }         
-        } ,
-        {
-            "name": "AttachLLDBRemote",
-            "type": "lldb",
-            "request": "attach",
-            "program": "/work/bazel-out/k8-dbg/bin/envoy",
-            "pid": "20",
-            "sourceMap": {
-                "/proc/self/cwd": "/work/bazel-work",
-                "/home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/sandbox/linux-sandbox/263/execroot/io_istio_proxy": "/work/bazel-work"
+            "miDebuggerServerAddress": "192.168.122.55:2159",
+            "miDebuggerArgs": "",
+            "externalConsole": true,
+            "cwd": "/work",
+            "logging": {
+                "engineLogging": false
             },
-            "initCommands": [
-                "platform select remote-linux", // Execute `platform list` for a list of available remote platform plugins.
-                "platform connect connect://192.168.122.55:2159"
-            ],                              
-        }                         
+            "sourceFileMap": {
+                "/proc/self/cwd": "/work/bazel-work",
+                "/home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/sandbox/linux-sandbox/263/execroot/io_istio_proxy": "/work/bazel-work"
+            },            
+            // "sou"
+            "linux": {
+              "MIMode": "gdb"
+            },
+        }        
     ]
 }
 ```

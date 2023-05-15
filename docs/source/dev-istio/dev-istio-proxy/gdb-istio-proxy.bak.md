@@ -221,11 +221,11 @@ ln -s /home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/execroot/i
 sudo passwd
 
 apt update
-apt install gdb
-apt install gdbserver
-apt install g++
-apt install sshd
-apt install tmux
+apt install -y gdb
+#apt install gdbserver
+apt install -y g++
+apt install -y openssh-server
+apt install -y tmux
 
 tmux
 
@@ -244,7 +244,7 @@ ssh-copy-id root@$CONTAINER_IP
 ```
 @vscode
 
-Remote-ssh: Add new ssh host: 172.17.0.2
+Remote-ssh: Add new ssh host: 172.18.0.4
 ```
 
 

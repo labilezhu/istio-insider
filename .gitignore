@@ -155,3 +155,4 @@ cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
 docs/source/bin
+docs/source/dev-istio/dev-istio-proxy/image/gdb-istio-proxy/envoy
