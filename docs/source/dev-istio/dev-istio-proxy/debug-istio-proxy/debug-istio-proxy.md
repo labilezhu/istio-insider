@@ -2,9 +2,9 @@
 
 
 
-请耐心等
+For a more in-depth study of the underlying behavior of sidecar (istio-proxy) under Istio service mesh. In order to write my book [Istio Insider](http://istio-insider.mygraphql.com/) better, I use the (lldb/gdb) + VSCode to debug the  Envoy(C++ code) which running on Istio service mesh. This article records my method of debugging Envoy(istio-proxy) sidecar in Istio service mesh, and I hope it can be useful to readers.
 
-
+<!-- 为更深入研究 Istio service mesh 下， sidecar(istio-proxy) 的底层行为。也为更好更靠普地编写我的书《Istio 内幕》，我用 debug 工具(lldb/gdb) + VSCode 去调试 Istio 下 Envoy 的底层实现(即 C++ 代码)。这篇文章记录了我 debug 在 Istio service mesh 中的 Envoy(istio-proxy) sidecar 的方法，希望也能对读者有用。 -->
 
 
 
@@ -337,4 +337,10 @@ version = 2
 ### Dynamic path
 
 Please update `/home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c` path according to your environment.
+
+
+
+### Why use `lldb` not `gdb`
+
+I was hit by many issues when use `gdb`.
 
