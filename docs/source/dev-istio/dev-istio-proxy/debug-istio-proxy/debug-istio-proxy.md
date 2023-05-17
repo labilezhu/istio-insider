@@ -8,14 +8,14 @@ For a more in-depth study of the underlying behavior of sidecar (istio-proxy) un
 
 ## Architecture
 
-:::{figure-md} 图：Envoy 请求与响应调度
+:::{figure-md} Figure：Remote lldb debug istio-proxy
 :class: full-width
 
-<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="图：Envoy 请求与响应调度">
+<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="Figure：Remote lldb debug istio-proxy">
 
 *Figure：Remote lldb debug istio-proxy*
 :::
-*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fremote-lldb-istio-proxy.drawio.svg)*
+*[Open in Draw.io](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fremote-lldb-istio-proxy.drawio.svg)*
 
 ## Environment Assumption
 
