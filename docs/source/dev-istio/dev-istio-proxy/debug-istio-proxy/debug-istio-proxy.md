@@ -1,5 +1,13 @@
 # Debug runing istio-proxy on mesh
 
+
+
+请耐心等
+
+
+
+
+
 ## Architecture
 
 ![](remote-lldb-istio-proxy.drawio.svg)
@@ -262,11 +270,11 @@ docker run \
 4. Install VSCode extensions:
    - CodeLLDB
    - clangd (Optional)
-  
+
 
 #### 3.3 lldb remote attach Envoy process
 
-##### 3.3.1 Create `.vscode/launch.json`
+##### 3.3.1 Create `launch.json`
 
 Create `.vscode/launch.json` in `/work`
 
@@ -295,11 +303,17 @@ Create `.vscode/launch.json` in `/work`
 
 ##### 3.3.2 Attach remote process
 
-Run and debug
+Run and debug: `AttachLLDBRemote`.
 
+It may took about 1 minute to load the 1GB ELF. Please be patient.
 
 
 ### 4. Debuging
+
+![image-20230517225030845](debug-istio-proxy.assets/vscode-debuging.png)
+
+
+
 
 
 ## FAQ
