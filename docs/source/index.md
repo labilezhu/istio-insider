@@ -98,6 +98,7 @@ performance/performance.md
 disruptions/disruptions.md
 observability/observability.md
 troubleshooting/troubleshooting.md
+dev-istio/dev-istio.md
 ```
 
 ## 附录
