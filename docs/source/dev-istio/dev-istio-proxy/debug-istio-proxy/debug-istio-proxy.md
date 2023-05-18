@@ -1,51 +1,60 @@
-# Istio 网格中调试 Envoy sidecar C++ 代码
+# 调试 Istio 网格中运行的 Envoy sidecar C++ 代码
 
-为更深入研究 Istio service mesh 下， sidecar(istio-proxy) 的底层行为。也为更好更靠普地编写我的书《Istio 内幕》，我用 debug 工具(lldb/gdb) + VSCode 去调试 Istio 下 Envoy 的底层实现(即 C++ 代码)。这篇文章记录了我 debug 在 Istio service mesh 中的 Envoy(istio-proxy) sidecar 的方法，希望也能对读者有用。
+## 介绍
+
+调试在 Istio 网格中运行的 Envoy sidecar C++ 代码。 它有助于在代码级别深入研究 sidecar。 它使我们在解决 Istio 问题或编写更好的 EnvoyFilter 或 eBPF 跟踪程序时更有信心。 本文介绍如何使用 `VSCode` 和 `lldb` 调试 Envoy istio-proxy sidecar。
+
+## 我的动机
+
+多年前，我写过一篇文章：
+[gdb debug istio-proxy(envoy)（中文）](https://blog.mygraphql.com/zh/notes/cloud/envoy/gdb-envoy/)。 它只是在 Istio 网格之外调试 Envoy 进程。
+
+对我来说，深入研究 Istio 服务网格中 sidecar (istio-proxy) 的行为让我更有信心完成我的书：[《Istio Insider》](http://istio-insider.mygraphql.com/)。 我想使用 (`lldb`/`gdb`) + `VSCode` 来调试在 Istio 服务网格上运行的 `Envoy`（C++ 代码）。
 
 
+## 环境架构
 
-## Architecture
-
-:::{figure-md} Figure：Remote lldb debug istio-proxy
+:::{figure-md} 图： 使用 lldb 远程调试 istio-proxy
 :class: full-width
 
-<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="Figure：Remote lldb debug istio-proxy">
+<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="图： 使用 lldb 远程调试 istio-proxy">
 
-*Figure：Remote lldb debug istio-proxy*
+*图： 使用 lldb 远程调试 istio-proxy*
 :::
-*[Open in Draw.io](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fremote-lldb-istio-proxy.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fremote-lldb-istio-proxy.drawio.svg)*
 
-## Environment Assumption
 
-Istio verion: 1.17.2
+## 环境说明
 
-Environment assumption:
+Istio 版本: 1.17.2
 
-- a k8s cluster
+环境说明:
+
+- k8s cluster
   - node network CIDR: 192.168.122.0/24
-  - Istio 1.17.2 installed
-  - tested k8s namespace: mark
-  - tested pod run on node: 192.168.122.55
-- a Linux developer node
+  - Istio 1.17.2 已安装
+  - 测试目标 k8s namespace: mark
+  - 测试目标 pod 运行于 node: 192.168.122.55
+- 带 Linux 桌面的开发者 node
   - IP addr: 192.168.122.1
   - hostname: `labile-T30`
   - OS: Ubuntu 22.04.2 LTS
   - user home: /home/labile
-  - Can reach k8s cluster node network
-  - with X11 GUI
+  - 连通 k8s cluster node 网络
+  - 有 X11 GUI
   - VSCode 
-  - Docker installed
-  - with Internet connection
+  - Docker 已安装
+  - 有 Internet 连接
 
 
 
-## Steps
+## 环境搭建步骤
 
-### 1. Build istio-proxy with debug info
+### 1. 构建带 debug 信息的 istio-proxy
 
-#### 1.1 Clone source code
+#### 1.1 Clone 源码
 
-Run on `labile-T30`
+运行于 `labile-T30` ：
 ```bash
 mkdir -p $HOME/istio-testing/
 cd $HOME/istio-testing/
@@ -55,13 +64,13 @@ git checkout tags/1.17.2 -b 1.17.2
 ```
 
 
-#### 1.2 start istio-proxy-builder container
+#### 1.2 启动 istio-proxy-builder 容器
 
-Compiling a large project like istio-proxy is an environment-related job. For a novice like me, I would like to use the official Istio CI compilation container directly. Benefits are:
-1. The environment is consistent with the official Istio version to avoid version pitfalls. Theoretically the generated executable is the same
-2. Built-in tools, easy to use
+编译像 istio-proxy 这样的大项目是环境相关的工作。 对于我这样的新手，我更愿意直接使用官方的 Istio CI 编译容器。 好处是：
+1.环境与Istio官方版本一致，避免版本陷阱。 理论上生成的可执行文件是相同的
+2.内置工具，简单易用
 
-> Note: The build-tools-proxy container image list can be found at [https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy](https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy) available. Please select the image corresponding to the version of istio-proxy you want to compile. The method is to use the Filter function in the web page. The following only takes release-1.17 as an example.
+> 注意：build-tools-proxy 容器镜像列表可以在 [https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy](https:// console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy) 获取。 请选择你要编译的 istio-proxy 版本对应的镜像。 方法是利用网页中的 Filter 功能。 以下仅以 release-1.17 为例。
 
 ```bash
 # optional
@@ -83,7 +92,7 @@ docker run --init  --privileged --name istio-proxy-builder --hostname istio-prox
 ```
 
 
-#### 1.3 build istio-proxy
+#### 1.3 构建 istio-proxy
 ```bash
 ## goto istio-proxy-builder container
 docker exec -it istio-proxy-builder bash
@@ -104,11 +113,11 @@ build-tools: # ls -lh /work/bazel-out/k8-dbg/bin/src/envoy/envoy
 -r-xr-xr-x 1 root root 1.2G Feb 18 21:46 /work/bazel-out/k8-dbg/bin/src/envoy/envoy
 ```
 
-### 2. Setup testing pod
+### 2. 安装测试目标 pod
 
-#### 2.1 Build debug istio-proxy docker image
+#### 2.1 构建 istio-proxy docker image
 
-Run on `labile-T30`
+在 `labile-T30` 上运行：
 
 ```bash
 # start local private plain http docker image registry
@@ -137,12 +146,12 @@ docker tag proxyv2:1.17.2-debug localhost:5000/proxyv2:1.17.2-debug
 docker push localhost:5000/proxyv2:1.17.2-debug
 ```
 
-Total size of image:
+docker image 的大小:
 - Envoy elf: 1.4G
 - lldb package: 700Mb
 - others
 
-#### 2.2 run target pod
+#### 2.2 运行目标 pod
 
 ```yaml
 kubectl -n mark apply -f - <<"EOF"
@@ -191,7 +200,7 @@ spec:
 EOF
 ```
 
-#### 2.3 start lldb server
+#### 2.3 启动 lldb server
 ```bash
 ssh 192.168.122.55
 
@@ -215,9 +224,9 @@ sudo nsenter -t $PID -u -p -m bash #NO -n
 sudo lldb-server platform --server --listen *:2159
 ```
 
-##### Test lldb-server(Optional)
+##### 测试 lldb-server(可选，可跳过)
 
-Run on `labile-T30`:
+在 `labile-T30` 上运行:
 
 ```bash
 sudo lldb
@@ -238,14 +247,14 @@ attach --pid 15
 exit
 ```
 
-### 3. Attach testing istio with debuger
+### 3. attach debuger 到 istio-proxy
 
-#### 3.1 start lldb-vscode-server container
+#### 3.1 启动 lldb-vscode-server container
 
-Run on `labile-T30`:
+在 `labile-T30` 运行:
 
 
-1. start `lldb-vscode-server` container
+1. 启动 `lldb-vscode-server` container
 
 ```bash
 docker stop lldb-vscode-server
@@ -265,19 +274,19 @@ docker run \
 
 #### 3.2 VSCode attach `lldb-vscode-server` container
 
-1. Start VSCode GUI on `labile-T30`. 
-2. Run vscode command: `Remote Containers: Attach to Running Container`, select `lldb-vscode-server` container.
-3. After attached to container, open folder: `/work`.
-4. Install VSCode extensions:
+1. 在 `labile-T30` 桌面 启动 VSCode GUI. 
+2. 在 vscode 执行命令(Ctrl+Shift+p): `Remote Containers: Attach to Running Container`, 选择 `lldb-vscode-server` container.
+3. 在 attached 到 container 后, open folder: `/work`.
+4. 安装 VSCode extensions:
    - CodeLLDB
    - clangd (Optional)
 
 
-#### 3.3 lldb remote attach Envoy process
+#### 3.3 lldb 远程 attach Envoy 进程
 
-##### 3.3.1 Create `launch.json`
+##### 3.3.1 创建 `launch.json` 文件
 
-Create `.vscode/launch.json` in `/work`
+在 `/work` 下创建 `.vscode/launch.json`
 
 ```json
 {
@@ -302,14 +311,14 @@ Create `.vscode/launch.json` in `/work`
 }
 ```
 
-##### 3.3.2 Attach remote process
+##### 3.3.2 Attach 远程 Envoy 进程
 
-Run and debug: `AttachLLDBRemote`.
+在 VSCode 中 Run and debug: `AttachLLDBRemote`.
 
-It may took about 1 minute to load the 1GB ELF. Please be patient.
+加载 1GB 的 ELF 可能需要大约 1 分钟。 请耐心等待。
 
 
-### 4. Debuging
+### 4. 开始调试
 
 ![image-20230517225030845](debug-istio-proxy.assets/vscode-debuging.png)
 
@@ -335,13 +344,35 @@ version = 2
         endpoint = ["http://192.168.122.1:5000"]
 ```
 
-### Dynamic path
+### 动态 path
 
 Please update `/home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c` path according to your environment.
 
 
 
-### Why use `lldb` not `gdb`
+### 为何用 `lldb` 而不是 `gdb`
 
-I was hit by many issues when use `gdb`.
+我在使用 `gdb` 时遇到了很多问题。
 
+
+
+
+## 更 Cloud Native 的远程调试的方法
+
+多年前，我写过一篇文章：
+[重新思考云原生时代的开发环境——从Dev-to-Cloud到Dev@Cloud](https://blog.mygraphql.com/zh/posts/cloud/devcloud/devcloud-idea/)。 介绍如何在k8s集群中安装一个运行 X11 桌面环境的 Pod，并通过浏览器直接连接到桌面。
+
+纯云原生风味是目标。 为了让调试 istio-proxy 更有云原生的味道。 您可以将下图中的一些组件替换为 k8s 组件。 这同时也可以降低开发者进入调试环境的门槛。 例如：
+  - 在 `labile-T30` 上运行的 docker 容器之间的共享文件夹可以用 k8s RWX(ReadWriteMany) PV 替换。 例如 NFS/CephFS。
+  - `istio-proxy-builder` 和 `lldb-vscode-server` 容器可以作为 k8s  Pod 运行并挂载上面的 RWX PVC。
+  - `Remote Containers: Attach to Running Container` 可以替换为 [`VSCode-server`](https://github.com/coder/code-server) k8s 服务，它的好处是，可以通过任何网络浏览器轻松访问。 不再需要具有 X11 桌面/VSCode GUI 应用程序和 docker 或 ssh 连接的节点。 只需将 `VSCode-server` 发布为 k8s 服务并在开发者电脑的网络浏览器上访问它。
+
+
+:::{figure-md} 图： 使用 lldb 远程调试 istio-proxy
+:class: full-width
+
+<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="图： 使用 lldb 远程调试 istio-proxy">
+
+*图： 使用 lldb 远程调试 istio-proxy*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fremote-lldb-istio-proxy.drawio.svg)*
