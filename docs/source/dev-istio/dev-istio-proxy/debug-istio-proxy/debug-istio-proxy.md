@@ -17,7 +17,7 @@
 :::{figure-md} 图： 使用 lldb 远程调试 istio-proxy
 :class: full-width
 
-<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="图： 使用 lldb 远程调试 istio-proxy">
+<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="图： 使用 lldb 远程调试 istio-proxy" />
 
 *图： 使用 lldb 远程调试 istio-proxy*
 :::
@@ -102,9 +102,10 @@ cd /work
 make build BAZEL_STARTUP_ARGS='' BAZEL_BUILD_ARGS='-s  --explain=explain.txt --config=debug' BAZEL_TARGETS=':envoy'
 ```
 
-It took me 3 hours to build it on my 2 cores CPU and 64GB ram machine. More core will be faster.
+在我的 2 core CPU 和 64GB RAM 机器上花了 3 个小时构建它。 更多的 core 会更快。
 
-You can check the output ELF after build finished：
+构建完成后可以查看输出的 ELF：
+
 ```bash
 ## goto istio-proxy-builder container
 docker exec -it istio-proxy-builder bash
