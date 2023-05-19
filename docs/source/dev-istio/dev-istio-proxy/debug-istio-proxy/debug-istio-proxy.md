@@ -70,7 +70,7 @@ git checkout tags/1.17.2 -b 1.17.2
 1.环境与Istio官方版本一致，避免版本陷阱。 理论上生成的可执行文件是相同的
 2.内置工具，简单易用
 
-> 注意：build-tools-proxy 容器镜像列表可以在 [https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy](https:// console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy) 获取。 请选择你要编译的 istio-proxy 版本对应的镜像。 方法是利用网页中的 Filter 功能。 以下仅以 release-1.17 为例。
+> 注意：build-tools-proxy 容器镜像列表可以在 [https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy](https://console.cloud.google.com/gcr/images/istio-testing/global/build-tools-proxy) 获取。 请选择你要编译的 istio-proxy 版本对应的镜像。 方法是利用网页中的 Filter 功能。 以下仅以 release-1.17 为例。
 
 ```bash
 # optional
