@@ -220,9 +220,9 @@ done <<< "$ENVOY_PIDS"
 echo $POD_PID
 export PID=$POD_PID
 
-sudo nsenter -t $PID -u -p -m bash #NO -n
+sudo nsenter -t $PID -u -p -m bash -c 'lldb-server platform --server --listen *:2159' #NO -n: not join network namespace
 
-sudo lldb-server platform --server --listen *:2159
+
 ```
 
 ##### 测试 lldb-server(可选，可跳过)
@@ -356,6 +356,262 @@ Please update `/home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c` 
 我在使用 `gdb` 时遇到了很多问题。
 
 
+## 调试 Envoy 的启动过程
+
+```bash
+./istioctl kube-inject -f fortio-server.yaml > fortio-server-injected.yaml
+
+vi fortio-server-injected.yaml
+      annotations:
+        sidecar.istio.io/inject: "false" 
+
+```
+
+```yaml
+kubectl -n mark apply -f - <<"EOF"
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  creationTimestamp: null
+  labels:
+    app: fortio-server
+  name: fortio-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fortio-server
+  serviceName: fortio-server
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: main-app
+        kubectl.kubernetes.io/default-logs-container: main-app
+        prometheus.io/path: /stats/prometheus
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
+        sidecar.istio.io/proxyImage: 192.168.122.1:5000/proxyv2:1.17.2-debug
+        sidecar.istio.io/status: '{"initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["workload-socket","credential-socket","workload-certs","istio-envoy","istio-data","istio-podinfo","istio-token","istiod-ca-cert"],"imagePullSecrets":null,"revision":"default"}'
+        sidecar.istio.io/inject: "false" 
+      creationTimestamp: null
+      labels:
+        app: fortio-server
+        app.kubernetes.io/name: fortio-server
+        security.istio.io/tlsMode: istio
+        service.istio.io/canonical-name: fortio-server
+        service.istio.io/canonical-revision: latest
+    spec:
+      containers:
+      - args:
+        - 10d
+        command:
+        - /bin/sleep
+        image: docker.io/nicolaka/netshoot:latest
+        imagePullPolicy: IfNotPresent
+        name: main-app
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 2159
+          name: http-m
+          protocol: TCP
+        resources: {}
+      - args:
+        - 20d
+        command:
+        - /usr/bin/sleep
+        env:
+        - name: JWT_POLICY
+          value: third-party-jwt
+        - name: PILOT_CERT_PROVIDER
+          value: istiod
+        - name: CA_ADDR
+          value: istiod.istio-system.svc:15012
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: PROXY_CONFIG
+          value: |
+            {}
+        - name: ISTIO_META_POD_PORTS
+          value: |-
+            [
+                {"name":"http","containerPort":8080,"protocol":"TCP"}
+                ,{"name":"http-m","containerPort":8070,"protocol":"TCP"}
+                ,{"name":"grpc","containerPort":8079,"protocol":"TCP"}
+            ]
+        - name: ISTIO_META_APP_CONTAINERS
+          value: main-app
+        - name: ISTIO_META_CLUSTER_ID
+          value: Kubernetes
+        - name: ISTIO_META_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ISTIO_META_INTERCEPTION_MODE
+          value: REDIRECT
+        - name: ISTIO_META_MESH_ID
+          value: cluster.local
+        - name: TRUST_DOMAIN
+          value: cluster.local
+        image: 192.168.122.1:5000/proxyv2:1.17.2-debug
+        name: istio-proxy
+        ports:
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - ALL
+          privileged: true
+          readOnlyRootFilesystem: false
+          runAsGroup: 1337
+          runAsNonRoot: true
+          runAsUser: 1337
+        volumeMounts:
+        - mountPath: /var/run/secrets/workload-spiffe-uds
+          name: workload-socket
+        - mountPath: /var/run/secrets/credential-uds
+          name: credential-socket
+        - mountPath: /var/run/secrets/workload-spiffe-credentials
+          name: workload-certs
+        - mountPath: /var/run/secrets/istio
+          name: istiod-ca-cert
+        - mountPath: /var/lib/istio/data
+          name: istio-data
+        - mountPath: /etc/istio/proxy
+          name: istio-envoy
+        - mountPath: /var/run/secrets/tokens
+          name: istio-token
+        - mountPath: /etc/istio/pod
+          name: istio-podinfo
+      restartPolicy: Always
+      volumes:
+      - name: workload-socket
+      - name: credential-socket
+      - name: workload-certs
+      - emptyDir:
+          medium: Memory
+        name: istio-envoy
+      - emptyDir: {}
+        name: istio-data
+      - downwardAPI:
+          items:
+          - fieldRef:
+              fieldPath: metadata.labels
+            path: labels
+          - fieldRef:
+              fieldPath: metadata.annotations
+            path: annotations
+        name: istio-podinfo
+      - name: istio-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              audience: istio-ca
+              expirationSeconds: 43200
+              path: istio-token
+      - configMap:
+          name: istio-ca-root-cert
+        name: istiod-ca-cert
+  updateStrategy: {}
+status:
+  availableReplicas: 0
+  replicas: 0
+
+
+EOF
+```
+
+```bash
+k exec -it fortio-server-0 -c istio-proxy -- bash
+sudo apt install tmux
+```
+
+
+```bash
+
+k exec -it fortio-server-0 -c istio-proxy -- bash
+
+
+# Generated by iptables-save v1.8.7 on Fri Jun  2 19:32:04 2023
+*nat
+:PREROUTING ACCEPT [8947:536820]
+:INPUT ACCEPT [8947:536820]
+:OUTPUT ACCEPT [713:63023]
+:POSTROUTING ACCEPT [713:63023]
+:ISTIO_INBOUND - [0:0]
+:ISTIO_IN_REDIRECT - [0:0]
+:ISTIO_OUTPUT - [0:0]
+:ISTIO_REDIRECT - [0:0]
+-A PREROUTING -p tcp -j ISTIO_INBOUND
+-A OUTPUT -p tcp -j ISTIO_OUTPUT
+-A ISTIO_INBOUND -p tcp -m tcp --dport 15008 -j RETURN
+-A ISTIO_INBOUND -p tcp -m tcp --dport 15090 -j RETURN
+-A ISTIO_INBOUND -p tcp -m tcp --dport 15021 -j RETURN
+-A ISTIO_INBOUND -p tcp -m tcp --dport 15020 -j RETURN
+-A ISTIO_INBOUND -p tcp -m tcp --dport 2159 -j RETURN
+-A ISTIO_INBOUND -p tcp -j ISTIO_IN_REDIRECT
+-A ISTIO_IN_REDIRECT -p tcp -j REDIRECT --to-ports 15006
+-A ISTIO_OUTPUT -s 127.0.0.6/32 -o lo -j RETURN
+-A ISTIO_OUTPUT ! -d 127.0.0.1/32 -o lo -m owner --uid-owner 1337 -j ISTIO_IN_REDIRECT
+-A ISTIO_OUTPUT -o lo -m owner ! --uid-owner 1337 -j RETURN
+-A ISTIO_OUTPUT -m owner --uid-owner 1337 -j RETURN
+-A ISTIO_OUTPUT ! -d 127.0.0.1/32 -o lo -m owner --gid-owner 1337 -j ISTIO_IN_REDIRECT
+-A ISTIO_OUTPUT -o lo -m owner ! --gid-owner 1337 -j RETURN
+-A ISTIO_OUTPUT -m owner --gid-owner 1337 -j RETURN
+-A ISTIO_OUTPUT -d 127.0.0.1/32 -j RETURN
+-A ISTIO_OUTPUT -j ISTIO_REDIRECT
+-A ISTIO_REDIRECT -p tcp -j REDIRECT --to-ports 15001
+COMMIT
+# Completed on Fri Jun  2 19:32:04 2023
+
+
+```
+
+```
+/usr/local/bin/pilot-agent proxy sidecar --domain $(POD_NAMESPACE).svc.cluster.local --proxyLogLevel=warning --proxyComponentLogLevel=misc:error --log_output_level=default:info --concurrency 2
+```
+
+
+```bash
+
+192.168.122.1:5000/proxyv2:1.17.2-debug
+```
+
+```
+sudo lldb
+process attach --name pilot-agent --waitfor
+```
+
+```
+platform process attach --name envoy --waitfor
+```
 
 
 ## 更 Cloud Native 的远程调试的方法

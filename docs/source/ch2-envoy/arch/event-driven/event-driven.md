@@ -38,6 +38,17 @@
 
 
 
+## 事件处理抽象框架
+
+上面主要在 kernel syscall 层面上介绍事件处理的底层过程。下面介绍在 Envoy 代码层面，如何抽象和封装事件。
+
+Envoy 使用了 libevent 这个 C 编写的事件 library。还在其上作了 C++ OOP 方面的封装。
+
+![](./event-driven.assets/abstract-event-model.drawio.svg)
+
+
+
+
 
 ## 扩展阅读
 

@@ -76,7 +76,7 @@ breakpoint modify -T wrk:worker_0  12
 breakpoint command add -s python -o 'frame.thread.name != "envoy"' 21
 breakpoint command add -s python -o 'print("frame.thread.name = {}".format( frame.thread.name ))' 21
 
-breakpoint command add -s python -o 'frame.thread.name != "envoy"' 21 27 28 29 30
+breakpoint command add -s python -o 'frame.thread.name != "envoy"' 1 2 3 4 5 6 7
 
 expr -l python -- 'return frame.thread.name != "envoy"'
 
