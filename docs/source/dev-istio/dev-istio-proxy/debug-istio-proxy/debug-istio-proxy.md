@@ -613,15 +613,36 @@ EOF
 
 ```
 
+```bash
+export POD="fortio-server-0"
+ENVOY_PIDS=$(pgrep sleep)
+while IFS= read -r ENVOY_PID; do
+    HN=$(sudo nsenter -u -t $ENVOY_PID hostname)
+    if [[ "$HN" = "$POD" ]]; then # space between = is important
+        sudo nsenter -u -t $ENVOY_PID hostname
+        export POD_PID=$ENVOY_PID
+    fi
+done <<< "$ENVOY_PIDS"
+echo $POD_PID
+export PID=$POD_PID
+
+sudo nsenter -t $PID -u -p -m bash -c 'lldb-server platform --server --listen *:2159' #NO -n: 
+```
+
+
+```bash
+lldb-server platform --server --listen *:2159
+```
+
+```bash
+kubectl port-forward --address 0.0.0.0 pods/fortio-server-0 2159:2159
+```
 
 
 ```
 /usr/local/bin/pilot-agent proxy sidecar --domain ${POD_NAMESPACE}.svc.cluster.local --proxyLogLevel=warning --proxyComponentLogLevel=misc:error --log_output_level=default:info --concurrency 2
 ```
 
-```bash
-kubectl port-forward pods/fortio-server-0 2159:2159
-```
 
 
 ```bash
