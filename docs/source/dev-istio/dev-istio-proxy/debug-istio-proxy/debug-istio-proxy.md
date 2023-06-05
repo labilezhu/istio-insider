@@ -701,7 +701,12 @@ tracing:
 2023-06-05T08:04:25.758098Z     info    Envoy command: [-c etc/istio/proxy/envoy-rev.json --drain-time-s 45 --drain-strategy immediate --local-address-ip-version v4 --file-flush-interval-msec 1000 --disable-hot-restart --allow-unknown-static-fields --log-format %Y-%m-%dT%T.%fZ       %l      envoy %n %g:%#  %v      thread=%t -l warning --component-log-level misc:error --concurrency 2]
 ```
 
+```bash
+k exec -it fortio-server-0 -c main-app -- bash
 
+su app
+
+```
 
 
 <!-- ```bash

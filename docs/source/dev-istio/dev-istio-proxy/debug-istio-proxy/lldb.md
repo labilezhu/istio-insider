@@ -108,3 +108,12 @@ echo 2 | sudo tee /proc/sys/kernel/randomize_va_space
 
 kernel.randomize_va_space = 0
 ```
+
+## codelldb
+```
+/py lldb.frame.thread.name != "envoy"
+
+breakpoint name add -N work
+
+breakpoint command add -s python -o 'frame.thread.name != "envoy"' work
+```
