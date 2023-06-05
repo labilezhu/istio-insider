@@ -613,6 +613,44 @@ EOF
 
 ```
 
+```json
+        {
+            "name": "AttachLLDBWaitRemote",
+            "type": "lldb",
+            "request": "attach",
+            "program": "/usr/local/bin/envoy",
+            // "stopOnEntry": true,
+            "waitFor": true,
+            "sourceMap": {
+                "/proc/self/cwd": "/work/bazel-work",
+                "/home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c/sandbox/linux-sandbox/263/execroot/io_istio_proxy": "/work/bazel-work"
+            },
+            "initCommands": [
+                "log enable lldb commands",
+                "platform select remote-linux", // Execute `platform list` for a list of available remote platform plugins.
+                "platform connect connect://192.168.122.55:2159",
+                "log enable lldb commands"
+            ],                              
+        } 
+```
+
+
+```
+9: file = '/proc/self/cwd/external/envoy/source/exe/main_common.cc', line = 87, exact_match = 0, locations = 1, resolved = 1, hit count = 0
+
+  9.1: where = envoy`Envoy::MainCommon::main(int, char**, std::__1::function<void (Envoy::Server::Instance&)>) + 25 at main_common.cc:91:30, address = 0x000055555a21d329, resolved, hit count = 0 
+
+10: file = '/proc/self/cwd/external/envoy/source/exe/main.cc', line = 16, exact_match = 0, locations = 1, resolved = 1, hit count = 1
+
+  10.1: where = envoy`main + 38 at main.cc:24:34, address = 0x000055555a21c336, resolved, hit count = 1 
+
+11: file = '/proc/self/cwd/external/envoy/source/exe/main.cc', line = 24, exact_match = 0, locations = 1, resolved = 1, hit count = 1
+
+  11.1: where = envoy`main + 38 at main.cc:24:34, address = 0x000055555a21c336, resolved, hit count = 1 
+```
+
+
+
 ```bash
 export POD="fortio-server-0"
 ENVOY_PIDS=$(pgrep sleep)
@@ -630,22 +668,43 @@ sudo nsenter -t $PID -u -p -m bash -c 'lldb-server platform --server --listen *:
 ```
 
 
-```bash
+<!-- ```bash
 lldb-server platform --server --listen *:2159
-```
+``` -->
 
-```bash
+<!-- ```bash
 kubectl port-forward --address 0.0.0.0 pods/fortio-server-0 2159:2159
-```
+``` -->
 
 
 ```
 /usr/local/bin/pilot-agent proxy sidecar --domain ${POD_NAMESPACE}.svc.cluster.local --proxyLogLevel=warning --proxyComponentLogLevel=misc:error --log_output_level=default:info --concurrency 2
+
+
+2023-06-05T08:04:25.267206Z     info    Effective config: binaryPath: /usr/local/bin/envoy
+concurrency: 2
+configPath: ./etc/istio/proxy
+controlPlaneAuthPolicy: MUTUAL_TLS
+discoveryAddress: istiod.istio-system.svc:15012
+drainDuration: 45s
+proxyAdminPort: 15000
+serviceCluster: istio-proxy
+statNameLength: 189
+statusPort: 15020
+terminationDrainDuration: 5s
+tracing:
+  zipkin:
+    address: zipkin.istio-system:9411
+...
+2023-06-05T08:04:25.754381Z     info    Starting proxy agent
+2023-06-05T08:04:25.755875Z     info    starting
+2023-06-05T08:04:25.758098Z     info    Envoy command: [-c etc/istio/proxy/envoy-rev.json --drain-time-s 45 --drain-strategy immediate --local-address-ip-version v4 --file-flush-interval-msec 1000 --disable-hot-restart --allow-unknown-static-fields --log-format %Y-%m-%dT%T.%fZ       %l      envoy %n %g:%#  %v      thread=%t -l warning --component-log-level misc:error --concurrency 2]
 ```
 
 
 
-```bash
+
+<!-- ```bash
 
 192.168.122.1:5000/proxyv2:1.17.2-debug
 ```
@@ -663,7 +722,7 @@ platform process attach --name envoy --waitfor
         - '8080,8070' #updated,  inbound ports for which traffic is to be redirected to Envoy
         - -d
         - 15090,15021,15020,2159 #updated, inbound ports to be excluded from redirection to Envoy
-```
+``` -->
 
 
 ## 更 Cloud Native 的远程调试的方法
