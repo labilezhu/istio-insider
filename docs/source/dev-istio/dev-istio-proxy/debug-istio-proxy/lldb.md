@@ -115,7 +115,7 @@ kernel.randomize_va_space = 0
 
 breakpoint name add -N work
 
-breakpoint command add -s python -o 'frame.thread.name != "envoy"' work
+breakpoint command add -s python -o 'lldb.frame.thread.name != "envoy"' work
 
 breakpoint write -f /root/b.json
 breakpoint read -f /root/b.json
