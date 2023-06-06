@@ -1,14 +1,69 @@
-# Debug istio-proxy start
+# 调试与观察 istio-proxy Envoy sidecar 的启动过程
 
-想知道 Listener socket 事件监听是如何初始化的。最直接的方法是 debug Envoy 启动初始化过程。
+学习 Istio 下 Envoy sidecar 的初始化过程，有助于理解 Envoy 是如何构建起整个事件驱动和线程互动体系的。其中 Listener socket 事件监初始化是重点。而获取这个知识最直接的方法是 debug Envoy 启动初始化过程，这样可以直接观察运行状态的 Envoy 代码，而不是只读无聊的 OOP 代码去猜现实行为。debug sidecar 初始化有几道砍要过。本文记录了我的通关打怪的过程。
+
+
+
+## debug 初始化之难
+
+有经验的程序员都知道，debug 的难度和要 debug 的目标场景出现频率成反比。而 sidecar 的初始化只有一次。
 
 要 debug istio-proxy(Envoy) 的启动过程，需要经过几道砍：
- 1. istio auto inject sidecar 在容器启动时就自动启动 Envoy，很难在初始化前完成 remote debug attach 和 breakpoint 设置。
+
+ 1. Istio auto inject sidecar 在容器启动时就自动启动 Envoy，很难在初始化前完成 remote debug attach 和 breakpoint 设置。
  2. `/usr/local/bin/pilot-agent` 负责运行 `/usr/local/bin/envoy` 进程，并作为其父进程，即不可以直接控制 envoy 进程的启动。
 
-下面我解释一下如何解决上面问题。
+下面我解释一下如何避坑。
 
-## 调试 Envoy 的启动过程
+
+
+## Envoy 的启动 attach 方法
+
+下面研究一下，两种场景下，Envoy 的启动 attach 方法：
+
+1. Istio auto inject 的 istio-proxy container
+2. 手工 inject 的 istio-proxy container
+
+### Istio auto inject 的 sidecar container
+
+对于 Istio auto inject 的 sidecar container，是很难在 envoy 初始化前 attach 到刚启动的 envoy 进程的。理论上有个可能的方法：
+
+
+
+- 在 worker node 上，让 gdb/lldb 不断扫描进程列表，发现 envoy 立即 attach
+
+对于 gdb， [网上](https://stackoverflow.com/a/11147567) 有个 script:
+
+```bash
+#!/bin/sh
+# 以下脚本启动前，要求 pid namespace(这里为 worker node) 下未有 envoy 进程运行
+progstr=envoy
+progpid=`pgrep -o $progstr`
+while [ "$progpid" = "" ]; do
+  progpid=`pgrep -o $progstr`
+done
+gdb -ex continue -p $progpid
+```
+
+对于 本文的主角 lldb，有内置的方法：
+
+```
+(lldb) process attach --name /usr/local/bin/envoy --waitfor
+```
+
+这个方法由于让 debugger(gdb/lldb) 和 envoy 不在同一个 pid namespace 和 mount namespace，所以不建议使用。
+
+
+
+
+
+### 手工 inject 的 istio-proxy container
+
+
+
+1. envoy 进程是由 `pilot-agent`  fork & execv 出来的，可以用 gdb/lldb  debug 启动  `pilot-agent`  ，然后开启 `follow-fork-mode child` 模式，这样就可以，debug 和挂停新 envoy 进程。
+
+
 
 ```bash
 ./istioctl kube-inject -f fortio-server.yaml > fortio-server-injected.yaml
