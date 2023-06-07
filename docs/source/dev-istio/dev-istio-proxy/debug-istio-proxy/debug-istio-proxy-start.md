@@ -2,7 +2,7 @@
 
 
 
-学习 Istio 下 Envoy sidecar 的初始化过程，有助于理解 Envoy 是如何构建起整个事件驱动和线程互动体系的。其中 Listener socket 事件监初始化是重点。而获取这个知识最直接的方法是 debug Envoy 启动初始化过程，这样可以直接观察运行状态的 Envoy 代码，而不是只读无聊的 OOP 代码去猜现实行为。debug sidecar 初始化有几道砍要过。本文记录了我的通关打怪的过程。
+学习 Istio 下 Envoy sidecar 的初始化过程，有助于理解 Envoy 是如何构建起整个事件驱动和线程互动体系的。其中 Listener socket 事件监初始化是重点。而获取这个知识最直接的方法是 debug Envoy 启动初始化过程，这样可以直接观察运行状态的 Envoy 代码，而不是直接读无聊的 OOP 代码去猜现实行为。但要 debug sidecar 初始化有几道砍要过。本文记录了我通关打怪的过程。
 
 
 
@@ -27,129 +27,8 @@
 
 下面研究一下，两种场景下，Envoy 的启动 attach 方法：
 
-1. Istio auto inject 的 istio-proxy container (我没有使用这种方法)
+1. Istio auto inject 的 istio-proxy container (我没有使用这种方法，见附录部分)
 2. 手工 inject 的 istio-proxy container (我使用这种方法)
-
-### Istio auto inject 的 sidecar container  (我没有使用这种方法)
-
-对于 Istio auto inject 的 sidecar container，是很难在 envoy 初始化前 attach 到刚启动的 envoy 进程的。理论上有几个可能的方法（**注意：我未测试过**）：
-
-
-
--  在 worker node 上 Debugger wait process
-
-- debugger follow process fork
-
-- debugger wrapper script
-
-
-
-下面简单说明一下理论。
-
-#### 在 worker node 上 Debugger wait process
-
-在 worker node 上，让 gdb/lldb 不断扫描进程列表，发现 envoy 立即 attach
-
-对于 gdb， [网上](https://stackoverflow.com/a/11147567) 有个 script:
-
-```bash
-#!/bin/sh
-# 以下脚本启动前，要求 worker node 下未有 envoy 进程运行
-progstr=envoy
-progpid=`pgrep -o $progstr`
-while [ "$progpid" = "" ]; do
-  progpid=`pgrep -o $progstr`
-done
-gdb -ex continue -p $progpid
-```
-
-对于 本文的主角 lldb，有内置的方法：
-
-```
-(lldb) process attach --name /usr/local/bin/envoy --waitfor
-```
-
-这个方法缺点是 debugger(gdb/lldb) 与 debuggee(envoy) 运行在不同的 pid namespace 和 mount namespace，会让 debugger 发生很多奇怪的问题，所以不建议使用。
-
-
-
-#### Debugger follow process fork
-
-我们知道：
-
--  `envoy` 进程由容器的 pid 1 进程（这里为 `pilot-agent`）启动
--  `pilot-agent` 由短命进程 `runc` 启动
--  `runc` 由 `/usr/local/bin/containerd-shim-runc-v2` 启动
-- `containerd-shim-runc-v2` 由 `/usr/local/bin/containerd` 启动
-
-> 参考：https://iximiuz.com/en/posts/implementing-container-runtime-shim/
-
-
-
-只要用 debugger 跟踪 containerd ，一步步 follow process fork 就可以跟踪到 exec /usr/local/bin/envoy 。
-
-
-
-对于 gdb 可以用
-
-```
-(gdb) set follow-fork-mode child
-```
-
-> 参见：
->
-> [https://visualgdb.com/gdbreference/commands/set_follow-fork-mode](https://visualgdb.com/gdbreference/commands/set_follow-fork-mode)
-
-
-
-对于 lldb 可以用：
-
-```
-(lldb) settings set target.process.follow-fork-mode child
-```
-
-> 参见：
->
-> - [LLDB support for fork(2) and vfork(2)](https://www.moritz.systems/blog/lldb-support-for-fork-and-vfork/)
-> - [LLDB Improvements Part II – Additional CPU Support, Follow-fork operations, and SaveCore Functionality](https://freebsdfoundation.org/project/lldb-improvements-part-ii-additional-cpu-support-follow-fork-operations-and-savecore-functionality/#fromHistory)
-> - [lldb equivalent of gdb's "follow-fork-mode" or "detach-on-fork"](https://stackoverflow.com/questions/19204395/lldb-equivalent-of-gdbs-follow-fork-mode-or-detach-on-fork#:~:text=lldb%20does%20not%20currently%20support,process%20with%20the%20given%20name.#fromHistory)
-
-
-
-#### Debugger wrapper script
-
-我们没办法直接修改 `pilot-agent` 注入 debugger，但可以用一个 `wrapper script` 替换 `/usr/local/bin/envoy`，然后由这个`wrapper script`  启动 debugger , 让 debugger 启动 真正的 envoy ELF。
-
-可以通过修改 istio-proxy docker image 的方法，去实现：
-
-如：
-
-```bash
-mv /usr/local/bin/envoy /usr/local/bin/real_envoy_elf
-vi /usr/local/bin/envoy
-...
-chmod +x /usr/local/bin/envoy
-```
-
-
-
-`/usr/local/bin/envoy` 写成这样：
-
-```bash
-#!/bin/bash
-
-# This is a gdb wrapper script.
-# Get the arguments passed to the script.
-args=$@
-# Start gdb.
-gdb -ex=run --args /usr/local/bin/real_envoy_elf $args
-```
-
-
-
-> 参见：
->
-> - [Debugging binaries invoked from scripts with GDB](https://developers.redhat.com/articles/2022/12/27/debugging-binaries-invoked-scripts-gdb#)
 
 
 
@@ -363,7 +242,6 @@ sudo apt install -y tmux
 kubectl exec -it fortio-server-0 -c main-app -- bash
 
 adduser -u 1000 app
-su app
 ```
 
 
@@ -389,7 +267,7 @@ sudo iptables-restore <<"EOF"
 -A ISTIO_INBOUND -p tcp -m tcp --dport 15090 -j RETURN
 -A ISTIO_INBOUND -p tcp -m tcp --dport 15021 -j RETURN
 -A ISTIO_INBOUND -p tcp -m tcp --dport 15020 -j RETURN
-# remote lldb inbound
+# do not redirect remote lldb inbound
 -A ISTIO_INBOUND -p tcp -m tcp --dport 2159 -j RETURN
 -A ISTIO_INBOUND -p tcp -j ISTIO_IN_REDIRECT
 -A ISTIO_IN_REDIRECT -p tcp -j REDIRECT --to-ports 15006
@@ -397,11 +275,11 @@ sudo iptables-restore <<"EOF"
 -A ISTIO_OUTPUT ! -d 127.0.0.1/32 -o lo -m owner --uid-owner 1337 -j ISTIO_IN_REDIRECT
 -A ISTIO_OUTPUT -o lo -m owner ! --uid-owner 1337 -j RETURN
 -A ISTIO_OUTPUT -m owner --uid-owner 1337 -j RETURN
-# only app user outbound redirct
+# only redirct app user outbound
 -A ISTIO_OUTPUT -m owner ! --uid-owner 1000 -j RETURN
 -A ISTIO_OUTPUT ! -d 127.0.0.1/32 -o lo -m owner --gid-owner 1337 -j ISTIO_IN_REDIRECT
 -A ISTIO_OUTPUT -o lo -m owner ! --gid-owner 1337 -j RETURN
-# only app user outbound redirct
+# only redirct app user outbound 
 -A ISTIO_OUTPUT -m owner ! --gid-owner 1000 -j RETURN
 -A ISTIO_OUTPUT -m owner --gid-owner 1337 -j RETURN
 -A ISTIO_OUTPUT -d 127.0.0.1/32 -j RETURN
@@ -540,10 +418,10 @@ tracing:
 以下是一些我常用的断点：
 
 ```
+# Envoy 直接调用的系统调用 syscall
 breakpoint set --func-regex .*OsSysCallsImpl.*
 
-breakpoint set --shlib libc.so.6 --func-regex 
-
+# libevent 的 syscall
 breakpoint set --shlib libc.so.6 --func-regex 'epoll_create.*|epoll_wait|epoll_ctl'
 
 breakpoint set --shlib libc.so.6 --basename 'epoll_create'
@@ -554,9 +432,142 @@ breakpoint set --shlib libc.so.6 --basename 'epoll_ctl'
 
 
 
+## 附录 - 写给自己的一些备忘
+
+
+
+### Istio auto inject 的 sidecar container  (我没有使用这种方法)
+
+做过 k8s 运维的同学都知道，一个时常遇到，但又缺少非入侵方法定位的问题是：容器启动时出错。很难有办法让出错的启动进程暂停下来，留充足的时间，让人工进入环境中去做 troubleshooting。而 gdb/lldb 这类 debuger 天生就有这种让任意进程挂起的 “魔法”。
+
+
+
+对于 Istio auto inject 的 sidecar container，是很难在 envoy 初始化前 attach 到刚启动的 envoy 进程的。理论上有几个可能的方法（**注意：我未测试过**）：
+
+
+
+-  在 worker node 上 Debugger wait process
+
+-  debugger follow process fork
+
+-  debugger wrapper script
+
+
+
+下面简单说明一下理论。
+
+#### 在 worker node 上 Debugger wait process
+
+在 worker node 上，让 gdb/lldb 不断扫描进程列表，发现 envoy 立即 attach
+
+对于 gdb， [网上](https://stackoverflow.com/a/11147567) 有个 script:
+
+```bash
+#!/bin/sh
+# 以下脚本启动前，要求 worker node 下未有 envoy 进程运行
+progstr=envoy
+progpid=`pgrep -o $progstr`
+while [ "$progpid" = "" ]; do
+  progpid=`pgrep -o $progstr`
+done
+gdb -ex continue -p $progpid
+```
+
+对于 本文的主角 lldb，有内置的方法：
+
+```
+(lldb) process attach --name /usr/local/bin/envoy --waitfor
+```
+
+这个方法缺点是 debugger(gdb/lldb) 与 debuggee(envoy) 运行在不同的 pid namespace 和 mount namespace，会让 debugger 发生很多奇怪的问题，所以不建议使用。
+
+
+
+#### Debugger follow process fork
+
+我们知道：
+
+-  `envoy` 进程由容器的 pid 1 进程（这里为 `pilot-agent`）启动
+-  `pilot-agent` 由短命进程 `runc` 启动
+-  `runc` 由 `/usr/local/bin/containerd-shim-runc-v2` 启动
+-  `containerd-shim-runc-v2` 由 `/usr/local/bin/containerd` 启动
+
+> 参考：https://iximiuz.com/en/posts/implementing-container-runtime-shim/
+
+
+
+只要用 debugger 跟踪 containerd ，一步步 follow process fork 就可以跟踪到 exec /usr/local/bin/envoy 。
+
+
+
+对于 gdb 可以用
+
+```
+(gdb) set follow-fork-mode child
+```
+
+> 参见：
+>
+> [https://visualgdb.com/gdbreference/commands/set_follow-fork-mode](https://visualgdb.com/gdbreference/commands/set_follow-fork-mode)
+
+
+
+对于 lldb 可以用：
+
+```
+(lldb) settings set target.process.follow-fork-mode child
+```
+
+> 参见：
+>
+> - [LLDB support for fork(2) and vfork(2)](https://www.moritz.systems/blog/lldb-support-for-fork-and-vfork/)
+> - [LLDB Improvements Part II – Additional CPU Support, Follow-fork operations, and SaveCore Functionality](https://freebsdfoundation.org/project/lldb-improvements-part-ii-additional-cpu-support-follow-fork-operations-and-savecore-functionality/#fromHistory)
+> - [lldb equivalent of gdb's "follow-fork-mode" or "detach-on-fork"](https://stackoverflow.com/questions/19204395/lldb-equivalent-of-gdbs-follow-fork-mode-or-detach-on-fork#:~:text=lldb%20does%20not%20currently%20support,process%20with%20the%20given%20name.#fromHistory)
+
+
+
+#### Debugger wrapper script
+
+我们没办法直接修改 `pilot-agent` 注入 debugger，但可以用一个 `wrapper script` 替换 `/usr/local/bin/envoy`，然后由这个`wrapper script`  启动 debugger , 让 debugger 启动 真正的 envoy ELF。
+
+可以通过修改 istio-proxy docker image 的方法，去实现：
+
+如：
+
+```bash
+mv /usr/local/bin/envoy /usr/local/bin/real_envoy_elf
+vi /usr/local/bin/envoy
+...
+chmod +x /usr/local/bin/envoy
+```
+
+
+
+`/usr/local/bin/envoy` 写成这样：
+
+```bash
+#!/bin/bash
+
+# This is a gdb wrapper script.
+# Get the arguments passed to the script.
+args=$@
+# Start gdb.
+gdb -ex=run --args /usr/local/bin/real_envoy_elf $args
+```
+
+
+
+> 参见：
+>
+> - [Debugging binaries invoked from scripts with GDB](https://developers.redhat.com/articles/2022/12/27/debugging-binaries-invoked-scripts-gdb#)
+
+
+
+
+
 ### 流量 debug
 
-发起一些流量
+发起一些 经过 envoy 的 outbound 流量：
 
 ```bash
 kubectl exec -it fortio-server-0 -c main-app -- bash
@@ -567,11 +578,11 @@ curl -v www.baidu.com
 
 
 
-## 一些备忘附录
+### lldb 常用命令单
 
 ```
-sudo lldb
-process attach --name pilot-agent --waitfor
-platform process attach --name envoy --waitfor
+lldb
+(lldb) process attach --name pilot-agent --waitfor
+(lldb) platform process attach --name envoy --waitfor
 ```
 
