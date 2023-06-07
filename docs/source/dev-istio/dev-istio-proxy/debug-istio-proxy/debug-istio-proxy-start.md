@@ -481,7 +481,17 @@ sudo nsenter -t $PID -u -p -m bash -c 'lldb-server platform --server --listen *:
         } 
 ```
 
-然后在 vscode 中启动 AttachLLDBWaitRemote 。这将与 lldb-server 建立连接，并分析 `/usr/local/bin/envoy`。由于这是一个 1GB 的 ELF，这步在我的机器中用了 100% CPU 和 16GB RSS 内存，耗时 1 分钟以上。完成后，可见 istio-proxy 中有一个 100% CPU 占用的 lldb-server 进程，其实就是 `"waitFor": true` 命令 lldb-server 不断扫描进程列表。
+然后在 vscode 中启动 AttachLLDBWaitRemote 。这将与 lldb-server 建立连接，并分析 `/usr/local/bin/envoy`。由于这是一个 1GB 的 ELF，这步在我的机器中用了 100% CPU 和 16GB RSS 内存，耗时 1 分钟以上。完成后，可见 istio-proxy 中有一个 100% CPU 占用的 `lldb-server` 进程，其实就是 `"waitFor": true` 命令 lldb-server 不断扫描进程列表。
+
+
+
+##### 2.1 设置断点
+
+你可以在设置断点在你的兴趣点上，我是：
+
+`envoy/source/exe/main.cc` 即：`Envoy::MainCommon::main(...)`
+
+
 
 #### 3. 启动 pilot-agent 和 envoy
 
@@ -515,7 +525,19 @@ tracing:
 
 
 
+#### 4. 开始 debug
 
+这时，lldb-server 会扫描到 envoy 进程的启动，并 attach 和 挂起 envoy 进程，然后通知到 vscode。vscode 设置断点，然后继续 envoy 的运行，然后进程跑到断点， vscode 反馈到 GUI:
+
+
+
+![vscode-break-on-envoy-startup.png](debug-istio-proxy-start.assets/vscode-break-on-envoy-startup.png)
+
+
+
+### 常用断点
+
+以下是一些我常用的断点：
 
 ```
 breakpoint set --func-regex .*OsSysCallsImpl.*
@@ -528,24 +550,13 @@ breakpoint set --shlib libc.so.6 --basename 'epoll_create'
 breakpoint set --shlib libc.so.6 --basename 'epoll_create1'
 breakpoint set --shlib libc.so.6 --basename 'epoll_wait'
 breakpoint set --shlib libc.so.6 --basename 'epoll_ctl'
-
-
-breakpoint list 8
-8: regex = 'epoll_create.*|epoll_wait|epoll_ctl', locations = 6, resolved = 6, hit count = 0
-  8.1: where = envoy`do_epoll_wait(grpc_pollset*, grpc_core::Timestamp) + 34 at ev_epoll1_linux.cc:716:3, address = 0x000055555fc1c692, resolved, hit count = 0 
-  8.2: where = envoy`epoll_create_and_cloexec() + 8 at ev_epoll1_linux.cc:98:12, address = 0x000055555fc1dd68, resolved, hit count = 0 
-  8.3: where = libc.so.6`epoll_wait at epoll_wait.c:28:1, address = 0x00007ffff7dc1f80, resolved, hit count = 0 
-  8.4: where = libc.so.6`epoll_create1 + 19, address = 0x00007ffff7dc2d03, resolved, hit count = 0 
-  8.5: where = libc.so.6`epoll_ctl + 22, address = 0x00007ffff7dc2d36, resolved, hit count = 0 
-  8.6: where = libc.so.6`epoll_create + 19, address = 0x00007ffff7dc2cd3, resolved, hit count = 0 
-
 ```
 
 
 
+### 流量 debug
 
-
-发起一些流量：
+发起一些流量
 
 ```bash
 kubectl exec -it fortio-server-0 -c main-app -- bash
@@ -555,6 +566,8 @@ curl -v www.baidu.com
 ```
 
 
+
+## 一些备忘附录
 
 ```
 sudo lldb
