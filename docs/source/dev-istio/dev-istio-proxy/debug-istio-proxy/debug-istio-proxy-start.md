@@ -157,7 +157,7 @@ gdb -ex=run --args /usr/local/bin/real_envoy_elf $args
 
 要方便精准地在 envoy 开始初始化前 attach envoy 进程，一个方法是不要在容器启动时自动启动 envoy。要手工启动  `pilot-agent`，一个方法是不要 auto inject sidecar，用 `istioctl` 手工 inject：
 
-
+#### 1. 定制手工拉起的 istio-proxy 环境
 
 ```bash
 # fortio-server.yaml 是定义 pod 的 k8s StatefulSet/deployment
@@ -165,8 +165,6 @@ $ ./istioctl kube-inject -f fortio-server.yaml > fortio-server-injected.yaml
 ```
 
 
-
-定制手工拉起的 istio-proxy
 
 ```yaml
 $ vi fortio-server-injected.yaml
@@ -416,6 +414,48 @@ EOF
 
 
 
+#### 2. 启动 remote debug server 与 vscode debug session
+
+
+
+在 isto-proxy 运行的 worker node 上启动 remote debug server:
+
+```bash
+ssh labile@192.168.122.55 #  ssh 到运行 istio-proxy 的 worker node
+
+# 获取 istio-proxy 容器内一个进程的 PID
+export POD="fortio-server-0"
+ENVOY_PIDS=$(pgrep sleep) #容器中有个叫 /usr/bin/sleep 的进程
+while IFS= read -r ENVOY_PID; do
+    HN=$(sudo nsenter -u -t $ENVOY_PID hostname)
+    if [[ "$HN" = "$POD" ]]; then # space between = is important
+        sudo nsenter -u -t $ENVOY_PID hostname
+        export POD_PID=$ENVOY_PID
+    fi
+done <<< "$ENVOY_PIDS"
+echo $POD_PID
+export PID=$POD_PID
+
+# 启动 remote debug server
+sudo nsenter -t $PID -u -p -m bash -c 'lldb-server platform --server --listen *:2159' #注意没有 -n: 
+```
+
+
+
+> 为何不使用 kubectl port forward?
+>
+> 我尝试过：
+>
+> ```bash
+> kubectl port-forward --address 0.0.0.0 pods/fortio-server-0 2159:2159
+> ```
+>
+> 可能由于 debug 的流量很大，forward 很不稳定。
+
+
+
+
+
 在 `lldb-vscode-server` 的 `.vscode/launch.json` 文件中，加入一个 debug 配置：
 
 ```json
@@ -441,36 +481,15 @@ EOF
         } 
 ```
 
+然后在 vscode 中启动 AttachLLDBWaitRemote 。这将与 lldb-server 建立连接，并分析 `/usr/local/bin/envoy`。由于这是一个 1GB 的 ELF，这步在我的机器中用了 100% CPU 和 16GB RSS 内存，耗时 1 分钟以上。完成后，可见 istio-proxy 中有一个 100% CPU 占用的 lldb-server 进程，其实就是 `"waitFor": true` 命令 lldb-server 不断扫描进程列表。
 
+#### 3. 启动 pilot-agent 和 envoy
 
+``` bash
+kubectl exec -it fortio-server-0 -c istio-proxy -- bash
 
+tmux a #连接上之前启动的 tmux server
 
-```bash
-export POD="fortio-server-0"
-ENVOY_PIDS=$(pgrep sleep)
-while IFS= read -r ENVOY_PID; do
-    HN=$(sudo nsenter -u -t $ENVOY_PID hostname)
-    if [[ "$HN" = "$POD" ]]; then # space between = is important
-        sudo nsenter -u -t $ENVOY_PID hostname
-        export POD_PID=$ENVOY_PID
-    fi
-done <<< "$ENVOY_PIDS"
-echo $POD_PID
-export PID=$POD_PID
-
-sudo nsenter -t $PID -u -p -m bash -c 'lldb-server platform --server --listen *:2159' #NO -n: 
-```
-
-
-
-``` -->
-
-<!-- ```bash
-kubectl port-forward --address 0.0.0.0 pods/fortio-server-0 2159:2159
-``` -->
-
-
-```bash
 /usr/local/bin/pilot-agent proxy sidecar --domain ${POD_NAMESPACE}.svc.cluster.local --proxyLogLevel=warning --proxyComponentLogLevel=misc:error --log_output_level=default:info --concurrency 2
 
 
@@ -494,12 +513,9 @@ tracing:
 2023-06-05T08:04:25.758098Z     info    Envoy command: [-c etc/istio/proxy/envoy-rev.json --drain-time-s 45 --drain-strategy immediate --local-address-ip-version v4 --file-flush-interval-msec 1000 --disable-hot-restart --allow-unknown-static-fields --log-format %Y-%m-%dT%T.%fZ       %l      envoy %n %g:%#  %v      thread=%t -l warning --component-log-level misc:error --concurrency 2]
 ```
 
-```bash
-k exec -it fortio-server-0 -c main-app -- bash
 
-su app
 
-```
+
 
 ```
 breakpoint set --func-regex .*OsSysCallsImpl.*
@@ -528,23 +544,21 @@ breakpoint list 8
 
 
 
-<!-- ```bash
 
-192.168.122.1:5000/proxyv2:1.17.2-debug
+发起一些流量：
+
+```bash
+kubectl exec -it fortio-server-0 -c main-app -- bash
+
+su app
+curl -v www.baidu.com
 ```
+
+
 
 ```
 sudo lldb
 process attach --name pilot-agent --waitfor
-```
-
-```
 platform process attach --name envoy --waitfor
 ```
-
-```
-        - '8080,8070' #updated,  inbound ports for which traffic is to be redirected to Envoy
-        - -d
-        - 15090,15021,15020,2159 #updated, inbound ports to be excluded from redirection to Envoy
-``` -->
 
