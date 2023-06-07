@@ -1,6 +1,12 @@
 # 调试与观察 istio-proxy Envoy sidecar 的启动过程
 
+
+
 学习 Istio 下 Envoy sidecar 的初始化过程，有助于理解 Envoy 是如何构建起整个事件驱动和线程互动体系的。其中 Listener socket 事件监初始化是重点。而获取这个知识最直接的方法是 debug Envoy 启动初始化过程，这样可以直接观察运行状态的 Envoy 代码，而不是只读无聊的 OOP 代码去猜现实行为。debug sidecar 初始化有几道砍要过。本文记录了我的通关打怪的过程。
+
+
+
+> 本文基于我之前写的：[《调试 Istio 网格中运行的 Envoy sidecar C++ 代码》](https://blog.mygraphql.com/zh/posts/cloud/istio/debug-istio-proxy/)。你可能需要看看前者的背景，才比较容易读懂本文。
 
 
 
@@ -21,22 +27,34 @@
 
 下面研究一下，两种场景下，Envoy 的启动 attach 方法：
 
-1. Istio auto inject 的 istio-proxy container
-2. 手工 inject 的 istio-proxy container
+1. Istio auto inject 的 istio-proxy container (我没有使用这种方法)
+2. 手工 inject 的 istio-proxy container (我使用这种方法)
 
-### Istio auto inject 的 sidecar container
+### Istio auto inject 的 sidecar container  (我没有使用这种方法)
 
-对于 Istio auto inject 的 sidecar container，是很难在 envoy 初始化前 attach 到刚启动的 envoy 进程的。理论上有个可能的方法：
+对于 Istio auto inject 的 sidecar container，是很难在 envoy 初始化前 attach 到刚启动的 envoy 进程的。理论上有几个可能的方法（**注意：我未测试过**）：
 
 
 
-- 在 worker node 上，让 gdb/lldb 不断扫描进程列表，发现 envoy 立即 attach
+-  在 worker node 上 Debugger wait process
+
+- debugger follow process fork
+
+- debugger wrapper script
+
+
+
+下面简单说明一下理论。
+
+#### 在 worker node 上 Debugger wait process
+
+在 worker node 上，让 gdb/lldb 不断扫描进程列表，发现 envoy 立即 attach
 
 对于 gdb， [网上](https://stackoverflow.com/a/11147567) 有个 script:
 
 ```bash
 #!/bin/sh
-# 以下脚本启动前，要求 pid namespace(这里为 worker node) 下未有 envoy 进程运行
+# 以下脚本启动前，要求 worker node 下未有 envoy 进程运行
 progstr=envoy
 progpid=`pgrep -o $progstr`
 while [ "$progpid" = "" ]; do
@@ -51,33 +69,107 @@ gdb -ex continue -p $progpid
 (lldb) process attach --name /usr/local/bin/envoy --waitfor
 ```
 
-这个方法由于让 debugger(gdb/lldb) 和 envoy 不在同一个 pid namespace 和 mount namespace，所以不建议使用。
+这个方法缺点是 debugger(gdb/lldb) 与 debuggee(envoy) 运行在不同的 pid namespace 和 mount namespace，会让 debugger 发生很多奇怪的问题，所以不建议使用。
 
 
+
+#### Debugger follow process fork
+
+我们知道：
+
+-  `envoy` 进程由容器的 pid 1 进程（这里为 `pilot-agent`）启动
+-  `pilot-agent` 由短命进程 `runc` 启动
+-  `runc` 由 `/usr/local/bin/containerd-shim-runc-v2` 启动
+- `containerd-shim-runc-v2` 由 `/usr/local/bin/containerd` 启动
+
+> 参考：https://iximiuz.com/en/posts/implementing-container-runtime-shim/
+
+
+
+只要用 debugger 跟踪 containerd ，一步步 follow process fork 就可以跟踪到 exec /usr/local/bin/envoy 。
+
+
+
+对于 gdb 可以用
+
+```
+(gdb) set follow-fork-mode child
+```
+
+> 参见：
+>
+> [https://visualgdb.com/gdbreference/commands/set_follow-fork-mode](https://visualgdb.com/gdbreference/commands/set_follow-fork-mode)
+
+
+
+对于 lldb 可以用：
+
+```
+(lldb) settings set target.process.follow-fork-mode child
+```
+
+> 参见：
+>
+> - [LLDB support for fork(2) and vfork(2)](https://www.moritz.systems/blog/lldb-support-for-fork-and-vfork/)
+> - [LLDB Improvements Part II – Additional CPU Support, Follow-fork operations, and SaveCore Functionality](https://freebsdfoundation.org/project/lldb-improvements-part-ii-additional-cpu-support-follow-fork-operations-and-savecore-functionality/#fromHistory)
+> - [lldb equivalent of gdb's "follow-fork-mode" or "detach-on-fork"](https://stackoverflow.com/questions/19204395/lldb-equivalent-of-gdbs-follow-fork-mode-or-detach-on-fork#:~:text=lldb%20does%20not%20currently%20support,process%20with%20the%20given%20name.#fromHistory)
+
+
+
+#### Debugger wrapper script
+
+我们没办法直接修改 `pilot-agent` 注入 debugger，但可以用一个 `wrapper script` 替换 `/usr/local/bin/envoy`，然后由这个`wrapper script`  启动 debugger , 让 debugger 启动 真正的 envoy ELF。
+
+可以通过修改 istio-proxy docker image 的方法，去实现：
+
+如：
+
+```bash
+mv /usr/local/bin/envoy /usr/local/bin/real_envoy_elf
+vi /usr/local/bin/envoy
+...
+chmod +x /usr/local/bin/envoy
+```
+
+
+
+`/usr/local/bin/envoy` 写成这样：
+
+```bash
+#!/bin/bash
+
+# This is a gdb wrapper script.
+# Get the arguments passed to the script.
+args=$@
+# Start gdb.
+gdb -ex=run --args /usr/local/bin/real_envoy_elf $args
+```
+
+
+
+> 参见：
+>
+> - [Debugging binaries invoked from scripts with GDB](https://developers.redhat.com/articles/2022/12/27/debugging-binaries-invoked-scripts-gdb#)
 
 
 
 ### 手工 inject 的 istio-proxy container
 
-
-
-1. envoy 进程是由 `pilot-agent`  fork & execv 出来的，可以用 gdb/lldb  debug 启动  `pilot-agent`  ，然后开启 `follow-fork-mode child` 模式，这样就可以，debug 和挂停新 envoy 进程。
+要方便精准地在 envoy 开始初始化前 attach envoy 进程，一个方法是不要在容器启动时自动启动 envoy。要手工启动  `pilot-agent`，一个方法是不要 auto inject sidecar，用 `istioctl` 手工 inject：
 
 
 
 ```bash
-./istioctl kube-inject -f fortio-server.yaml > fortio-server-injected.yaml
-
-vi fortio-server-injected.yaml
-      annotations:
-        sidecar.istio.io/inject: "false" 
-
+# fortio-server.yaml 是定义 pod 的 k8s StatefulSet/deployment
+$ ./istioctl kube-inject -f fortio-server.yaml > fortio-server-injected.yaml
 ```
 
-### 定制手工拉起的 istio-proxy 
+
+
+定制手工拉起的 istio-proxy
 
 ```yaml
-kubectl -n mark apply -f - <<"EOF"
+$ vi fortio-server-injected.yaml
 
 apiVersion: apps/v1
 kind: StatefulSet
@@ -101,8 +193,7 @@ spec:
         prometheus.io/port: "15020"
         prometheus.io/scrape: "true"
         sidecar.istio.io/proxyImage: 192.168.122.1:5000/proxyv2:1.17.2-debug
-        sidecar.istio.io/status: '{"initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["workload-socket","credential-socket","workload-certs","istio-envoy","istio-data","istio-podinfo","istio-token","istiod-ca-cert"],"imagePullSecrets":null,"revision":"default"}'
-        sidecar.istio.io/inject: "false" 
+        sidecar.istio.io/inject: "false" #加入这行
       creationTimestamp: null
       labels:
         app: fortio-server
@@ -115,7 +206,7 @@ spec:
       - args:
         - 10d
         command:
-        - /bin/sleep
+        - /bin/sleep #不启动 pilot-agent
         image: docker.io/nicolaka/netshoot:latest
         imagePullPolicy: IfNotPresent
         name: main-app
@@ -252,35 +343,39 @@ spec:
 status:
   availableReplicas: 0
   replicas: 0
-
-
-EOF
 ```
 
+
+
 ```bash
-k exec -it fortio-server-0 -c istio-proxy -- bash
+$ kubectl apply -f fortio-server-injected.yaml  
+```
+
+为避免 kubectl exec 在容器中启动进程的意外退出，和可以多次接入同一个 shell 实例，我使用了 `tmux`：
+
+```bash
+kubectl exec -it fortio-server-0 -c istio-proxy -- bash
 sudo apt install -y tmux
-tmux
-
-bash
 ```
+
+我只希望一个 app(uid=1000) 用户的 outbound 流量流经 envoy，其它 outbound 流量不经过 envoy：
 
 
 ```bash
-k exec -it fortio-server-0 -c main-app -- bash
+kubectl exec -it fortio-server-0 -c main-app -- bash
 
 adduser -u 1000 app
 su app
 ```
 
 
+
+
 ```bash
-
-k exec -it fortio-server-0 -c istio-proxy -- bash
-
+kubectl exec -it fortio-server-0 -c istio-proxy -- bash
+tmux #开启 tmux server
 
 sudo iptables-restore <<"EOF"
-# Generated by iptables-save v1.8.7 on Fri Jun  2 19:32:04 2023
 *nat
 :PREROUTING ACCEPT [8947:536820]
 :INPUT ACCEPT [8947:536820]
@@ -315,13 +410,19 @@ sudo iptables-restore <<"EOF"
 -A ISTIO_OUTPUT -j ISTIO_REDIRECT
 -A ISTIO_REDIRECT -p tcp -j REDIRECT --to-ports 15001
 COMMIT
-# Completed on Fri Jun  2 19:32:04 2023
 EOF
 
 ```
 
+
+
+在 `lldb-vscode-server` 的 `.vscode/launch.json` 文件中，加入一个 debug 配置：
+
 ```json
-        {
+{
+    "version": "0.2.0",
+    "configurations": [
+		{
             "name": "AttachLLDBWaitRemote",
             "type": "lldb",
             "request": "attach",
@@ -341,19 +442,6 @@ EOF
 ```
 
 
-```
-9: file = '/proc/self/cwd/external/envoy/source/exe/main_common.cc', line = 87, exact_match = 0, locations = 1, resolved = 1, hit count = 0
-
-  9.1: where = envoy`Envoy::MainCommon::main(int, char**, std::__1::function<void (Envoy::Server::Instance&)>) + 25 at main_common.cc:91:30, address = 0x000055555a21d329, resolved, hit count = 0 
-
-10: file = '/proc/self/cwd/external/envoy/source/exe/main.cc', line = 16, exact_match = 0, locations = 1, resolved = 1, hit count = 1
-
-  10.1: where = envoy`main + 38 at main.cc:24:34, address = 0x000055555a21c336, resolved, hit count = 1 
-
-11: file = '/proc/self/cwd/external/envoy/source/exe/main.cc', line = 24, exact_match = 0, locations = 1, resolved = 1, hit count = 1
-
-  11.1: where = envoy`main + 38 at main.cc:24:34, address = 0x000055555a21c336, resolved, hit count = 1 
-```
 
 
 
@@ -374,8 +462,7 @@ sudo nsenter -t $PID -u -p -m bash -c 'lldb-server platform --server --listen *:
 ```
 
 
-<!-- ```bash
-lldb-server platform --server --listen *:2159
+
 ``` -->
 
 <!-- ```bash
