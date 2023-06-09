@@ -520,6 +520,7 @@ gdb -ex continue -p $progpid
 
 > 参见：
 >
+> - [Debugging binaries invoked from scripts with GDB](https://developers.redhat.com/articles/2022/12/27/debugging-binaries-invoked-scripts-gdb#)
 > - [LLDB support for fork(2) and vfork(2)](https://www.moritz.systems/blog/lldb-support-for-fork-and-vfork/)
 > - [LLDB Improvements Part II – Additional CPU Support, Follow-fork operations, and SaveCore Functionality](https://freebsdfoundation.org/project/lldb-improvements-part-ii-additional-cpu-support-follow-fork-operations-and-savecore-functionality/#fromHistory)
 > - [lldb equivalent of gdb's "follow-fork-mode" or "detach-on-fork"](https://stackoverflow.com/questions/19204395/lldb-equivalent-of-gdbs-follow-fork-mode-or-detach-on-fork#:~:text=lldb%20does%20not%20currently%20support,process%20with%20the%20given%20name.#fromHistory)
@@ -556,10 +557,6 @@ gdb -ex=run --args /usr/local/bin/real_envoy_elf $args
 ```
 
 
-
-> 参见：
->
-> - [Debugging binaries invoked from scripts with GDB](https://developers.redhat.com/articles/2022/12/27/debugging-binaries-invoked-scripts-gdb#)
 
 
 
