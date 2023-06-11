@@ -86,25 +86,6 @@ Listener 由 Listener filters 、Network Filter Chains 组成。
 
 每个 `Network Filter Chain` 由顺序化的 `Network Filter` 组成。 
 
-### Network Filter
-
-Envoy 对为保证扩展性，处理组件采用多层插件化的设计。其中，Network Filter 就是 L2 / L3 (IP/TCP) 层的组件了。如，上面的 [图：Istio里的 Envoy Inbound配置举例] 中，顺序地有：
-1. istio.metadata_exchange
-2. envoy.filters.network.http_connection_manager
-两个 Network Filter。其中，主要逻辑当然在 `http_connection_manager` 了。
-
-#### request 向与 response 向的 Network Filter 关系
-
-Envoy 的官方文档，说明了 request 向与 response 向的 filter 关系：
-
-请求：
-![](./listener.assets/lor-network-read.svg)
-响应：
-![](./listener.assets/lor-network-write.svg)
-
-
-*图源：[Network filter chain processing](https://www.envoyproxy.io/docs/envoy/latest/intro/life_of_a_request#network-filter-chain-processing)*
-
 
 ## 代码抽象
 
@@ -118,6 +99,13 @@ Envoy 的官方文档，说明了 request 向与 response 向的 filter 关系�
 *图：Listener 内部组件类图*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-code-oop.drawio.svg)*
+
+
+### Network Filter
+
+```{toctree}
+/ch2-envoy/arch/network-filter/network-filter.md
+```
 
 
 ## 扩展阅读
