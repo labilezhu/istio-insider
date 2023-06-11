@@ -4,7 +4,7 @@ typora-root-url: ../../..
 
 # Listener
 
-开始讲 Listener 前，让我们回到 {doc}`/ch2-envoy/envoy@istio-conf-eg` 的例子。
+开始学习 Listener 前，先回顾一下 {doc}`/ch2-envoy/envoy@istio-conf-eg` 中的例子。
 
 ```{note}
 这里下载 Envoy 的配置 yaml {download}`envoy@istio-conf-eg-inbound.envoy_conf.yaml </ch2-envoy/envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.envoy_conf.yaml>` .
@@ -82,7 +82,7 @@ Listener 由 Listener filters 、Network Filter Chains 组成。
 图中已经陈述了相关的功能。
 
 ### Network Filter Chains
-如，上面的 [图：Istio里的 Envoy Inbound配置举例] 中，可以看到几个 Network Filter Chains，它们的名字是可以重复的。而其中每个都有有自己的`filter_chain_match`  ，用于指定连接到底要匹配到哪个 `Network Filter Chain`。  
+如，上面的 [图：Istio里的 Envoy Inbound配置举例] 中，可以看到几个 Network Filter Chains，它们的名字是可以重复的。而其中每个都有自己的 `filter_chain_match`  ，Envoy 使用这个匹配条件，将连接匹配到不同的 `Network Filter Chain`。  
 
 每个 `Network Filter Chain` 由顺序化的 `Network Filter` 组成。 
 
@@ -99,13 +99,6 @@ Listener 由 Listener filters 、Network Filter Chains 组成。
 *图：Listener 内部组件类图*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-code-oop.drawio.svg)*
-
-
-### Network Filter
-
-```{toctree}
-/ch2-envoy/arch/network-filter/network-filter.md
-```
 
 
 ## 扩展阅读
