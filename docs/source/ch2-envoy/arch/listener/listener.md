@@ -147,7 +147,29 @@ Envoy 只有两种类型的 Listener 实现。TCP 和 UDP 的。这里我只看 
   - 在旧版本默认不使用 `reuse_port` socket opts 情况下，是使用 duplicate socket/file descriptor 的方法为每个 work thread 复制一个文件描述符。
   - 新版本默认使用 `reuse_port` socket opts ，就可以每个线程独立 bind 相同 port 了。 好处见我的文章：https://blog.mygraphql.com/zh/posts/cloud/istio/istio-tunning/istio-thread-balance/
 
-## 扩展阅读
+### 代码级的启动顺序
+
+:::{figure-md} 图：Listener 相关的组件和启动顺序 - 代码流程
+
+<img src="/ch2-envoy/arch/listener/listener.assets/envoy-classes-listen-flow.drawio.svg" alt="图：Listener 相关的组件和启动顺序 - 代码流程">
+
+*图：Listener 相关的组件和启动顺序 - 代码流程*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy-classes-listen-flow.drawio.svg)*
+
+
+Listener 相关的组件和启动顺序 - 核心流程图说明以下几步（ `reuse_port=false` 情况下）：
+
+1. 进程 main 间接调用 ListenerManagerImpl，间接建立 socket，假设文件描述符为 fd-root
+2. bind socket 绑定到 ip 和 port
+3. 启动新的 worker 线程
+4. 加入异步 task：`add Listener task`(每个 Worker + Listener 执行一次) 到 worker 的任务队列中。
+5. worker 线程取出任务队列，执行 `add Listener task`
+6. worker 线程 duplicate 文件描述符 fd-root 为 fd-envoy
+7. worker 线程 异步 listen socket，和注册事件处理器
+
+
+## 求证过程
 
 如果有兴趣研究 Listener 的实现细节，建议看看我 Blog 的文章：
  - [逆向工程与云原生现场分析 Part2 —— eBPF 跟踪 Istio/Envoy 之启动、监听与线程负载均衡](https://blog.mygraphql.com/zh/posts/low-tec/trace/trace-istio/trace-istio-part2/)
