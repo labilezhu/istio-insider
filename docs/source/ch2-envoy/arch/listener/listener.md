@@ -73,7 +73,17 @@ Outbound:
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Flistener.drawio.svg)*
 
 
-Listener 由 Listener filters 、Network Filter Chains 组成。
+Listener 由 `Listener filters` 、`Network Filter Chains` 组成。
+
+`Listener Filter` 和 `Network Filter` 两个概念比较容易混淆。简单说一下：
+
+- `Listener Filter` ： 在连接建立之初，收集连接上的首几个信息，为选择 `Network Filter Chain` 做数据准备。
+  - 可以是收集 TCP 基本数据， 如 src IP/port，dst IP/port, 也可以收集 iptables 转发前的原 dst IP/port 。
+  - 可以是 TLS 握手数据，SNI / APLN。
+- `Network Filter` ： 
+  - TCP/TLS 握手后，进行更上层协议的处理，如 TCP Proxy / HTTP Proxy
+
+
 
 ### Listener filters
 
@@ -149,11 +159,11 @@ Envoy 只有两种类型的 Listener 实现。TCP 和 UDP 的。这里我只看 
 
 ### 代码级的启动顺序
 
-:::{figure-md} 图：Listener 相关的组件和启动顺序 - 代码流程
+:::{figure-md} 图：Listener TCP 连接建立流程
 
-<img src="/ch2-envoy/arch/listener/listener.assets/envoy-classes-listen-flow.drawio.svg" alt="图：Listener 相关的组件和启动顺序 - 代码流程">
+<img src="/ch2-envoy/arch/listener/listener.assets/envoy-classes-listen-flow.drawio.svg" alt="图：Listener TCP 连接建立流程">
 
-*图：Listener 相关的组件和启动顺序 - 代码流程*
+*图：Listener TCP 连接建立流程*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy-classes-listen-flow.drawio.svg)*
 
@@ -174,3 +184,8 @@ Listener 相关的组件和启动顺序 - 核心流程图说明以下几步（ `
 如果有兴趣研究 Listener 的实现细节，建议看看我 Blog 的文章：
  - [逆向工程与云原生现场分析 Part2 —— eBPF 跟踪 Istio/Envoy 之启动、监听与线程负载均衡](https://blog.mygraphql.com/zh/posts/low-tec/trace/trace-istio/trace-istio-part2/)
  - [逆向工程与云原生现场分析 Part3 —— eBPF 跟踪 Istio/Envoy 事件驱动模型、连接建立、TLS 握手与 filter_chain 选择](https://blog.mygraphql.com/zh/posts/low-tec/trace/trace-istio/trace-istio-part3/)
+
+
+```{toctree}
+listener-connection.md
+```
