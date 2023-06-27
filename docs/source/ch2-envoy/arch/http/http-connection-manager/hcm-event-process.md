@@ -9,7 +9,7 @@
 图中看出，有4种事件驱动了整个流程。后面几节会逐个分析。
 
 为免一下子进入各个步骤细节而让人迷途，建议回顾一下之前举例的所有步骤的总流程： 
-{doc}`ch2-envoy/envoy@istio-conf-eg`
+{doc}`/ch2-envoy/envoy@istio-conf-eg`
 
 
 
