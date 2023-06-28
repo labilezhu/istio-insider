@@ -1,6 +1,5 @@
 # HCM upstream/downstream 事件驱动协作下的 HTTP 反向代理流程
 
-
 ## HTTP 反向代理的总流程
 
 整体看，Socket 事件驱动的 HTTP 反向代理总流程如下：
