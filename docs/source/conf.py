@@ -38,7 +38,8 @@ html_theme_options = {
     # "path_to_docs": "docs",
     "use_repository_button": True,
     "use_edit_page_button": False,
-    "show_navbar_depth": 8,
+    "show_navbar_depth": 3,
+    "show_toc_level": 3,
     "logo_only": True,
 }
 
