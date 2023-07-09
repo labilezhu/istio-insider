@@ -67,9 +67,15 @@ Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)
 如果你也对编写本书有兴趣，欢迎联系我。本书的出发点不是刷简历，也没这个能力。而且，这样的非`短平快` 且 `TL;DR` 书籍注定是小众货。
 
 
+#### 感谢提出 Issue 的同学 🌻
+- 使众行者：对阅读体验和排版提出很多非常好的意见。
+
 ### Dedication 💞
 First, to my dear parents, for showing me how to live a happy
 and productive life. To my dear wife and our amazing kid – thanks for all your love and patience.
+
+
+
 
 
 ### Copyleft 声明
