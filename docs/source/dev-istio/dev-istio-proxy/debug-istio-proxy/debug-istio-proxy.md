@@ -124,7 +124,7 @@ build-tools: # ls -lh /work/bazel-out/k8-dbg/bin/src/envoy/envoy
 # start local private plain http docker image registry
 docker run -d -p 5000:5000 --restart=always --name image-registry --hostname image-registry registry:2
 
-cd mkdir -p image/gdb-istio-proxy
+mkdir -p image/gdb-istio-proxy
 cd image/gdb-istio-proxy
 
 # NOTICE: replae 1e0bb3bee2d09d2e4ad3523530d3b40c with the real path in your environment
