@@ -158,7 +158,6 @@ Libevent’s basic unit of operation is the _`event`_. Every event represents a 
 
 - A user-triggered event.
 
-
 ### event state
 
 - `initialized`
@@ -265,7 +264,6 @@ void main_loop(evutil_socket_t fd1, evutil_socket_t fd2)
 - EV_ET
   Indicates that the event should be edge-triggered, if the underlying event_base backend supports edge-triggered events. This affects the semantics of EV_READ and EV_WRITE.
 
-
 #### callback argument
 
 Frequently, you might want to create an event that receives itself as a callback argument. You can’t just pass a pointer to the event as an argument to event_new(), though, because it does not exist yet. To solve this problem, you can use event_self_cbarg().
@@ -326,7 +324,6 @@ hup_event = evsignal_new(base, SIGHUP, sighup_function, NULL);
 
 Note that signal callbacks are run in the event loop after the signal occurs, so it is safe for them to call functions that you are not supposed to call from a regular POSIX signal handler.
 
-
 ### Making events pending and non-pending
 
 Once you have constructed an event, it won’t actually do anything until you have made it pending by adding it. You do this with event_add:
@@ -379,7 +376,7 @@ void event_active(struct event *ev, int what, short ncalls);
 
 This function makes an event ev become active with the flags what (a combination of EV_READ, EV_WRITE, and EV_TIMEOUT). The event does not need to have previously been pending, and activating it does not make it pending.
 
-Warning: calling event_active() recursively on the same event may result in resource exhaustion. The following snippet of code is an example of how event_active can be used incorrectly.
+Warning: calling event_active() recursively on the same event may result in resource exhaustion. 
 
 
 
