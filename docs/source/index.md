@@ -68,15 +68,11 @@ Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)
 
 
 #### 感谢提出 Issue 的同学 🌻
-- 使众行者：对阅读体验和排版提出很多非常好的意见。
+- [使众行者](https://github.com/tanjunchen)：对阅读体验和排版提出很多非常好的意见。
 
 ### Dedication 💞
 First, to my dear parents, for showing me how to live a happy
 and productive life. To my dear wife and our amazing kid – thanks for all your love and patience.
-
-
-
-
 
 ### Copyleft 声明
 无论是文字还是图片，如果转载或修改，请注明原出处。
