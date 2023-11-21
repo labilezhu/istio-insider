@@ -155,7 +155,7 @@ Envoy 只有两种类型的 Listener 实现。TCP 和 UDP 的。这里我只看 
   - 可以在进程启动早期就发现 socket 监听端口冲突等常见问题。详细解释在 Envoy 的源码文档中 https://github.com/envoyproxy/envoy/blob/main/source/docs/listener.md 。
 - 两个 worker 线程可以 listen 同一个 socket?
   - 在旧版本默认不使用 `reuse_port` socket opts 情况下，是使用 duplicate socket/file descriptor 的方法为每个 work thread 复制一个文件描述符。
-  - 新版本默认使用 `reuse_port` socket opts ，就可以每个线程独立 bind 相同 port 了。 好处见我的文章：https://blog.mygraphql.com/zh/posts/cloud/istio/istio-tunning/istio-thread-balance/
+  - 新版本默认使用 `reuse_port` socket opts ，就可以每个线程独立 bind 相同 port 了。 好处见我的文章：[记一次 Istio 调优 Part 2 —— 饥饿的线程与 SO_REUSEPORT](https://blog.mygraphql.com/zh/posts/cloud/istio/istio-tunning/istio-thread-balance/)
 
 ### 代码级的启动顺序
 
