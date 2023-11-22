@@ -38,7 +38,7 @@
 6. 执行 `ListenerFilterChain`  流程：
    1. 如：TlsInspector::Filter 注册监听新 socket 的事件，以便在后续新 socket 发生事件时，读 socket，抽取出 TLS SNI/ALPN。
    2. 当 `ListenerFilterChain` 中所有的 `ListenerFilter` 在新的事件和事件周期中完成其所有的数据交换和抽取的任务，本 fd 的控制权交到一环节。
-7. 调用 核心函数 `ActiveTcpListener：：newConnection()`
+7. 调用 核心函数 `ActiveTcpListener::newConnection()`
 8. 调用 findFilterChain() 基于之前 `ListenerFilter` 抽取到的数据，和各 `network filter chain 配置` 的 match 条件，找到最匹配的 `network filter chain 配置` 。
 9. 创建 `ServerConnection`(ConnectionImpl的子类) 对象
    1.  注册 socket 事件回调到 `Network::ConnectionImpl::onFileEvent(uint32_t events)` 中。即以后的 socket 事件将由这个`ServerConnection`处理。
