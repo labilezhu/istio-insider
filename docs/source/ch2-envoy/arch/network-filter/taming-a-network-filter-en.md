@@ -30,11 +30,11 @@ Network Filters intercept data (TCP payloads) flowing in both directions:
 
 
 
-The “Downstream > Envoy > Upstream” path is referred to in Envoy as the “read” path, and the opposite direction is referred to as the “write” path.
+The “`Downstream > Envoy > Upstream`” path is referred to in Envoy as the “`read`” path, and the opposite direction is referred to as the “`write`” path.
 
 
 
-Unlike the Filter concept you’ve seen in other APIs, Filters in Envoy are stateful. A separate instance of Network Filter is allocated for every connection.
+Unlike the Filter concept you’ve seen in other APIs, **Filters in Envoy are stateful. A separate instance of Network Filter is allocated for every connection**.
 
 
 
@@ -46,7 +46,7 @@ On the “read” path:
 
 ![img](./taming-a-network-filter-en.assets/0xz7HnKZUgnAJ5SVi.png)
 
-Figure 2
+*Figure 2*
 
 
 
@@ -80,11 +80,11 @@ On connect from the Downstream, Envoy will iterate through the filter chain to c
 
 If a Network Filter returns `StopIteration` from its callback, Envoy will not proceed to the next filter in the chain.
 
-Beware that StopIteration only means “don’t call filters after me for this particular iteration cycle” as opposed to “don’t do any further processing on that connection until I give a green light”.
+Beware that StopIteration only means <mark>“don’t call filters after me for this particular iteration cycle”</mark> as opposed to “don’t do any further processing on that connection until I give a green light”.
 
 
 
-For example, even if a Network Filter returns `StopIteration` from its `onNewConnection()` callback, once Envoy receives a chunk of request data from the Downstream, it will iterate through the filter chain again, this time calling the `onData()` callback. Filters that haven’t seen `onNewConnection()` yet are guaranteed to see it prior to `onData()`.
+For example, even if a Network Filter returns `StopIteration` from its `onNewConnection()` callback, once Envoy receives a chunk of request data from the Downstream, it will iterate through the filter chain again, this time calling the `onData()` callback. <mark>Filters that haven’t seen `onNewConnection()` yet are guaranteed to see it prior to `onData()`</mark>.
 
 
 
@@ -121,16 +121,16 @@ When Envoy receives a new chunk of request data from the Downstream:
 - First, it appends the new chunk into the “read” buffer.
 - Next, it iterates over the filter chain calling `onData()` with the entire “read” buffer as a parameter (as opposed to the new chunk only).
 - The “read” buffer will normally be drained by the terminal filter in the chain (e.g., TcpProxy).
-- However, if one of the filters in the chain returns `StopIteration` without draining the buffer, the data will remain buffered.
+- However, **if one of the filters in the chain returns `StopIteration` without draining the buffer, the data will remain buffered.**
 
 When Envoy receives the next chunk of request data from the Downstream:
 
 - It will again append to the “read” buffer.
 - Next, it iterates over the filter chain calling `onData()` with the entire “read” buffer as parameter.
 
-The important thing to notice is that, due to the presence of the “read” buffer, a Network Filter might observe the same data twice in its `onData()` callback!
+The important thing to notice is that, **due to the presence of the “read” buffer, a Network Filter might observe the same data twice in its `onData()` callback**!
 
-Finally, how safe is it to let the “read” buffer keep growing? Can it grow indefinitely or overflow? The good news is that Envoy takes care of this aspect automatically and will stop reading data from the socket as soon as the size of the “read” buffer exceeds the limit (1MiB by default).
+Finally, how safe is it to let the “read” buffer keep growing? Can it grow indefinitely or overflow? The good news is that **Envoy takes care of this aspect automatically and will stop reading data from the socket as soon as the size of the “read” buffer exceeds the limit (1MiB by default)**.
 
 On the “write” path:
 
