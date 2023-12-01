@@ -87,7 +87,7 @@ Listener 由 `Listener filters` 、`Network Filter Chains` 组成。
 
 ### Listener filters
 
-如，上面的 [图：Istio里的 Envoy Inbound配置举例] 中，可以看到几个 Listener filters:
+如，上面的 {ref}`图：Istio里的 Envoy Inbound 配置举例` 中，可以看到几个 Listener filters:
  - envoy.filters.listener.original_dst
  - envoy.filters.listener.tls_inspector
  - envoy.filters.listener.http_inspector
@@ -96,7 +96,7 @@ Listener 由 `Listener filters` 、`Network Filter Chains` 组成。
 图中已经陈述了相关的功能。
 
 ### Network Filter Chains
-如，上面的 [图：Istio里的 Envoy Inbound配置举例] 中，可以看到几个 Network Filter Chains，它们的名字是可以重复的。而其中每个都有自己的 `filter_chain_match`  ，Envoy 使用这个匹配条件，将连接匹配到不同的 `Network Filter Chain`。  
+如，上面的 {ref}`图：Istio里的 Envoy Inbound 配置举例` 中，可以看到几个 Network Filter Chains，它们的名字是可以重复的。而其中每个都有自己的 `filter_chain_match`  ，Envoy 使用这个匹配条件，将连接匹配到不同的 `Network Filter Chain`。  
 
 每个 `Network Filter Chain` 由顺序化的 `Network Filter` 组成。 `Network Filter` 将在后面的章节介绍。
 
