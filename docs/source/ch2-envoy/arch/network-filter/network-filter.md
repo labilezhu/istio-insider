@@ -1,24 +1,27 @@
 # Network Filter
 
 ## Network Filter Chains
-如，上面的 {ref}`图：Istio里的 Envoy Inbound 配置举例` 中，可以看到几个 Network Filter Chains，它们的名字是可以重复的。而其中每个都有有自己的`filter_chain_match`  ，用于指定连接到底要匹配到哪个 `Network Filter Chain`。  
+在前面章節的 {ref}`图：Istio里的 Envoy Inbound 配置举例` 中，可以看出，一个 Listener 可以包含多个 `Network Filter Chain`。而其中每个 Chain 都有自己的 `filter_chain_match`  ，用于说明新建立的 `Inbound Connection` 选用哪个 `Network Filter Chain`。
 
-每个 `Network Filter Chain` 由顺序化的 `Network Filter` 组成。 
+每个 `Network Filter Chain` 都有自己的名字。需要注意的是，`Network Filter Chain` 的名字是允许重复的。
+
+每个 `Network Filter Chain` 又由顺序化的 `Network Filter` 组成。 
 
 ## Network Filter
 
-Envoy 对为保证扩展性，处理组件采用多层插件化的设计。其中，Network Filter 就是 L2 / L3 (IP/TCP) 层的组件了。如，上面的 {ref}`图：Istio里的 Envoy Inbound 配置举例` 中，顺序地有：
+Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`Network Filter` 就是 L2 / L3 (IP/TCP) 层的组件。如，上面的 {ref}`图：Istio里的 Envoy Inbound 配置举例` 中，顺序地有：
 1. istio.metadata_exchange
 2. envoy.filters.network.http_connection_manager
+
 两个 Network Filter。其中，主要逻辑当然在 `http_connection_manager` 了。
 
 ### request 向与 response 向的 Network Filter 关系
 
-Envoy 的官方文档，说明了 request 向与 response 向的 filter 关系：
+Envoy 的官方文档，说明了 read downstream request 向与 write downstream response 向的 filter 关系：
 
-请求：
+read downstream request：
 ![](/ch2-envoy/arch/listener/listener.assets/lor-network-read.svg)
-响应：
+write downstream response：
 ![](/ch2-envoy/arch/listener/listener.assets/lor-network-write.svg)
 
 
