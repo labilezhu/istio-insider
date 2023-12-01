@@ -28,16 +28,16 @@ write downstream response：
 *图源：[Network filter chain processing](https://www.envoyproxy.io/docs/envoy/latest/intro/life_of_a_request#network-filter-chain-processing)*
 
 
-## 代码抽象
+## Network Filter 对象关系
 
 写到这里，是时候看看代码了。不过，不是直接看，先看看 C++ 类图吧。
 
 
-:::{figure-md} 图：network-filter 类抽象层级
+:::{figure-md} 图：Network Filter 对象关系
 
-<img src="/ch2-envoy/arch/network-filter/network-filter-hierarchy.drawio.svg" alt="图：network-filter 类抽象层级">
+<img src="/ch2-envoy/arch/network-filter/network-filter-hierarchy.drawio.svg" alt="图：Network Filter 对象关系">
 
-*图：network-filter 类抽象层级*
+*图：Network Filter 对象关系*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-hierarchy.drawio.svg)*
 
