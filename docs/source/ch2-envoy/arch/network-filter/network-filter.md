@@ -15,14 +15,32 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 
 两个 Network Filter。其中，主要逻辑当然在 `http_connection_manager` 了。
 
-### Network Filter 框架设计
+### Network Filter 框架设计概念
 
 我在学习 Envoy 的  Network Filter 框架设计时，发现它和我想像中的 Filter 设计非常不同。甚至有点违反我的直觉。见下图：
 
+:::{figure-md} 图：Model of Network Filter Framework
 
+<img src="/ch2-envoy/arch/network-filter/network-filter-framework-concept.drawio.svg" alt="图：Model of Network Filter Framework">
 
+*图：Model of Network Filter Framework*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-framework-concept.drawio.svg)*
 
-## Network Filter 对象关系
+以下仅以 ReadFilter 说说：
+
+`My intuition Ideal model 我直觉中的模型` 是：
+ 1. Filter 框架层有 `Upstream` 这个概念
+ 2. 一个 Filter 的输出数据和事件，会是下一个 Filter 的输入数据和事件。因为这叫 Chain，应该和 Linux 的 `cat myfile | grep abc | grep def` 类似。
+ 3. Filter 之间逻辑上的 Buffer 应该是隔离的。
+  
+
+而 `Realistic model（现实的模型）` 中
+1. 框架层面，没有 `Upstream` 这个概念。Filter 实现自行实现 Upstream，包括连接建立和数据读写，事件通知。所以，框架层面，更没有 Cluster / Connection Pool 等等概念了。
+2. 见下面一项
+3. Filter 之间共享了 Buffer，前面的 Filter 对 Buffer 的读，如果不  `drained 排干` ，后面的 Filter 将会重复读取数据。前面的 Filter 也可以在 Buffer 中插入新数据。 而这个有状态的 Buffer，会传递到后面的 Filter 。
+
+### Network Filter 对象关系
 
 写到这里，是时候看看代码了。不过，不是直接看，先看看 C++ 类图吧。
 
@@ -34,6 +52,37 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 *图：Network Filter 对象关系*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-hierarchy.drawio.svg)*
+
+
+可见，大家日常生活中，WriteFilter 并不常用 :) 。
+
+
+### Network Filter 框架设计细说
+在代码实现层， Network Filter 框架下，抽象对象间的协作关系如下：
+
+:::{figure-md} 图：网络过滤器框架抽象协作
+
+<img src="/ch2-envoy/arch/network-filter/network-filter-framework.drawio.svg" alt="图：网络过滤器框架抽象协作">
+
+*图：网络过滤器框架抽象协作*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-framework.drawio.svg)*
+
+
+下面，以 经典的 TCP Proxy Fitler 为例，说明一下。
+
+
+:::{figure-md} 图：Network Filter Framework - TCP 代理过滤器示例
+
+<img src="/ch2-envoy/arch/network-filter/network-filter-tcpproxy.drawio.svg" alt="图：Network Filter Framework - TCP 代理过滤器示例">
+
+*图：Network Filter Framework - TCP 代理过滤器示例*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-tcpproxy.drawio.svg)*
+
+
+#### Network Filter - ReadFilter 协作
+
 
 
 ## 扩展阅读

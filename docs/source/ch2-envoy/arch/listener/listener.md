@@ -101,20 +101,6 @@ Listener 由 `Listener filters` 、`Network Filter Chains` 组成。
 每个 `Network Filter Chain` 由顺序化的 `Network Filter` 组成。 `Network Filter` 将在后面的章节介绍。
 
 
-## 代码 OOP 抽象设计
-
-写到这里，是时候看看代码了。不过，不是直接看，先看看 C++ 类图吧。
-
-
-:::{figure-md} 图：Listener 内部组件类图
-
-<img src="/ch2-envoy/arch/listener/listener.assets/network-filter-code-oop.drawio.svg" alt="图：Listener 内部组件类图">
-
-*图：Listener 内部组件类图*
-:::
-*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-code-oop.drawio.svg)*
-
-
 ## Listener 相关的组件和启动顺序
 
 :::{figure-md} 图：Listener 核心对象与启动顺序
