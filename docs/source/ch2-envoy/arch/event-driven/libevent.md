@@ -1,9 +1,13 @@
+---
+typora-root-url: ../../..
+---
+
 # libevent 核心思想
 
 `libevent` 的有两个重要的概念： `event_base` 、`event` 。
 
 
-![](libevent.assets/libevent.drawio.svg)
+![](/ch2-envoy/arch/event-driven/libevent.assets/libevent.drawio.svg)
 
 
 ## event
@@ -178,7 +182,7 @@ Events have similar lifecycles:
 
 
 
-![libevent-6-事件状态图.png](./libevent.assets/1538970316042-d588bff5-1f5f-4f49-ad6a-e078ba0f9df9.png)
+![libevent-6-事件状态图.png](/ch2-envoy/arch/event-driven/libevent.assets/1538970316042-d588bff5-1f5f-4f49-ad6a-e078ba0f9df9.png)
 
 [Libevent状态转换图 from https://developer.aliyun.com/article/659277#fromHistory]
 

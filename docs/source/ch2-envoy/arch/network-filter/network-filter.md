@@ -1,3 +1,7 @@
+---
+typora-root-url: ../../..
+---
+
 # Network Filter
 
 ## Network Filter Chains
@@ -33,7 +37,7 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
  1. Filter 框架层有 `Upstream` 这个概念
  2. 一个 Filter 的输出数据和事件，会是下一个 Filter 的输入数据和事件。因为这叫 Chain，应该和 Linux 的 `cat myfile | grep abc | grep def` 类似。
  3. Filter 之间逻辑上的 Buffer 应该是隔离的。
-  
+
 
 而 `Realistic model（现实的模型）` 中
 1. 框架层面，没有 `Upstream` 这个概念。Filter 实现自行实现/不实现 Upstream，包括连接建立和数据读写，事件通知。所以，框架层面，更没有 Cluster / Connection Pool 等等概念了。

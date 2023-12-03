@@ -1,6 +1,10 @@
+---
+typora-root-url: ../../..
+---
+
 # 事件驱动与线程模型
 
-![event loop](./event-driven.assets/envoy-event-model-loop.drawio.svg)
+![event loop](/ch2-envoy/arch/event-driven/event-driven.assets/envoy-event-model-loop.drawio.svg)
 
 不出意外，Envoy 使用了 libevent 这个 C 事件 library， libevent 使用了 Linux Kernel 的 epoll 事件驱动 API。
 
@@ -18,14 +22,14 @@
 ## HTTP 反向代理的总流程
 
 整体看，Socket 事件驱动的 HTTP 反向代理总流程如下：
-![图：Socket 事件驱动的 HTTP 反向代理总流程](./event-driven.assets/envoy-event-model-proxy.drawio.svg)
+![图：Socket 事件驱动的 HTTP 反向代理总流程](/ch2-envoy/arch/event-driven/event-driven.assets/envoy-event-model-proxy.drawio.svg)
 
 图中看出，有4种事件驱动了整个流程。后面几节会逐个分析。
 
 ## Downstream TCP 连接建立
 
 现在看看，事件驱动和连接的建立的过程和关系：
-![envoy-event-model-accept](./event-driven.assets/envoy-event-model-accept.drawio.svg)
+![envoy-event-model-accept](/ch2-envoy/arch/event-driven/event-driven.assets/envoy-event-model-accept.drawio.svg)
 
 
 1. Envoy worker 线程挂起在 `epoll_wait()` 方法中。线程被移出 kernel 的 runnable queue。线程睡眠。
@@ -44,7 +48,7 @@
 
 Envoy 使用了 libevent 这个 C 编写的事件 library。还在其上作了 C++ OOP 方面的封装。
 
-![](./event-driven.assets/abstract-event-model.drawio.svg)
+![](/ch2-envoy/arch/event-driven/event-driven.assets/abstract-event-model.drawio.svg)
 
 
 如何快速在一个重度（甚至过度）使用 OOP 封装和 OOP Design Pattern 的项目中读懂核心流程逻辑，而不是在源码海洋中无方向地漂流? 答案是：找到主线。 对于 Envoy 的事件处理，主线当然是 `libevent` 的 `event_base` ，`event` 。如果你对 libevent 还不了解，可以看看本书的 `libevent 核心思想` 一节。
