@@ -47,10 +47,17 @@ Envoy 使用了 libevent 这个 C 编写的事件 library。还在其上作了 C
 ![](./event-driven.assets/abstract-event-model.drawio.svg)
 
 
-如何快速在一个重度（甚至过度）使用 OOP 封装和 OOP Design Pattern 的项目中读懂核心流程逻辑，而不是在源码海洋中无方向地漂流? 答案是：找到主线。 对于 Envoy 的事件处理，主线当然是 libevent 的 `event_base` ，`event` 。如果你到 libevent 还不了解，可以看看本书的 `libevent 核心思想` 一节。
+如何快速在一个重度（甚至过度）使用 OOP 封装和 OOP Design Pattern 的项目中读懂核心流程逻辑，而不是在源码海洋中无方向地漂流? 答案是：找到主线。 对于 Envoy 的事件处理，主线当然是 `libevent` 的 `event_base` ，`event` 。如果你到 libevent 还不了解，可以看看本书的 `libevent 核心思想` 一节。
 
+- `event` 封装到 `ImplBase` 对象中。 
+- `event_base` 包含在 `LibeventScheduler` <- `DispatcherImpl` <- `WorkerImpl` <- `ThreadImplPosix` 下
 
+然后，不同类型的 `event` ，又封装到不同的  `ImplBase` 子类中：
+- TimerImpl
+- SchedulableCallbackImpl
+- FileEventImpl
 
+其它信息上图已经比较详细，不再多言了。
 
 ## libevent 核心思想
 
