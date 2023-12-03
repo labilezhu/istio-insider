@@ -69,7 +69,7 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-framework.drawio.svg)*
 
 
-下面，以 经典的 TCP Proxy Fitler 为例，说明一下。
+下面，以经典的 TCP Proxy Fitler 为例，说明一下。
 
 
 :::{figure-md} 图：Network Filter Framework - TCP 代理过滤器示例
@@ -91,6 +91,17 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-readfilter.drawio.svg)*
 
+ReadFilter 协作比较复杂，也是 Network Filter Framework 的核心逻辑。所以要细说。
+如前所言， Framework 本身没的直接提供 Upstream / Upstream Connection Pool / Cluster / Route 这些抽象对象和相关事件。而这里，我们暂且把这些称为：`外部对象与事件`。Filter 实现需要自己去创建或获取这些 `外部对象`，也需要自己去监听这些 `外部事件` 。`外部事件` 可能包括：
+
+- Upstream 域名解释完成
+- Upstream Connection Pool 连接可用
+- Upstream socket read ready
+- Upstream write buffer full
+- ...
+
+
+
 
 #### Network Filter - WriteFilter 协作
 
@@ -101,6 +112,8 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 *图：Network Filter - WriteFilter 协作*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-writefilter.drawio.svg)*
+
+由于 `WriteFilter` 在 Envoy 中使用场景有限，只有 MySQLFilter / PostgresFilter / KafkaBrokerFilter 和 Istio 的 MetadataExchangeFilter 。所以这里就不展开说明了。
 
 ## 扩展阅读
 
