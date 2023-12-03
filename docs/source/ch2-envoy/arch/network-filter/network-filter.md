@@ -38,7 +38,7 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 而 `Realistic model（现实的模型）` 中
 1. 框架层面，没有 `Upstream` 这个概念。Filter 实现自行实现/不实现 Upstream，包括连接建立和数据读写，事件通知。所以，框架层面，更没有 Cluster / Connection Pool 等等概念了。
 2. 见下面一项
-3. Filter 之间共享了 Buffer，前面的 Filter 对 Buffer 的读，如果不  `drained 排干` ，后面的 Filter 将会重复读取数据。前面的 Filter 也可以在 Buffer 中插入新数据。 而这个有状态的 Buffer，会传递到后面的 Filter 。
+3. Filter 之间共享了 Buffer，前面的 Filter 对 Buffer 的读操作，如果沒进行 `drained 排干` ，后面的 Filter 将会重复读取数据。前面的 Filter 也可以在 Buffer 中插入新数据。 而这个有状态的 Buffer，会传递到后面的 Filter 。
 
 ### Network Filter 对象关系
 
