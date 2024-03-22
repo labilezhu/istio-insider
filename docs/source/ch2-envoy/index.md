@@ -48,7 +48,6 @@ Matt Klein 的回答是，这是 Envoy 开始时那时，最好的选择。我�
 :hidden:
 envoy@istio-conf-eg.md
 envoy-high-level-flow/envoy-high-level-flow.md
-envoy@istio-process-level.md
 arch/arch.md
 req-resp-flow-timeline/req-resp-flow-timeline.md
 connection-life/connection-life.md
