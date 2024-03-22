@@ -93,8 +93,6 @@ and productive life. To my dear wife and our amazing kid – thanks for all your
 ch0/index
 ch1-istio-arch/index
 ch2-envoy/index
-ch3-control-panel/index
-ch4-istio-ctrl-envoy/index
 performance/performance.md
 disruptions/disruptions.md
 observability/observability.md
