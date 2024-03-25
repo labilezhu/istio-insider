@@ -33,16 +33,16 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 
 以下仅以 ReadFilter 说说：
 
-`My intuition Ideal model 我直觉中的模型` 是：
+`我直觉中的模型(My intuition Ideal model)` 是：
  1. Filter 框架层有 `Upstream` 这个概念
  2. 一个 Filter 的输出数据和事件，会是下一个 Filter 的输入数据和事件。因为这叫 Chain，应该和 Linux 的 `cat myfile | grep abc | grep def` 类似。
  3. Filter 之间逻辑上的 Buffer 应该是隔离的。
 
 
-而 `Realistic model（现实的模型）` 中
+而 `现实的模型(Realistic model)` 中
 1. 框架层面，没有 `Upstream` 这个概念。Filter 实现自行实现/不实现 Upstream，包括连接建立和数据读写，事件通知。所以，框架层面，更没有 Cluster / Connection Pool 等等概念了。
 2. 见下面一项
-3. Filter 之间共享了 Buffer，前面的 Filter 对 Buffer 的读操作，如果沒进行 `drained 排干` ，后面的 Filter 将会重复读取数据。前面的 Filter 也可以在 Buffer 中插入新数据。 而这个有状态的 Buffer，会传递到后面的 Filter 。
+3. Filter 之间共享了 Buffer，前面的 Filter 对 Buffer 的读操作，如果沒进行 `drained(排干)` ，后面的 Filter 将会重复读取数据。前面的 Filter 也可以在 Buffer 中插入新数据。 而这个有状态的 Buffer，会传递到后面的 Filter 。
 
 ### Network Filter 对象关系
 

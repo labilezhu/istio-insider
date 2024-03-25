@@ -6,7 +6,7 @@
 
 ## Envoy 与 Downstream/Upstream 连接状态不同步
 
-以下大部分情况，算是个发生可能性低的 race condition。但，在大流量下，再少的可能性也是有遇到的时候。`Design For  Failure` 是程序员的天职。
+以下大部分情况，算是个发生可能性低的 race condition。但，在大流量下，再少的可能性也是有遇到的时候。`Design For Failure` 是程序员的天职。
 
 ### Downstream 向 Envoy 关闭中的连接发送请求
 
