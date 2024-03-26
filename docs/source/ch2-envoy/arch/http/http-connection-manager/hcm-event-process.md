@@ -7,9 +7,15 @@
 
 图中看出，有4种事件驱动了整个流程。后面几节会逐个分析。
 
-为免一下子进入各个步骤细节而让人迷途，建议回顾一下之前举例的所有步骤的总流程： 
+为免一下子进入各个步骤细节而让人迷途，建议读者回顾一下之前举例的所有步骤的总流程： 
 {doc}`/ch2-envoy/envoy@istio-conf-eg`
 
+下面以 HTTP/1.1 为例，分 5 个步骤去解释 HTTP 代理的过程：
+1. Downstream Read Request 模块协作
+2. Downstream Request Router 模块协作
+3. Upstream Write Request 模块协作
+4. Upstream Read Response 模块协作
+5. Downstream Write Response 模块协作
 
 
 ### Downstream Read Request 模块协作
