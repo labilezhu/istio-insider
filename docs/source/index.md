@@ -7,7 +7,7 @@
 这是一本编写中的书，现在只是草稿阶段。书名为《Istio & Envoy 内幕》，英文名《Istio & Envoy Insider》。
 ```
 
-There is English version too: [https://istio-insider.mygraphql.com/en/latest/](https://istio-insider.mygraphql.com/en/latest/)
+There is an English version: [https://istio-insider.mygraphql.com/en/latest/](https://istio-insider.mygraphql.com/en/latest/)
 
 
 ## 本书概述
@@ -23,7 +23,7 @@ There is English version too: [https://istio-insider.mygraphql.com/en/latest/](h
 
 ### 本书是什么
 
-本书中，我尝试用设计与实现角度，尽量系统地去思考：
+本书中，我尝试以设计与实现角度，尽量系统地去思考：
 - Istio 为什么是现在的样子
 - 那些魔术配置背后的真相： Linux + Envoy
   - 流量是如何用 Linux 的 netfilter 技术，被拦截到 Envoy 的
@@ -33,10 +33,10 @@ There is English version too: [https://istio-insider.mygraphql.com/en/latest/](h
 
 书里说的，只是在我研究与使用了 Istio 一段时间后，的思考与记录。我只是排查过一些 Istio/Envoy 相关的功能与性能问题，浏览和 Debug 过一些 Istio/Envoy 的代码。
 
-在研究 Istio 过程中。发现网上是有很多非常有价值的资讯。但是，要么主要是从使用者出发，没说实现机理；要么就是说了机理，也说得很好，但内容少了系统化和连贯性。
+在研究 Istio 过程中。发现网上是有很多非常有价值的资讯。但是，要么主要是从使用者出发，没说实现机理；要么就是说了机理，也说得很好，但内容缺少系统化和连贯性。
 
 ### 读者对象
-本书主要讲 Istio/Envoy 的设计、实现机制。假设读者已经有一定的 Istio 使用经验。并有兴趣进一步研究其实现机理
+本书主要讲 Istio/Envoy 的设计、实现机制。假设读者已经有一定的 Istio 使用经验。并有兴趣进一步研究其实现机理。
 
 ### 书的访问地址
 - [https://istio-insider.mygraphql.com](https://istio-insider.mygraphql.com)
