@@ -36,7 +36,7 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`”写�
 
 
 
-子系统和 Callback 机制可见前文的： {ref}`/ch2-envoy/arch/oop/oop#Callback回调设计模式`  一节。
+子系统和 Callback 机制可见前文的： {ref}`ch2-envoy/arch/oop/oop:Callback回调设计模式`  一节。
 
 
 
