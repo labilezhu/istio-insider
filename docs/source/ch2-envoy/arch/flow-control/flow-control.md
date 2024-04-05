@@ -1,6 +1,6 @@
 # Flow Control
 
-和所有代理类型的软件一样，Envoy 很重视流控。因为CPU/内存资源是有限的，时间也要避免单个流过度占用资源的情况。需要注意的是，和其它以异步/线程多路复用架构实现的软件一样，流控永远不是一个简单的事情。
+和所有代理类型的软件一样，Envoy 很重视流控。因为CPU/内存资源是有限的，同时也要避免单个流过度占用资源的情况。需要注意的是，和其它以异步/线程多路复用架构实现的软件一样，流控永远不是一个简单的事情。
 
 
 
@@ -69,5 +69,5 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`”写�
 
 ## Ref.
 
-> [Flow control](https://github.com/envoyproxy/envoy/blob/main/source/docs/flow_control.md)
-> [Envoy buffer management & flow control](https://docs.google.com/document/d/1EB3ybx3yTndp158c4AdQ4nutksZA9lL-BQvixhPnb_4/edit?usp=sharing)
+> - [Flow control](https://github.com/envoyproxy/envoy/blob/main/source/docs/flow_control.md)
+> - [Envoy buffer management & flow control](https://docs.google.com/document/d/1EB3ybx3yTndp158c4AdQ4nutksZA9lL-BQvixhPnb_4/edit?usp=sharing)
