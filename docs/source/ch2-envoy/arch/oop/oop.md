@@ -32,13 +32,38 @@ Gang of Four (GoF) 的 《*Design Patterns*》 中，并没有一个设计模式
 
 
 
-上面有两个子系统，`Network::TransportSocket`  与  `Network::Connection` 你可以这么想，如果 每个使用 `Network::TransportSocket`  的子系统都要 `Network::TransportSocket` 去依赖通知，结果是一个循环依赖。而 Callback 的设计模式，避免了这个问题。
+上面有两个子系统，`Network::TransportSocket`  与  `Network::Connection` 。你可以这么想，如果 每个使用 `Network::TransportSocket`  的子系统都要 `Network::TransportSocket` 去依赖通知，结果是一个循环依赖。而 Callback 的设计模式，避免了这个问题。
 
 
 
 ## 子系统
 
-Envoy 为了模块化，设计出很多在编译期相互独立的子系统。而这些子系统通过 显式依赖和 Callback 胶水的方法。
+Envoy 为了模块化，设计出很多在编译期相互独立的子系统。而这些子系统通过 显式依赖和 Callback 胶水等的依赖反转方法，实现互动。一般，每个子系统都有自己的 C++ namespace(名几个相关的子系统共用一个 namespace)。以下列出主要的子系统：
+
+
+
+- `Buffer`  - 缓存块
+- `Api` - 操作系统调用
+- `Config` - XDS 等配置
+- `Event` - 事件驱动
+- `Http` - HTTP 相关
+  - `Http::ConnectionPool` - HTTP 连接池相关
+  - `Http1` - HTTP/1.1 相关
+  - `Http2` - HTTP/2 相关
+- `Network` - IP/TCP/DNS/Socket  层，即 OSI 的 L3/L4 层相关。包括 `Envoy Network Filter` 、`Listener`
+  - `Network::Address` - IP 地址相关
+
+- `Server` - Envoy 作为服务 Daemon  lifecycle 相关的实现
+- `Stats` - 监控指标相关
+- `Tcp` - TCP 与连接池相关
+- `Upstream` - Upstream 相关的负载均衡、健康检查等等
+- ``
+
+
+
+其中，大部分子系统均有自己的功能 `C++ Class/Interface`，如 `Envoy Network Filter`  的 `ReadFilter`，以及其配套的 Callback 接口定义，如 `ReadFilterCallbacks` 。
+
+
 
 
 
