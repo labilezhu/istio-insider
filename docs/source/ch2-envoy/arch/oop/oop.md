@@ -10,7 +10,7 @@ Envoy 是开源软件，文档也写得相当细致，这在开源项目中是�
 
 
 
-### Callback 回调设计模式
+### Callback回调设计模式
 
 Gang of Four (GoF) 的 《*Design Patterns*》 中，并没有一个设计模式叫 Callback 的。`Callback 设计模式`其实是 [`Observer pattern(观察者模式)`](https://en.wikipedia.org/wiki/Observer_pattern) 的一个变体或应用。
 
