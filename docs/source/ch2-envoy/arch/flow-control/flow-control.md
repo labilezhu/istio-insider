@@ -14,9 +14,13 @@ Envoy 中的流量控制是通过对每个 Buffer 进行限制 和 `watermark ca
 
 
 
+下面先以 简单的 TCP 实现细节 流控过程，再说明更复杂的 HTTP2 流控过程。
+
+
+
 ## TCP 实现细节
 
-TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`”写入Buffer和“`Network::TcpProxy`”过滤器之间的协调来处理的。
+TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写入 Buffer 和 “`Network::TcpProxy ` Filter” 之间的协调来处理的。
 
 
 
@@ -48,15 +52,49 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`”写�
 
 ![代理 HTTP 响应时的 Http 流控与背压](flow-control.drawio.svg)
 
-
-
-对于 HTTP/2，当`Filter`、`streams`、 `connection` 的 Buffer 过载时，最终结果都会在`Source stream`上调用 “`readDisable(true)`”。 这会导致`Source stream`停止消耗`HTTP2 Window`，因此不会向对方发送更多的流量控制`HTTP2 Window`更新 ; 最终导致对方在可用窗口耗尽时停止发送数据（或者如果对方违反流量控制限制，nghttp2 将关闭连接），这样 Envoy 就可以对每个`steam` 限制 Buffer 的大小。 
-
-当 `readDisable(false)` 被调用时，任何 Buffer 中未被使用的数据都会立即被使用，最终，会恢复向对端发送窗口更新并最终恢复数据流动。
+上图的 `Unbounded buffer` 不是说 Buffer 完成没有 limit，而是说 limit 是软性的。
 
 
 
-请注意，`stream`的 `readDisable(true)` 可能会被多个使用者重复调用。 当任何 `Filter`、`stream` 、`connection` 缓冲过多数据时，均会调用 `stream`的 `readDisable(true)`  。 因此，`stream` 的 `readDisable()` 会记住禁用`stream`的次数，并在每个调用者调用等次数的低水位线回调时恢复读取。 
+> For HTTP/2, when filters, streams, or connections back up, the end result is `readDisable(true)` being called on the source stream. This results in the stream ceasing to consume window, and so not sending further flow control window updates to the peer. This will result in the peer eventually stopping sending data when the available window is consumed (or nghttp2 closing the connection if the peer violates the flow control limit) and so limiting the amount of data Envoy will buffer for each stream. 
+
+对于 HTTP/2，当`Filter`、`streams`、 `connection` 过载(Above high watermark)时，最终结果都会调用到数据源头`Source stream`上的 `readDisable(true)`。 这会导致`Source stream`停止消耗`HTTP2 Window`，因此不会向对方发送更多的流量控制`HTTP2 Window`更新 ; 最终导致对方在可用窗口耗尽时停止发送数据（或者如果对方违反流量控制限制，nghttp2 将关闭连接），这样 Envoy 就可以对每个`steam` 限制 Buffer 的大小。 
+
+> When `readDisable(false)` is called, any outstanding unconsumed data is immediately consumed, which results in resuming window updates to the peer and the resumption of data.
+
+当 `Source steam` 上的  `readDisable(FALSE)` 被调用时，任何 Buffer 中未被处理的数据都会立即被处理，最终，会恢复向对端发送窗口更新并最终恢复数据流动。见：
+
+```c++
+void ConnectionImpl::StreamImpl::readDisable(bool disable) {
+  ENVOY_CONN_LOG(debug, "Stream {} {}, unconsumed_bytes {} read_disable_count {}",
+                 parent_.connection_, stream_id_, (disable ? "disabled" : "enabled"),
+                 unconsumed_bytes_, read_disable_count_);
+  if (disable) {
+    ++read_disable_count_;
+  } else {
+    ASSERT(read_disable_count_ > 0);
+    --read_disable_count_;
+    if (!buffersOverrun()) {
+      scheduleProcessingOfBufferedData(false);
+      if (shouldAllowPeerAdditionalStreamWindow()) {
+        grantPeerAdditionalStreamWindow();
+      }
+    }
+  }
+}
+```
+
+> Note that `readDisable(true)` on a stream may be called by multiple entities. It is called when any filter buffers too much, when the stream backs up and has too much data buffered, or the connection has too much data buffered. Because of this, `readDisable()` maintains a count of the number of times it has been called to both enable and disable the stream, resuming reads when each caller has called the equivalent low watermark callback. 
+
+请注意，同一个 `stream`的 `readDisable(true)` 可能会被多个使用者重复调用。 当任何 `Filter`、`stream` 、`connection` 缓冲过多数据(Above high watermark)时，均会调用 `stream`的 `readDisable(true)`  。 因此，`stream` 的 `readDisable()` 会记住`readDisable(true)`的次数，并在每个调用者调用等次数的低水位线回调时恢复读取。 
+
+> For example, if the TCP window upstream fills up and results in the network buffer backing up, all the streams associated with that connection will `readDisable(true)` their downstream data sources. 
+>
+> When the HTTP/2 flow control window fills up an individual stream may use all of the window available and call a second `readDisable(true)` on its downstream data source. 
+>
+> When the upstream TCP socket drains, the connection will go below its low watermark and each stream will call `readDisable(false)` to resume the flow of data. The stream which had both a network level block and a H2 flow control block will still not be fully enabled. 
+>
+> Once the upstream peer sends window updates, the stream buffer will drain and the second `readDisable(false)` will be called on the downstream data source, which will finally result in data flowing from downstream again.
 
 例如：
 
