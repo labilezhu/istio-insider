@@ -24,6 +24,7 @@ Envoy 中的流量控制是通过对每个 Buffer 进行限制 和 `watermark ca
 - `buffers fill up` - 缓存空间到达限制上限
 - `HTTP/2 window` - HTTP/2 标准的流控实现方法，通过`WINDOW_UPDATE` 帧指示除了现有的流量控制窗口之外，发送方还可以传输的八位字节数。详见 “[Hypertext Transfer Protocol Version 2 (HTTP/2) - 5.2. Flow Control](https://httpwg.org/specs/rfc7540.html#FlowControl)”
 - `http stream`  - HTTP/2 标准的流。详见 “[Hypertext Transfer Protocol Version 2 (HTTP/2) - 5. Streams and Multiplexing](https://httpwg.org/specs/rfc7540.html#StreamsLayer)”
+- High/Low Watermark - 为控制内存或 Buffer 的消耗量，但又不想频繁高频抖动触发控制操作而使用的高水位线和低水位线设计模式，详见：[What are high and low water marks in bit streaming](https://stackoverflow.com/questions/45489405/what-are-high-and-low-water-marks-in-bit-streaming)。
 
 
 
