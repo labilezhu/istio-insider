@@ -18,6 +18,15 @@ Envoy 中的流量控制是通过对每个 Buffer 进行限制 和 `watermark ca
 
 
 
+## 一些流控相关的术语
+
+- `back up` - 因流量到达目标的速度慢或不畅顺，而发生数据拥塞在一个或多个中间环节的 Buffer 当中，导致 Buffer 空间耗尽的情况。以下一般翻译为中文：`拥塞`
+- `buffers fill up` - 缓存空间到达限制上限
+- `HTTP/2 window` - HTTP/2 标准的流控实现方法，通过`WINDOW_UPDATE` 帧指示除了现有的流量控制窗口之外，发送方还可以传输的八位字节数。详见 “[Hypertext Transfer Protocol Version 2 (HTTP/2) - 5.2. Flow Control](https://httpwg.org/specs/rfc7540.html#FlowControl)”
+- `http stream`  - HTTP/2 标准的流。详见 “[Hypertext Transfer Protocol Version 2 (HTTP/2) - 5. Streams and Multiplexing](https://httpwg.org/specs/rfc7540.html#StreamsLayer)”
+
+
+
 ## TCP 实现细节
 
 TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写入 Buffer 和 “`Network::TcpProxy ` Filter” 之间的协调来处理的。
@@ -54,13 +63,25 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 
 
-上图的 `Unbounded buffer` 不是说 Buffer 完成没有 limit，而是说 limit 是软性的。
+上图的 `Unbounded buffer` 不是说 Buffer 没有 limit，而是说 limit 是`软限制`。
+
+
+
+### 最简单的 Upsteam connection 拥塞场景
 
 
 
 > For HTTP/2, when filters, streams, or connections back up, the end result is `readDisable(true)` being called on the source stream. This results in the stream ceasing to consume window, and so not sending further flow control window updates to the peer. This will result in the peer eventually stopping sending data when the available window is consumed (or nghttp2 closing the connection if the peer violates the flow control limit) and so limiting the amount of data Envoy will buffer for each stream. 
 
-对于 HTTP/2，当`Filter`、`streams`、 `connection` 过载(Above high watermark)时，最终结果都会调用到数据源头`Source stream`上的 `readDisable(true)`。 这会导致`Source stream`停止消耗`HTTP2 Window`，因此不会向对方发送更多的流量控制`HTTP2 Window`更新 ; 最终导致对方在可用窗口耗尽时停止发送数据（或者如果对方违反流量控制限制，nghttp2 将关闭连接），这样 Envoy 就可以对每个`steam` 限制 Buffer 的大小。 
+对于 HTTP/2，当`Filter`、`streams`、 `connection` 拥塞(Above high watermark)时，最终结果都会调用到数据源头`Source stream`上的 `readDisable(true)`。 这会导致`Source stream`停止消耗`HTTP2 Window`，因此不会向对方发送更多的流量控制`HTTP2 Window Update` ; 最终导致对方在可用窗口耗尽时停止发送数据（或者如果对方违反流量控制限制，nghttp2 将关闭连接），这样 Envoy 就可以对每个`steam` 限制 Buffer 的大小。 
+
+![flow-control-1-upstream-backs-up-simple.drawio.svg](./flow-control-1-upstream-backs-up-simple.drawio.svg)
+
+
+
+### Upsteam connection 与 Upstream http stream 同时拥塞场景
+
+
 
 > When `readDisable(false)` is called, any outstanding unconsumed data is immediately consumed, which results in resuming window updates to the peer and the resumption of data.
 
@@ -104,6 +125,44 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 2. 同时，如 HTTP/2 流控制窗口填满时，单个流可能会使用所有可用窗口并在其 Downstream 数据源上调用第二个` readDisable(true)`。 
 3. 然后，随着 Upstream TCP Write Buffer 的不断发送和排空(drains)，`connection` 将低于其低水位线，每个流将调用 `readDisable(false)` 来恢复数据流。 但同时具有网络级挂起和 H2 流控制级挂起的 `stream` 仍然不会完全启用。 
 4. 一旦 Upstream 对端发送 HTTP2 窗口更新，`stream` 缓冲区将排空，并且 Downstream 数据源将调用第二个 `readDisable(false)`，这最终将导致数据再次从 Downstream 流出。
+
+![flow-control-2-upstream-backs-up-counter.drawio.svg](./flow-control-2-upstream-backs-up-counter.drawio.svg)
+
+
+
+### Upstream 拥塞时 Router::Filter 的协作
+
+
+
+> The two main parties involved in flow control are the router filter (`Envoy::Router::Filter`) and the connection manager (`Envoy::Http::ConnectionManagerImpl`). The router is responsible for intercepting watermark events for its own buffers, the individual upstream streams (if codec buffers fill up) and the upstream connection (if the network buffer fills up). It passes any events to the connection manager, which has the ability to call `readDisable()` to enable and disable further data from downstream. 
+
+流量控制主要的两个相关组件是`router filter`（Envoy::Router::Filter）和`connection manager `（Envoy::Http::ConnectionManagerImpl）。 `router filter`负责拦截各种 watermark 事件：其自己的 Buffer 已满、各个upstream http streams（如果codec buffers 已满）、 upstream connection（如果网络 buffer 已满）。并将这些事件传递给ConnectionManagerImpl。然后 ConnectionManagerImpl 能够通过调用 downstream 的 stream 的 `readDisable(true/false)` 来开启或关闭来自 downstream 的数据流。
+
+
+
+![flow-control-3-upstream-backs-up-router.drawio.svg](flow-control-3-upstream-backs-up-router.drawio.svg)
+
+
+
+
+
+### Downstream 拥塞时 Http::ConnectionManagerImpl 的协作
+
+
+
+> On the reverse path, when the downstream connection backs up, the connection manager collects events for the downstream streams and the downstream connection. It passes events to the router filter via `Envoy::Http::DownstreamWatermarkCallbacks` and the router can then call `readDisable()` on the upstream stream. Filters opt into subscribing to `DownstreamWatermarkCallbacks` as a performance optimization to avoid each watermark event on a downstream HTTP/2 connection resulting in "number of streams * number of filters" callbacks. Instead, only the router filter is notified and only the "number of streams" multiplier applies. Because the router filter only subscribes to notifications when it has an upstream connection, the connection manager tracks how many outstanding high watermark events have occurred and passes any on to the router filter when it subscribes.
+
+
+
+在反向路径上，当 downstream connection 拥塞时，connection manager 收集 downstream 的 stream 层 和 connection 层的事件。 它通过 `Envoy::Http::DownstreamWatermarkCallbacks` 将事件传递到`router filter`，然后`router filter`可以调用 Upstream stream 上的 `readDisable(true)` 。 
+
+设计上，`HTTP Filter` 选择性地订阅 “`DownstreamWatermarkCallbacks`”以优化性能，以避免 downstream HTTP/2 连接上的每个 watermark 事件导致 “downstream http stream 数 * filter 数” 次回调。 相反，仅通知`router filter` 并且仅调用 “downstream http stream 数”的倍数次。 
+
+由于`router filter` 仅在拥有 upstream connection 时才订阅事件，因此 connection manager 会记录已发生但未处理的 high watermark 事件的数量，并在订阅时将任何事件传递给路由器过滤器。
+
+
+
+![flow-control-4-downstream-conn-backs-up.drawio.svg](flow-control-4-downstream-conn-backs-up.drawio.svg)
 
 
 
