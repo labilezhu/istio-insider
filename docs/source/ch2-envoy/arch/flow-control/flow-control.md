@@ -46,11 +46,13 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 ## HTTP2 实现细节
 
-由于 HTTP/2 堆栈中的各种 Buffer 相当复杂，因此从 Buffer 超出 `Watermark`限制到禁用来自数据源的数据的每段路径都会单独文档说明。
+由于 HTTP/2 技术堆栈中的各种 Buffer 相当繁杂，因此从 Buffer 超出 `Watermark`限制到暂停来自数据源的数据的每段路径都有单独的 Envoy 文档说明。
 
 
 
-![代理 HTTP 响应时的 Http 流控与背压](flow-control.drawio.svg)
+![flow-control-1-upstream-backs-up-simple.drawio.svg](./flow-control-1-upstream-backs-up-simple.drawio.svg)
+
+
 
 上图的 `Unbounded buffer` 不是说 Buffer 完成没有 limit，而是说 limit 是软性的。
 
