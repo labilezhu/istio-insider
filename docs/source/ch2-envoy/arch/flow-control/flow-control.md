@@ -158,7 +158,7 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 
 设计上，`HTTP Filter` 选择性地订阅 “`DownstreamWatermarkCallbacks`”以优化性能，以避免 downstream HTTP/2 连接上的每个 watermark 事件导致 “downstream http stream 数 * filter 数” 次回调。 相反，仅通知`router filter` 并且仅调用 “downstream http stream 数”的倍数次。 
 
-由于`router filter` 仅在拥有 upstream connection 时才订阅事件，因此 connection manager 会记录已发生但未处理的 high watermark 事件的数量，并在订阅时将任何事件传递给路由器过滤器。
+由于`router filter` 仅在拥有 upstream connection 时才订阅事件，即有空档期。因此 connection manager 会记录已发生但未处理的 high watermark 事件的数量，并在 `router filter` 订阅时将记录的事件传递给`router filter`。
 
 
 
