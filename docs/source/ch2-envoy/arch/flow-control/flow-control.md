@@ -27,13 +27,14 @@ Envoy 中的流量控制是通过对每个 Buffer 进行限制 和 `watermark ca
 - `back up` - 因流量到达目标的速度慢或不畅顺，而发生数据拥塞在一个或多个中间环节的 Buffer 当中，导致 Buffer 空间耗尽的情况。以下一般翻译为中文：`拥塞`
 - `buffers fill up` - 缓存空间到达限制上限
 - `backpressure` - 流背压是一种反馈机制，允许系统在超过处理能力时，还能响应请求而不是在负载下崩溃。当传入数据的速率超过处理或输出数据的速率时，就会发生这种情况，从而导致拥塞和潜在的数据丢失。详见：[Backpressure explained — the resisted flow of data through software](https://medium.com/@jayphelps/backpressure-explained-the-flow-of-data-through-software-2350b3e77ce7)
+- `drained` - Buffer 的排空。一般指 Buffer 由高于 low watermark 处理下降后低于 low watermark  甚至清空的处理与排空操作。
 - `HTTP/2 window` - HTTP/2 标准的流控实现方法，通过`WINDOW_UPDATE` 帧指示除了现有的流量控制窗口之外，发送方还可以传输的八位字节数。详见 “[Hypertext Transfer Protocol Version 2 (HTTP/2) - 5.2. Flow Control](https://httpwg.org/specs/rfc7540.html#FlowControl)”
 - `http stream`  - HTTP/2 标准的流。详见 “[Hypertext Transfer Protocol Version 2 (HTTP/2) - 5. Streams and Multiplexing](https://httpwg.org/specs/rfc7540.html#StreamsLayer)”
 - High/Low Watermark - 为控制内存或 Buffer 的消耗量，但又不想频繁高频抖动触发控制操作而使用的高水位线和低水位线设计模式，详见：[What are high and low water marks in bit streaming](https://stackoverflow.com/questions/45489405/what-are-high-and-low-water-marks-in-bit-streaming)。
 
 
 
-## TCP 实现细节
+## TCP 流控实现
 
 TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写入 Buffer 和 “`Network::TcpProxy ` Filter” 之间的协调来处理的。
 
@@ -59,11 +60,17 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 
 
-## HTTP2 实现细节
+## HTTP2 流控实现
 
 由于 HTTP/2 技术堆栈中的各种 Buffer 相当繁杂，因此从 Buffer 超出 `Watermark`限制到暂停来自数据源的数据的每段路径都有单独的 Envoy 文档说明。
 
-### 最简单的 Upsteam connection 拥塞场景
+
+
+### HTTP2 流控总体流程
+
+
+
+#### 最简单的 Upsteam connection 拥塞场景
 
 
 > For HTTP/2, when filters, streams, or connections back up, the end result is `readDisable(true)` being called on the source stream. This results in the stream ceasing to consume window, and so not sending further flow control window updates to the peer. This will result in the peer eventually stopping sending data when the available window is consumed (or nghttp2 closing the connection if the peer violates the flow control limit) and so limiting the amount of data Envoy will buffer for each stream. 
@@ -81,8 +88,7 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 上图的 `Unbounded buffer` 不是说 Buffer 没有 limit，而是说 limit 是`软限制`。
 
-
-### Upsteam connection 与 Upstream http stream 同时拥塞场景
+#### Upsteam connection 与 Upstream http stream 同时拥塞场景
 
 
 
@@ -137,7 +143,7 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-2-upstream-backs-up-counter.drawio.svg)*
 
-### Upstream 拥塞时 Router::Filter 的协作
+#### Upstream 拥塞时 Router::Filter 的协作
 
 
 
@@ -155,8 +161,7 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-3-upstream-backs-up-router.drawio.svg)*
 
-
-### Downstream 拥塞时 Http::ConnectionManagerImpl 的协作
+#### Downstream 拥塞时 Http::ConnectionManagerImpl 的协作
 
 
 
@@ -179,6 +184,31 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 *Downstream 拥塞时 Http::ConnectionManagerImpl 的协作*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-4-downstream-conn-backs-up.drawio.svg)*
+
+
+
+### HTTP decode/encode filter 的流控
+
+> Each HTTP and HTTP/2 filter has an opportunity to call `decoderBufferLimit()` or `encoderBufferLimit()` on creation. No filter should buffer more than the configured bytes without calling the appropriate watermark callbacks or sending an error response.
+>
+> Filters may override the default limit with calls to `setDecoderBufferLimit()` and `setEncoderBufferLimit()`. These limits are applied as filters are created so filters later in the chain can override the limits set by prior filters. It is recommended that filters calling these functions should generally only perform increases to the buffer limit, to avoid potentially conflicting with the buffer requirements of other filters in the chain.
+>
+> Most filters do not buffer internally, but instead push back on data by returning a FilterDataStatus on `encodeData()`/`decodeData()` calls. If a buffer is a streaming buffer, i.e. the buffered data will resolve over time, it should return `FilterDataStatus::StopIterationAndWatermark` to pause further data processing, which will cause the `ConnectionManagerImpl` to trigger watermark callbacks on behalf of the filter. If a filter can not make forward progress without the complete body, it should return `FilterDataStatus::StopIterationAndBuffer`. In this case if the `ConnectionManagerImpl` buffers more than the allowed data it will return an error downstream: a 413 on the request path, 500 or `resetStream()` on the response path.
+
+
+
+每个 HTTP 和 HTTP/2 Filter 都可以在创建时调用 `decoderBufferLimit()` 或 `encoderBufferLimit()`。 任何过 Filter 都不应 buffer 超过配置的字节数，而不调用适当的 watermark callback 或返回错误 http 响应。
+
+Filter 可以通过调用 `setDecoderBufferLimit() `和 `setEncoderBufferLimit() `来覆盖默认限制。 这些限制在创建 Filter 时应用，因此 Filter Chain 中后面的 Filter 可以覆盖先前 Filter 设置的限制。 建议调用这些函数的 Filter 通常应仅执行缓冲区限制的增加，以避免与 filter chain 中其他 Filter 的缓冲区要求发生潜在冲突。
+
+大多数 Filter 不会在内部 buffer 数据，而是通过在调用 “`encodeData()`”/“`decodeData()`” 时返回 `FilterDataStatus` 来推回数据。 
+
+- 如果 buffer 是 `stream buffer` ，即当前缓冲区内的数据需要一些时间或外部事件才能解析，则它应该返回 `FilterDataStatus::StopIterationAndWatermark` 来暂停进一步(下一个 Filter)的数据处理，这将导致 `ConnectionManagerImpl` 因 Filter 触发 watermark callback。 
+- 如果 Filter 一定要收集到完整的 HTTP Body 才能继续，则应返回“`FilterDataStatus::StopIterationAndBuffer`”。 在这种情况下，如果“`ConnectionManagerImpl`”缓冲的数据量超过限制，它将向 downstream 返回错误：
+  - 如问题发生在请求处理时，则返回 `413`; 
+  - 如果问题发生在响应处理时，则返回 `500` 或“`resetStream()`”。
+
+
 
 ## Ref.
 
