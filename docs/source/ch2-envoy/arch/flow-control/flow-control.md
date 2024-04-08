@@ -149,9 +149,9 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 
 :::{figure-md}  Upstream 拥塞时 Router::Filter 的协作
 
-<img src="/ch2-envoy/arch/flow-control/flow-control-3-upstream-backs-up-router.drawio.svg" alt=" Upstream 拥塞时 Router::Filter 的协作">
+<img src="/ch2-envoy/arch/flow-control/flow-control-3-upstream-backs-up-router.drawio.svg" alt="Upstream 拥塞时 Router::Filter 的协作">
 
-* Upstream 拥塞时 Router::Filter 的协作*
+*Upstream 拥塞时 Router::Filter 的协作*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-3-upstream-backs-up-router.drawio.svg)*
 
