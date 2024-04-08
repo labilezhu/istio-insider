@@ -27,6 +27,8 @@
 
 ## http filter 抽象对象定义
 
+HttpFilter 在源码中叫 `StreamFilter` 或更精确叫 `Http::StreamFilterBase` 。一个 `http connection manager` 拥有一个 `Http::FilterManager`， `FilterManager` 拥有 `list<StreamFilterBase*> filters_` 。
+
 :::{figure-md} 图：http filter 抽象对象
 :class: full-width
 <img src="/ch2-envoy/arch/http/http-connection-manager/http-connection-manager.assets/http-filter-abstract.drawio.svg" alt="图：http filter 抽象对象">
