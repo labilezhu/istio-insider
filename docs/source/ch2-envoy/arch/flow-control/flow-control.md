@@ -1,3 +1,7 @@
+---
+typora-root-url: ../../..
+---
+
 # 流控 - Flow Control
 
 和所有代理类型的软件一样，Envoy 很重视流控。因为CPU/内存资源是有限的，同时也要避免单个流过度占用资源的情况。需要注意的是，和其它以异步/线程多路复用架构实现的软件一样，流控永远不是一个简单的事情。
@@ -59,26 +63,23 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 由于 HTTP/2 技术堆栈中的各种 Buffer 相当繁杂，因此从 Buffer 超出 `Watermark`限制到暂停来自数据源的数据的每段路径都有单独的 Envoy 文档说明。
 
-
-
-![flow-control-1-upstream-backs-up-simple.drawio.svg](./flow-control-1-upstream-backs-up-simple.drawio.svg)
-
-
-
-上图的 `Unbounded buffer` 不是说 Buffer 没有 limit，而是说 limit 是`软限制`。
-
-
-
 ### 最简单的 Upsteam connection 拥塞场景
-
 
 
 > For HTTP/2, when filters, streams, or connections back up, the end result is `readDisable(true)` being called on the source stream. This results in the stream ceasing to consume window, and so not sending further flow control window updates to the peer. This will result in the peer eventually stopping sending data when the available window is consumed (or nghttp2 closing the connection if the peer violates the flow control limit) and so limiting the amount of data Envoy will buffer for each stream. 
 
 对于 HTTP/2，当`Filter`、`streams`、 `connection` 拥塞(Above high watermark)时，最终结果都会调用到数据源头`Source stream`上的 `readDisable(true)`。 这会导致`Source stream`停止消耗`HTTP2 Window`，因此不会向对方发送更多的流量控制`HTTP2 Window Update` ; 最终导致对方在可用窗口耗尽时停止发送数据（或者如果对方违反流量控制限制，nghttp2 将关闭连接），这样 Envoy 就可以对每个`steam` 限制 Buffer 的大小。 
 
-![flow-control-1-upstream-backs-up-simple.drawio.svg](./flow-control-1-upstream-backs-up-simple.drawio.svg)
+:::{figure-md} Upsteam connection 拥塞与背压
 
+<img src="/ch2-envoy/arch/flow-control/flow-control-1-upstream-backs-up-simple.drawio.svg" alt="Upsteam connection 拥塞与背压">
+
+*Upsteam connection 拥塞与背压*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-1-upstream-backs-up-simple.drawio.svg)*
+
+
+上图的 `Unbounded buffer` 不是说 Buffer 没有 limit，而是说 limit 是`软限制`。
 
 
 ### Upsteam connection 与 Upstream http stream 同时拥塞场景
@@ -128,9 +129,13 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 3. 然后，随着 Upstream TCP Write Buffer 的不断发送和排空(drains)，`connection` 将低于其低水位线，每个流将调用 `readDisable(false)` 来恢复数据流。 但同时具有网络级挂起和 H2 流控制级挂起的 `stream` 仍然不会完全启用。 
 4. 一旦 Upstream 对端发送 HTTP2 窗口更新，`stream` 缓冲区将排空，并且 Downstream 数据源将调用第二个 `readDisable(false)`，这最终将导致数据再次从 Downstream 流出。
 
-![flow-control-2-upstream-backs-up-counter.drawio.svg](./flow-control-2-upstream-backs-up-counter.drawio.svg)
+:::{figure-md} Upsteam connection 与 Upstream http stream 同时拥塞
 
+<img src="/ch2-envoy/arch/flow-control/flow-control-2-upstream-backs-up-counter.drawio.svg" alt="Upsteam connection 与 Upstream http stream 同时拥塞">
 
+*Upsteam connection 与 Upstream http stream 同时拥塞*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-2-upstream-backs-up-counter.drawio.svg)*
 
 ### Upstream 拥塞时 Router::Filter 的协作
 
@@ -142,10 +147,13 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 
 
 
-![flow-control-3-upstream-backs-up-router.drawio.svg](flow-control-3-upstream-backs-up-router.drawio.svg)
+:::{figure-md}  Upstream 拥塞时 Router::Filter 的协作
 
+<img src="/ch2-envoy/arch/flow-control/flow-control-3-upstream-backs-up-router.drawio.svg" alt=" Upstream 拥塞时 Router::Filter 的协作">
 
-
+* Upstream 拥塞时 Router::Filter 的协作*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-3-upstream-backs-up-router.drawio.svg)*
 
 
 ### Downstream 拥塞时 Http::ConnectionManagerImpl 的协作
@@ -164,9 +172,13 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 
 
 
-![flow-control-4-downstream-conn-backs-up.drawio.svg](flow-control-4-downstream-conn-backs-up.drawio.svg)
+:::{figure-md} Downstream 拥塞时 Http::ConnectionManagerImpl 的协作
 
+<img src="/ch2-envoy/arch/flow-control/flow-control-4-downstream-conn-backs-up.drawio.svg" alt="Downstream 拥塞时 Http::ConnectionManagerImpl 的协作">
 
+*Downstream 拥塞时 Http::ConnectionManagerImpl 的协作*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-4-downstream-conn-backs-up.drawio.svg)*
 
 ## Ref.
 
