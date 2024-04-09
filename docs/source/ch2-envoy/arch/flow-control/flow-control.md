@@ -241,17 +241,87 @@ Filter 可以通过调用 `setDecoderBufferLimit() `和 `setEncoderBufferLimit()
 
 
 
-Decoder filter 的 high watermark 处理过程如下：
+Decoder filter 的 high watermark 处理流程如下：
 
 1. 当 `Envoy::Router::StreamDecoderFilter` 实例缓冲过多数据时，它应该调用 `StreamDecoderFilterCallback::onDecoderFilterAboveWriteBufferHighWatermark()`。
 2. 当 `Envoy::Http::ConnectionManagerImpl::ActiveStreamDecoderFilter` 接收到 `onDecoderFilterAboveWriteBufferHighWatermark() `时，它会调用 downstream 的 stream 的 `readDisable(true)` 来暂停数据流。
 
 
 
-Decoder filter 的 low watermark 处理过程如下：
+Decoder filter 的 low watermark 处理流程如下：
 
 1. 当 `Envoy::Router::StreamDecoderFilter` 的缓冲区排水到低于 low watermark 时，将调用 `StreamDecoderFilterCallback::onDecoderFilterBelowWriteBufferLowWatermark()`。
 2. 当 `Envoy::Http::ConnectionManagerImpl` 接收到 `onDecoderFilterAboveWriteBufferHighWatermark()` 时，它会调用 Downstream 的 stream 的 `readDisable(false)` 以恢复数据流动。
+
+
+
+#### Encoder filters
+
+> Encoder filters buffering more than the buffer limit should call `onEncoderFilterAboveWriteBufferHighWatermark` if they are streaming filters, i.e. filters which can process more bytes as the underlying buffer is drained. The high watermark call will be passed from the `Envoy::Http::ConnectionManagerImpl` to the `Envoy::Router::Filter` which will `readDisable(true)` to stop the flow of upstream data. Streaming filters which call `onEncoderFilterAboveWriteBufferHighWatermark` should call `onEncoderFilterBelowWriteBufferLowWatermark` when the underlying buffer drains.
+>
+> Filters which must buffer a full request body before processing further, should respond with a 500 (Server Error) if encountering a request body which is larger than the buffer limits.
+>
+> The encoder high watermark path for streaming filters is as follows:
+>
+> - When an instance of `Envoy::Router::StreamEncoderFilter` buffers too much data it should call `StreamEncoderFilterCallback::onEncodeFilterAboveWriteBufferHighWatermark()`.
+> - When `Envoy::Http::ConnectionManagerImpl::ActiveStreamEncoderFilter` receives `onEncoderFilterAboveWriteBufferHighWatermark()` it calls `ConnectionManagerImpl::ActiveStream::callHighWatermarkCallbacks()`
+> - `callHighWatermarkCallbacks()` then in turn calls `DownstreamWatermarkCallbacks::onAboveWriteBufferHighWatermark()` for all filters which registered to receive watermark events
+> - `Envoy::Router::Filter` receives `onAboveWriteBufferHighWatermark()` and calls `readDisable(true)` on the upstream request.
+>
+> The encoder low watermark path for streaming filters is as follows:
+>
+> - When an instance of `Envoy::Router::StreamEncoderFilter` buffers drains it should call `StreamEncoderFilterCallback::onEncodeFilterBelowWriteBufferLowWatermark()`.
+> - When `Envoy::Http::ConnectionManagerImpl::ActiveStreamEncoderFilter` receives `onEncoderFilterBelowWriteBufferLowWatermark()` it calls `ConnectionManagerImpl::ActiveStream::callLowWatermarkCallbacks()`
+> - `callLowWatermarkCallbacks()` then in turn calls `DownstreamWatermarkCallbacks::onBelowWriteBufferLowWatermark()` for all filters which registered to receive watermark events
+> - `Envoy::Router::Filter` receives `onBelowWriteBufferLowWatermark()` and calls `readDisable(false)` on the upstream request.
+
+
+
+- 对于 `stream encoder filter 流式过滤器：即等待底层缓冲区排空时还有机会处理更多字节流的Filter` ：
+  1. 如果 Encoder Filter 的缓冲超过缓冲区限制，则应调用 `onEncoderFilterAboveWriteBufferHighWatermark`。 
+  2. high watermark 调用将从 `Envoy::Http::ConnectionManagerImpl` 传递到 `Envoy::Router::Filter` 
+  3. 然后传递调用到 upsteam 的 stream  的 `readDisable(true)` 以挂起 upstream 数据流。 
+  4. 当底层缓冲区排水到低于 low watermark 时，之前调用过 `onEncoderFilterAboveWriteBufferHighWatermark` 的`stream encoder filter ` 应该再调用 `onEncoderFilterBelowWriteBufferLowWatermark`。
+
+
+
+- 对于 非 `steam filter` 类型的 Filter，即必须缓冲完整  Response body(原文中写 request body ，我觉得不对) 正文才能 encode 的 `Encoder filter`，当遇到太大而无法完全缓冲的 Response body(原文中写 request body ，我觉得不对) 时，应响应 500（服务器错误）。
+
+
+
+`stream encoder filter`的 high watermark 处理流程如下：
+
+1. 当 `Envoy::Http::StreamEncoderFilter（原文中写 Envoy::Router::StreamEncoderFilter，源码无此类）` 的实例缓冲太多数据时，它将调用 `StreamEncoderFilterCallback::onEncodeFilterAboveWriteBufferHighWatermark()`。
+2. 当 `Envoy::Http::ConnectionManagerImpl::ActiveStreamEncoderFilter` 收到 `onEncoderFilterAboveWriteBufferHighWatermark()` 时，它会调用 `ConnectionManagerImpl::ActiveStream::callHighWatermarkCallbacks()`
+3. 然后 `ConnectionManagerImpl::ActiveStream::callHighWatermarkCallbacks() `依次为所有注册接收 high watermark 事件的 http filter 调用 `DownstreamWatermarkCallbacks::onAboveWriteBufferHighWatermark()``
+4. ``Envoy::Router::Filter` 接收到 `onAboveWriteBufferHighWatermark()` 并在 Upstream 的 stream（UpstreamRequest） 上调用 `readDisable(true)`。
+
+
+
+`stream encoder filter`的 low watermark 处理流程如下：
+
+1. 当 `Envoy::Router::StreamEncoderFilter` 实例的缓冲区低于  low watermark 时，它将调用 `StreamEncoderFilterCallback::onEncodeFilterBelowWriteBufferLowWatermark()`。
+2. 当 `Envoy::Http::ConnectionManagerImpl::ActiveStreamEncoderFilter` 收到 `onEncoderFilterBelowWriteBufferLowWatermark()` 时，它会调用 `ConnectionManagerImpl::ActiveStream::callLowWatermarkCallbacks()`
+3. 然后 `ConnectionManagerImpl::ActiveStream::callLowWatermarkCallbacks()` 依次为所有注册接收 watermark 事件的 Filter 调用 `DownstreamWatermarkCallbacks::onBelowWriteBufferLowWatermark()`
+4. `Envoy::Router::Filter` 接收到 `onBelowWriteBufferLowWatermark()`调用，并在 Upstream 的 stream（UpstreamRequest）上调用 `readDisable(false)`。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
