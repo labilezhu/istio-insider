@@ -8,7 +8,7 @@ typora-root-url: ../../..
 
 
 
-Envoy 有一个[Envoy Flow Conrol 文档](https://github.com/envoyproxy/envoy/blob/main/source/docs/flow_control.md)专门叙述了其中的一些细节。我在本节中，记录一下我在这基础上的一些学习研究结果。我使用了翻译软件，但也加上了很多我的修正。
+Envoy 有一个[Envoy Flow Conrol 文档](https://github.com/envoyproxy/envoy/blob/main/source/docs/flow_control.md)专门叙述了其中的一些细节。我在本节中，记录一下我在这基础上的一些学习研究结果。我使用了翻译软件，但也加上了很多我的解读，和对中文思维方式的结构调整。
 
 
 
@@ -63,6 +63,12 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 ## HTTP2 流控实现
 
 由于 HTTP/2 技术堆栈中的各种 Buffer 相当繁杂，因此从 Buffer 超出 `Watermark`限制到暂停来自数据源的数据的每段路径都有单独的 Envoy 文档说明。
+
+
+
+```{note}
+如果读者对 Envoy 的 http-connection-manager 和 http filter chain 了解不多，建议先读本书的： {doc}`/ch2-envoy/arch/http/http-connection-manager/http-connection-manager` 一节。下面的内容假设读者已经了解这些知识。
+```
 
 
 
@@ -187,7 +193,7 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 
 
 
-### HTTP decode/encode filter 的流控
+### HTTP decode/encode filter 流控实现细节
 
 > Each HTTP and HTTP/2 filter has an opportunity to call `decoderBufferLimit()` or `encoderBufferLimit()` on creation. No filter should buffer more than the configured bytes without calling the appropriate watermark callbacks or sending an error response.
 >
@@ -201,12 +207,51 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 
 Filter 可以通过调用 `setDecoderBufferLimit() `和 `setEncoderBufferLimit() `来覆盖默认限制。 这些限制在创建 Filter 时应用，因此 Filter Chain 中后面的 Filter 可以覆盖先前 Filter 设置的限制。 建议调用这些函数的 Filter 通常应仅加大缓冲区的最大限制值，而非减少 limit，以避免与 filter chain 中其他 Filter 的缓冲区要求发生潜在冲突。
 
-大多数 Filter 不会在内部 buffer 数据，而是通过在调用 “`encodeData()`”/“`decodeData()`” 时返回 `FilterDataStatus` 来推回数据。 
+大多数 Filter 不会在内部 buffer 数据，而是通过在调用 “`encodeData()`”/“`decodeData()`” 时返回 `FilterDataStatus` 来推回(push back)数据。 
 
-- 如果 buffer 是 `stream buffer` ，即当前缓冲区内的数据需要一些时间或外部事件才能解析，则它应该返回 `FilterDataStatus::StopIterationAndWatermark` 来暂停进一步(下一个 Filter)的数据处理，这将导致 `ConnectionManagerImpl` 因 Filter 而触发 watermark callback。 
+- 如果 buffer 是 `stream buffer(流式 buffer)` ，即当前缓冲区内的数据需要一些时间或外部事件（如建立 Upstream 连接）才能解析/处理，则它应该返回 `FilterDataStatus::StopIterationAndWatermark` 来暂停进一步(下一个 Filter)的数据处理，这将导致 `ConnectionManagerImpl` 因 Filter 而触发 watermark callback。 
 - 如果 Filter 一定要收集到完整的 HTTP Body 才能继续，则应返回“`FilterDataStatus::StopIterationAndBuffer`”。 在这种情况下，如果“`ConnectionManagerImpl`”缓冲的数据量超过限制，它将向 downstream 返回错误：
-  - 如问题发生在请求处理时，则返回 `413`; 
+  - 如果问题发生在请求处理时，则返回 `413`; 
   - 如果问题发生在响应处理时，则返回 `500` 或“`resetStream()`”。
+
+
+
+#### Decoder filters
+
+> For filters which do their own internal buffering, filters buffering more than the buffer limit should call `onDecoderFilterAboveWriteBufferHighWatermark` if they are streaming filters, i.e. filters which can process more bytes as the underlying buffer is drained. This causes the downstream stream to be readDisabled and the flow of downstream data to be halted. The filter is then responsible for calling `onDecoderFilterBelowWriteBufferLowWatermark` when the buffer is drained to resume the flow of data.
+>
+> Decoder filters which must buffer the full response should respond with a 413 (Payload Too Large) when encountering a response body too large to buffer.
+>
+> The decoder high watermark path for streaming filters is as follows:
+>
+> - When an instance of `Envoy::Router::StreamDecoderFilter` buffers too much data it should call `StreamDecoderFilterCallback::onDecoderFilterAboveWriteBufferHighWatermark()`.
+> - When `Envoy::Http::ConnectionManagerImpl::ActiveStreamDecoderFilter` receives `onDecoderFilterAboveWriteBufferHighWatermark()` it calls `readDisable(true)` on the downstream stream to pause data.
+>
+> And the low watermark path:
+>
+> - When the buffer of the `Envoy::Router::StreamDecoderFilter` drains should call `StreamDecoderFilterCallback::onDecoderFilterBelowWriteBufferLowWatermark()`.
+> - When `Envoy::Http::ConnectionManagerImpl` receives `onDecoderFilterAboveWriteBufferHighWatermark()` it calls `readDisable(false)` on the downstream stream to resume data.
+
+
+
+对于自己进行内部缓冲的`Filter`：
+
+- 如果它是`stream filter(流式 Filter：即等待底层缓冲区排空时还有机会处理更多字节流的Filter)` ，缓冲超过缓冲区限制时将调用 `onDecoderFilterAboveWriteBufferHighWatermark` 。 这会让 Dowstream 的 http stream 被 `readDisabled(true)` 并最终挂起了 Downstream 数据流。 然后，当缓冲区排空以恢复数据流动时，Filter 负责调用 `onDecoderFilterBelowWriteBufferLowWatermark`。
+- 对于 非 `steam filter` 类型的 Filter，即必须缓冲完整响应才能解码的 `Decoder filter`，当遇到太大而无法完全缓冲的响应时，Filter 应该响应 413 (Payload Too Large) 。
+
+
+
+Decoder filter 的 high watermark 处理过程如下：
+
+1. 当 `Envoy::Router::StreamDecoderFilter` 实例缓冲过多数据时，它应该调用 `StreamDecoderFilterCallback::onDecoderFilterAboveWriteBufferHighWatermark()`。
+2. 当 `Envoy::Http::ConnectionManagerImpl::ActiveStreamDecoderFilter` 接收到 `onDecoderFilterAboveWriteBufferHighWatermark() `时，它会调用 downstream 的 stream 的 `readDisable(true)` 来暂停数据流。
+
+
+
+Decoder filter 的 low watermark 处理过程如下：
+
+1. 当 `Envoy::Router::StreamDecoderFilter` 的缓冲区排水到低于 low watermark 时，将调用 `StreamDecoderFilterCallback::onDecoderFilterBelowWriteBufferLowWatermark()`。
+2. 当 `Envoy::Http::ConnectionManagerImpl` 接收到 `onDecoderFilterAboveWriteBufferHighWatermark()` 时，它会调用 Downstream 的 stream 的 `readDisable(false)` 以恢复数据流动。
 
 
 
