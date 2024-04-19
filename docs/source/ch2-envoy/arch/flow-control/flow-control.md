@@ -6,7 +6,12 @@ typora-root-url: ../../..
 
 和所有代理类型的软件一样，Envoy 很重视流控。因为CPU/内存资源是有限的，同时也要避免单个流过度占用资源的情况。需要注意的是，和其它以异步/线程多路复用架构实现的软件一样，流控永远不是一个简单的事情。
 
+如果有人问我，学习 Envoy 实现最难的是什么？我的回答一定是流控部分。而网上这方面的资料极少。或者又有读者问，那么难，为什么还要学习，这个学习有什么价值吗？ 在我看来，这个学习最少有以下价值：
+1. Envoy 作为业务流量的必经重要一环，不容有错。它的内存使用情况在我们做服务资源评估时，应该了解其原理，才可以科学评估。
+2. 了解流量超限时，Envoy 的行为和服务降级的情况可以做到有备无患。
+3. 因为流控牵扯到数据流路径上的所有参与者，研究的过程本身就是对 Envoy 流量组件关系了解的过程。
 
+需要补充说明的是，本节要说的 “流控”，不是指我们一般做微服务 API 时，控制 API TPS 以防服务在高频 API 调用让服务崩溃这种过载保护。而更多是在 Envoy 处理数据流，如 request body/response body 时，防止单个 connection / http2 stream 使用过多内存 buffer 的，基于 `backpressure(背压)` 的保护措施。
 
 Envoy 有一个[Envoy Flow Conrol 文档](https://github.com/envoyproxy/envoy/blob/main/source/docs/flow_control.md)专门叙述了其中的一些细节。我在本节中，记录一下我在这基础上的一些学习研究结果。我使用了翻译软件，但也加上了很多我的解读，和对中文思维方式的结构调整。
 
@@ -39,7 +44,6 @@ Envoy 中的流量控制是通过对每个 Buffer 进行限制 和 `watermark ca
 TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写入 Buffer 和 “`Network::TcpProxy ` Filter” 之间的协调来处理的。
 
 
-
 `Downstream`的流量控制如下。
 
 - Downstream `Network::ConnectionImpl::write_buffer_` 缓冲了太多数据。 它调用“`Network::ConnectionCallbacks::onAboveWriteBufferHighWatermark()`”。
@@ -56,7 +60,7 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 
 
-子系统和 Callback 机制可见前文的： {ref}`ch2-envoy/arch/oop/oop:Callback回调设计模式`  一节。
+子系统和 Callback 机制可见本书的： {ref}`ch2-envoy/arch/oop/oop:Callback回调设计模式`  一节。
 
 
 
