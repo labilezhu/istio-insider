@@ -46,7 +46,7 @@ typora-root-url: ../..
 要实现这些特性，请求与响应的流程自然不可能简单。  
 
 ```{hint}
-看到这里，读者可能有疑问，本节的标题叫 “请求与响应调度” ？ 难度 Envoy 需要类似 Linux Kernel 调度线程一样，去调度处理 Request 吗？   
+看到这里，读者可能有疑问，本节的标题叫 “请求与响应调度” ？ 难道 Envoy 需要类似 Linux Kernel 调度线程一样，去调度处理 Request 吗？   
 
 对的，你说到点上了。
 ```
@@ -81,18 +81,18 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 
 ### 相关组件
 
-上图是尝试说明 `Envoy 请求与响应调度 ` 过程，以及串联相关的组件。其中可以看到一些组件：
+上图尝试说明 `Envoy 请求与响应调度 ` 过程，以及串联相关的组件。其中可以看到一些组件：
 
 - Listener - 应答 downstream 连接请求
 - HTTP Connection Manager(HCM) - HTTP 的核心组件，推动 http 流的读取、解释、路由(Router)
 - HCM-router - HTTP 路由核心组件，职责是:
-  - 判定 HTTP 下一跳的目标 cluster，即 upsteam cluster
+  - 判定 HTTP 下一跳的目标 cluster，即 upstream cluster
   - 重试
 - Load balancing - upstream cluster 内的负载均衡
 - pending request queue - `等待连接池可用连接的请求队列`
 - requests bind to connection - 已经分配到连接的请求
 - connection pool - worker 线程与 upstream host 专用的连接池
-- health checker/Outlier detection - upsteam host 健康监视，发现异常 host 并隔离。
+- health checker/Outlier detection - upstream host 健康监视，发现异常 host 并隔离。
 
 和一些  `Circuit breaking(熔断开关) `上限条件：
 
@@ -188,7 +188,7 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 7. 如果 Envoy 已经有空闲连接到 upstream host，则跳过 8 & 9
 8. Envoy 向 upstream host 发起新连接(TCP 握手)
 9. Envoy 向 upstream host 发起TLS 握手
-10. Envoy 向 upstream host 转发送 requst header & body
+10. Envoy 向 upstream host 转发送 request header & body
 11. Envoy 接收 upstream host 响应的 response header & body
 12. upstream host 连接开始 idle
 13. Envoy 向 downstream 转发送 response header & body

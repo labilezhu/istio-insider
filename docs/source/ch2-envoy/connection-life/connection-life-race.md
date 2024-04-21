@@ -137,7 +137,7 @@
 > Addresses the Envoy-specific parts of #19821
 > Runtime guard: `envoy.reloadable_features.skip_delay_close`
 >
-> 同时出现在 [Envoy 1.22.0 的 Release Note](https://www.envoyproxy.io/docs/envoy/latest/version_history/v1.22/v1.22.0) 里。需要注意的是，为了不影响性能，delayed_close_timeout 在很多情况下是不会生效的：：
+> 同时出现在 [Envoy 1.22.0 的 Release Note](https://www.envoyproxy.io/docs/envoy/latest/version_history/v1.22/v1.22.0) 里。需要注意的是，为了不影响性能，delayed_close_timeout 在很多情况下是不会生效的：
 >
 > **http**: avoiding `delay-close` for:
 >
@@ -205,7 +205,7 @@ Envoy 社区在这个问题有一些讨论，只能减少可能，不可能完�
 
 #### Envoy 实现上的缓解
 
-实现上，Envoy 社区曾经想用让 upstream 连接经历多次 epool event cycle 再复用的方法得到连接状态更新的事件。但这个方案不太好：
+实现上，Envoy 社区曾经想用让 upstream 连接经历多次 epoll event cycle 再复用的方法得到连接状态更新的事件。但这个方案不太好：
 
 > [Github PR: Delay connection reuse for a poll cycle to catch closed connections.#7159(Not Merged)](https://github.com/envoyproxy/envoy/pull/7159#issuecomment-499594146)
 >

@@ -74,9 +74,8 @@ If the [overload action](https://www.envoyproxy.io/docs/envoy/latest/configurati
 
 > [Envoy Doc](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#:~:text=request_headers_timeout%3A%2010s-,drain_timeout,-(Duration)%20The)
 
-(Duration) The time that Envoy will wait between sending an HTTP/2 “shutdown notification” (GOAWAY frame with max stream ID) and a final GOAWAY frame. This is used so that Envoy provides a grace period for new streams that race with the final GOAWAY frame. During this grace period, Envoy will continue to accept new streams. 
-
-After the grace period, a final GOAWAY frame is sent and Envoy will start refusing new streams. Draining occurs both when:
+> (Duration) The time that Envoy will wait between sending an HTTP/2 “shutdown notification” (GOAWAY frame with max stream ID) and a final GOAWAY frame. This is used so that Envoy provides a grace period for new streams that race with the final GOAWAY frame. During this grace period, Envoy will continue to accept new streams. 
+> After the grace period, a final GOAWAY frame is sent and Envoy will start refusing new streams. Draining occurs both when:
 
 * a connection hits the `idle timeout` 
   * 即系连接到达 `idle_timeout` 或 `max_connection_duration`后，都会开始 `draining` 的状态和`drain_timeout`计时器。对于 HTTP/1.1，在 `draining` 状态下。如果 downstream 过来请求，Envoy 都在响应中加入 `Connection: close`  header。
@@ -99,12 +98,12 @@ The default grace period is 5000 milliseconds (5 seconds) if this option is not 
 
 ###  delayed_close_timeout - for downstream only
 
-(Duration) The delayed close timeout is for downstream connections managed by the HTTP connection manager. It is defined as a grace period after connection close processing has been locally initiated during which Envoy will wait for the peer to close (i.e., a TCP FIN/RST is received by Envoy from the downstream connection) prior to Envoy closing the socket associated with that connection。
+> (Duration) The delayed close timeout is for downstream connections managed by the HTTP connection manager. It is defined as a grace period after connection close processing has been locally initiated during which Envoy will wait for the peer to close (i.e., a TCP FIN/RST is received by Envoy from the downstream connection) prior to Envoy closing the socket associated with that connection。
 
 即系在一些场景下，Envoy 会在未完全读取完 HTTP Request 前，就回写 HTTP Response 且希望关闭连接。这叫 `服务端过早关闭连接(Server Prematurely/Early Closes Connection)`。这时有几种可能情况：
 
-- downstream 还在发送 HTTP Reqest 当中(socket write)。
-- 或者是 Envoy 的 kernel 中，还有 `socket recv buffer` 未被 Envoy user-space 进取。通常是 HTTP Conent-Lentgh 大小的 BODY 还在内核的 `socket recv buffer` 中，未完整加载到 Envoy user-space
+- downstream 还在发送 HTTP Request 当中(socket write)。
+- 或者是 Envoy 的 kernel 中，还有 `socket recv buffer` 未被 Envoy user-space 进取。通常是 HTTP Content-Length 大小的 BODY 还在内核的 `socket recv buffer` 中，未完整加载到 Envoy user-space
 
 这两种情况下， 如果 Envoy 调用 `close(fd)` 去关闭连接， downstream 均可能会收到来自 Envoy kernel 的 `RST` 。最终 downstream 可能不会 read socket 中的 HTTP Response 就直接认为连接异常，向上层报告异常：`Peer connection rest`。
 
@@ -114,7 +113,7 @@ The default grace period is 5000 milliseconds (5 seconds) if this option is not 
 
 
 
-NOTE: This timeout is enforced even when the socket associated with the downstream connection is pending a flush of the write buffer. However, any progress made writing data to the socket will restart the timer associated with this timeout. This means that the total grace period for a socket in this state will be `<total_time_waiting_for_write_buffer_flushes>+<delayed_close_timeout>`.
+> NOTE: This timeout is enforced even when the socket associated with the downstream connection is pending a flush of the write buffer. However, any progress made writing data to the socket will restart the timer associated with this timeout. This means that the total grace period for a socket in this state will be `<total_time_waiting_for_write_buffer_flushes>+<delayed_close_timeout>`.
 
 即系，每次 write socket 成功，这个 timer 均会被 rest.
 
@@ -138,7 +137,7 @@ The default timeout is 1000 ms if this option is not specified.
 
 
 
-需要注意的是，为了不影响性能，delayed_close_timeout 在很多情况下是不会生效的：
+需要注意的是，为了不影响性能，`delayed_close_timeout` 在很多情况下是不会生效的：
 
 > [Github PR: http: reduce delay-close issues for HTTP/1.1 and below #19863](https://github.com/envoyproxy/envoy/pull/19863)
 >
