@@ -131,7 +131,7 @@ Envoy 只有两种类型的 Listener 实现。TCP 和 UDP 的。这里我只看 
 或者你和我一样，刚看 Envoy 的代码时，总会混淆名字相近的类。如： `TcpListenerImpl` 、 `TcpListenSocket` 。
 
 细心的同学如果看了图例，就知道图中黑、红连线代表不同类型的线程的。说说图中主流程：
-1. 进程 main 间接调用 ListenerManagerImpl
+1. `main 线程` 间接调用 ListenerManagerImpl
 2. bind socket 绑定到 ip 和 port
 3. 启动新的 worker 线程
 4. 加入异步 task：`add Listener task`(每个 Worker + Listener 执行一次) 到 worker 的任务队列中。

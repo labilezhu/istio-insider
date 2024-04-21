@@ -13,7 +13,7 @@ typora-root-url: ../../..
 
 需要补充说明的是，本节要说的 “流控”，不是指我们一般做微服务 API 时，控制 API TPS 以防服务在高频 API 调用让服务崩溃这种过载保护。而更多是在 Envoy 处理数据流，如 request body/response body 时，防止单个 connection / http2 stream 使用过多内存 buffer 的，基于 `backpressure(背压)` 的保护措施。
 
-Envoy 有一个[Envoy Flow Conrol 文档](https://github.com/envoyproxy/envoy/blob/main/source/docs/flow_control.md)专门叙述了其中的一些细节。我在本节中，记录一下我在这基础上的一些学习研究结果。我使用了翻译软件，但也加上了很多我的解读，和对中文思维方式的结构调整。
+Envoy 有一个[Envoy Flow Control 文档](https://github.com/envoyproxy/envoy/blob/main/source/docs/flow_control.md)专门叙述了其中的一些细节。我在本节中，记录一下我在这基础上的一些学习研究结果。我使用了翻译软件，但也加上了很多我的解读，和对中文思维方式的结构调整。
 
 
 
@@ -80,25 +80,25 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 
 
-#### 最简单的 Upsteam connection 拥塞场景
+#### 最简单的 Upstream connection 拥塞场景
 
 
 > For HTTP/2, when filters, streams, or connections back up, the end result is `readDisable(true)` being called on the source stream. This results in the stream ceasing to consume window, and so not sending further flow control window updates to the peer. This will result in the peer eventually stopping sending data when the available window is consumed (or nghttp2 closing the connection if the peer violates the flow control limit) and so limiting the amount of data Envoy will buffer for each stream. 
 
 对于 HTTP/2，当`Filter`、`streams`、 `connection` 拥塞(Above high watermark)时，最终结果都会调用到数据源头`Source stream`上的 `readDisable(true)`。 这会导致`Source stream`停止消耗`HTTP2 Window`，因此不会向对方发送更多的流量控制`HTTP2 Window Update` ; 最终导致对方在可用窗口耗尽时停止发送数据（或者如果对方违反流量控制限制，nghttp2 将关闭连接），这样 Envoy 就可以对每个`steam` 限制 Buffer 的大小。 
 
-:::{figure-md} Upsteam connection 拥塞与背压
+:::{figure-md} Upstream connection 拥塞与背压
 
-<img src="/ch2-envoy/arch/flow-control/flow-control-1-upstream-backs-up-simple.drawio.svg" alt="Upsteam connection 拥塞与背压">
+<img src="/ch2-envoy/arch/flow-control/flow-control-1-upstream-backs-up-simple.drawio.svg" alt="Upstream connection 拥塞与背压">
 
-*Upsteam connection 拥塞与背压*
+*Upstream connection 拥塞与背压*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-1-upstream-backs-up-simple.drawio.svg)*
 
 
 上图的 `Unbounded buffer` 不是说 Buffer 没有 limit，而是说 limit 是`软限制`。
 
-#### Upsteam connection 与 Upstream http stream 同时拥塞场景
+#### Upstream connection 与 Upstream http stream 同时拥塞场景
 
 
 
@@ -145,11 +145,11 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 3. 然后，随着 Upstream TCP Write Buffer 的不断发送和排空(drains)，`connection` 将低于其低水位线，每个流将调用 `readDisable(false)` 来恢复数据流。 但同时具有网络级挂起和 H2 流控制级挂起的 `stream` 仍然不会完全启用。 
 4. 一旦 Upstream 对端发送 HTTP2 窗口更新，`stream` 缓冲区将排空，并且 Downstream 数据源将调用第二个 `readDisable(false)`，这最终将导致数据再次从 Downstream 流出。
 
-:::{figure-md} Upsteam connection 与 Upstream http stream 同时拥塞
+:::{figure-md} Upstream connection 与 Upstream http stream 同时拥塞
 
-<img src="/ch2-envoy/arch/flow-control/flow-control-2-upstream-backs-up-counter.drawio.svg" alt="Upsteam connection 与 Upstream http stream 同时拥塞">
+<img src="/ch2-envoy/arch/flow-control/flow-control-2-upstream-backs-up-counter.drawio.svg" alt="Upstream connection 与 Upstream http stream 同时拥塞">
 
-*Upsteam connection 与 Upstream http stream 同时拥塞*
+*Upstream connection 与 Upstream http stream 同时拥塞*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-2-upstream-backs-up-counter.drawio.svg)*
 

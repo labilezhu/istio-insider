@@ -27,7 +27,7 @@ typora-root-url: ../..
 1. 接收来自 `downstream` 的 `Request`
 2. 做一些逻辑，必要时修改 `Request` ，并判定`upstream`目的地
 3. 转发（修改后）的 `Request` 到`upstream`
-4. 如果协议是一个 `Request` & `Reponse` 式的协议（如 HTTP）
+4. 如果协议是一个 `Request` & `Response` 式的协议（如 HTTP）
    1. 代理通常会接收`upstream`的`Response`
    2. 做一些逻辑，必要时修改 `Response` 
    3. 转发 `Response` 给 `downstream`

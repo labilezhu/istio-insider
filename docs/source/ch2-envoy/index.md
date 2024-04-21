@@ -14,7 +14,7 @@
 ```
 
 
-由在 Lyft 工作的 Matt Klein 创建。设计时，其定位就是作为 Service Mesh 中的代理。在 Envoy 的初期，Matt Klein 本人与 Google 的 Istio 的开发团队一直保持很好的合作。可以说，Istio 一直和 Envoy 是共生的关系（虽然现在的 Istio 已经可以用其它代理代替 Envoy）。这也是很多人分不清这两者关系的原因。
+Envoy 由在 Lyft 工作的 Matt Klein 创建。设计时，其定位就是作为 Service Mesh 中的代理。在 Envoy 的初期，Matt Klein 本人与 Google 的 Istio 的开发团队一直保持很好的合作。可以说，Istio 一直和 Envoy 是共生的关系（虽然现在的 Istio 已经可以用其它代理代替 Envoy）。这也是很多人分不清这两者关系的原因。
 
 #### 为什么用 C++ 实现
 

@@ -7,7 +7,7 @@
 
 :::{figure-md}
 
-<img src="/ch1-istio-arch/istio-data-panel-arch.assets/istio-data-panel-arch.drawio.svg" alt="Inbound与Outbound概念">
+<img src="/ch1-istio-arch/istio-data-panel-arch.assets/istio-data-panel-arch.drawio.svg" alt="I图:Istio 里的 Envoy 配置 - 部署">
 
 *图:Istio 里的 Envoy 配置 - 部署*
 :::

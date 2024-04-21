@@ -22,9 +22,9 @@
 {ref}`图：Istio数据面架构`  中的 `kernel netfilter`  是一些 TCP 连接的拦截与转发规则，可以这样查看：
 
 ```bash
-export WORKNODE=xzy #关注的 POD 运行的 worknode
+export WORKNODE=xzy # 关注的 POD 运行的 worker node
 ssh $WORKNODE
-export POD=fortio-server #关注的 POD 名字
+export POD=fortio-server # 关注的 POD 名字
 ENVOY_PIDS=$(pgrep envoy)
 while IFS= read -r ENVOY_PID; do
     if [ $(sudo nsenter -u -t $ENVOY_PID hostname)=="$POD" ]; then

@@ -40,7 +40,7 @@ yq eval -P > envoy@istio-conf-eg-inbound.envoy_conf.yaml
 
 :::{figure-md} 图：Istio里的 Envoy Inbound 配置举例
 :class: full-width
-<img src="envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.drawio.svg" alt="Inbound与Outbound概念">
+<img src="envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.drawio.svg" alt="图：Istio里的 Envoy Inbound 配置举例">
 
 *图：Istio里的 Envoy Inbound 配置举例*
 :::
@@ -101,7 +101,7 @@ ESTAB 0      0          localhost:15020                             localhost:51
 解释一下上面的命令。`-t` 是只看 tcp 连接。`-r` 是尝试对 ip 地址反向解释回域名。
 
 ````{tip}
-如果你的环境中发现已经有连接，那么，强制断开它。因为后面要分析一下建立新连接的日志。这里有个 强制断开连接的 ss 命令的秘技：
+如果你的环境中发现已经有连接，那么，强制断开它。因为后面要分析一下建立新连接的日志。这里有个 强制断开连接的 `ss` 命令的秘技：
 ```bash
 k exec -it netshoot -- ss -K 'dst 172-21-206-230.fortio-server.mark.svc.cluster.local'
 ```

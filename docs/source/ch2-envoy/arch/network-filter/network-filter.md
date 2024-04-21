@@ -7,15 +7,15 @@ typora-root-url: ../../..
 ## Network Filter Chains
 在前面章節的 {ref}`图：Istio里的 Envoy Inbound 配置举例` 中，可以看出，一个 Listener 可以包含多个 `Network Filter Chain`。而其中每个 Chain 都有自己的 `filter_chain_match`  ，用于配置新建立的 `Inbound Connection` 选定 `Network Filter Chain` 的策略。
 
-每个 `Network Filter Chain` 都有自己的名字。需要注意的是，`Network Filter Chain` 的名字是允许重复的。
+每个 `Network Filter Chain` 都有自己的名字。*需要注意的是，`Network Filter Chain` 的名字是允许重复的。*
 
 每个 `Network Filter Chain` 又由顺序化的 `Network Filter` 组成。 
 
 ## Network Filter
 
 Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`Network Filter` 就是 L2 / L3 (IP/TCP) 层的组件。如，上面的 {ref}`图：Istio里的 Envoy Inbound 配置举例` 中，顺序地有：
-1. istio.metadata_exchange
-2. envoy.filters.network.http_connection_manager
+1. istio.metadata_exchange `Network Filter`
+2. envoy.filters.network.http_connection_manager `Network Filter`
 
 两个 Network Filter。其中，主要逻辑当然在 `http_connection_manager` 了。
 
@@ -43,7 +43,7 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 1. 框架层面，没有 `Upstream` 这个概念。Filter 实现自行实现/不实现 Upstream，包括连接建立和数据读写，事件通知。所以，框架层面，更没有 Cluster / Connection Pool 等等概念了。
 2. 见下面一项
 3. Filter 之间共享了 Buffer，前面的 Filter 对 Buffer 的读操作，如果沒进行 `drained(排干)` ，后面的 Filter 将会重复读取数据。前面的 Filter 也可以在 Buffer 中插入新数据。 而这个有状态的 Buffer，会传递到后面的 Filter 。
-4. 由于 “框架层面，没有 `Upstream` 这个概念” 所以 `WriteFilter` 也不是直觉中的向 `Upstream` 写 Request/Data 的模块，而是向 `Downsteam` 写 Response/Data 的模块。
+4. 由于 “框架层面，没有 `Upstream` 这个概念” 所以 `WriteFilter` 也不是直觉中的向 `Upstream` 写 Request/Data 的模块，而是向 `Downstream` 写 Response/Data 的模块。
 
 ### Network Filter 对象关系
 
@@ -59,7 +59,7 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-hierarchy.drawio.svg)*
 
 
-可见，大家日常生活中，WriteFilter 并不常用 :) 。
+可见，大家日常生活中，`WriteFilter` 并不常用 :) 。
 
 
 ### Network Filter 框架设计细说
@@ -74,7 +74,7 @@ Envoy 对为保证扩展性，采用多层插件化的设计模式。其中，`N
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fnetwork-filter-framework.drawio.svg)*
 
 
-下面，以经典的 TCP Proxy Fitler 为例，说明一下。
+下面，以经典的 TCP Proxy Filter 为例，说明一下。
 
 
 :::{figure-md} 图：Network Filter Framework - TCP 代理过滤器示例
