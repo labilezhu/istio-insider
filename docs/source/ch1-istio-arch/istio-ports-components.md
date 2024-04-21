@@ -13,8 +13,8 @@ Istio 的每个组件都监听一堆端口。对于初学者，可能很难弄�
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fistio-ports-components.drawio.svg)*
 
 上图需要说明的是：
-- istio-proxy 容器与 应用容器(app container) 共享同一 Linux `network namespace`。 
-- `network namespace` 是内核内用于隔离多个不同网络配置的技术。其中一个配置就是 netfilter，即我们常说的 iptables。我们将在后面说说它的故事。
+- istio-proxy 容器与 Pod内其它容器(app container) 共享同一 Linux `network namespace`。 
+- `network namespace` 是内核内用于隔离多个不同网络配置的技术。其中一个配置就是 `netfilter`，即我们常说的 `iptables`。我们将在后面说说它的故事。
 
 ## 监听端口
 
@@ -83,7 +83,7 @@ COMMIT
 ```
 
 ## 连接
-{ref}`图：Istio端口与组件` 中包含了一些在 Istio 中时行 pod 内部的 TCP 连接的说明（见其中的 `ss` 命令输出）。在此不再赘述。
+{ref}`图：Istio端口与组件` 中包含了一些在 Istio 中时的 pod 的 TCP 连接的说明（见其中的 `ss` 命令输出）。在此不再赘述。
 
 
 ## 运维杂项
@@ -127,17 +127,17 @@ sudo tcpdump -i eth0 -n -vvvv -A  "((src portrange 20000-65535 and src $ETH0_IP)
 
 
 
-有一点比较麻烦的是，`outbound 明文`抓包，出向 ip packet 抓到的是 redirect 后的 127.0.0.1，入向 ip packet 抓到的是未 redirect 前的 ip 地址。如果你用 Wireshark 等工具分析。是无法 Follow TCP Stream 的。
+有一点比较麻烦的是，`outbound 明文`抓包，出向 IP packet 抓到的是 redirect 后的 127.0.0.1，入向 IP packet 抓到的是未 redirect 前的 ip 地址。如果你用 Wireshark 等工具分析。是无法 Follow TCP Stream 的。
 
 
 
 #### Istio Gateway 抓包
 
-一般，Istio Gateway 的 upsteam （Cluster 内部），与 downsteam（Cluster 外部）会在不同的 subnet，所以，可以用 CIDR 去区分。
+一般，Istio Gateway 的 upstream （Cluster 内部），与 downstream（Cluster 外部）会在不同的 subnet，所以，可以用 CIDR 去区分。
 
 
 
-首先，看看 kubernetes cluster 的 pod 的 cidr 范围：
+首先，看看 kubernetes cluster 的 pod 的 CIDR 范围：
 
 ```bash
 ps -ef | grep cidr
@@ -149,16 +149,16 @@ root      48587  20177  0 Dec08 ?        00:21:25 kube-controller-manager ... --
 这时，如果尝试直接使用上面的参数会出错：
 
 ```bash
-$ sudo tcpdump -i br0 -vvvv -A  net 192.168.0.0/12
+$ sudo tcpdump -i br0 -vvvv -A  net 192.168.0.0/12 #168 here
 tcpdump: non-network bits set in "192.168.0.0/12"
 ```
 
 
 
-发现，tcpdump 对 cidr 的格式要求比较严格，要求用首个可用 ip 段。使用 [https://cidr.xyz/](https://cidr.xyz/) 分析出 `192.168.0.0/12` 的首个可用 ip 为 `192.160.0.1`，固：
+发现，tcpdump 对 cidr 的格式要求比较严格，要求用首个可用 ip 地址段。使用 [https://cidr.xyz/](https://cidr.xyz/) 分析出 `192.168.0.0/12` 的首个可用 ip 地址段 为 `192.160.0.1`，固：
 
 ```bash
-sudo tcpdump -i br0 -vvvv -A  net 192.160.0.0/12
+$ sudo tcpdump -i br0 -vvvv -A  net 192.160.0.0/12 #160(NOT 168) here
 ```
 
 
