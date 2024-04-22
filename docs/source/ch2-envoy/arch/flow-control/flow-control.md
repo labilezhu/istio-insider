@@ -153,7 +153,7 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-2-upstream-backs-up-counter.drawio.svg)*
 
-#### Upstream 拥塞时 Router::Filter 的协作
+#### Upstream 拥塞时 `Router::Filter` 的协作
 
 
 
