@@ -296,7 +296,7 @@ EOF
 
 
 
-在 isto-proxy 运行的 worker node 上启动 remote debug server:
+在 istio-proxy 运行的 worker node 上启动 remote debug server:
 
 ```bash
 ssh labile@192.168.122.55 #  ssh 到运行 istio-proxy 的 worker node

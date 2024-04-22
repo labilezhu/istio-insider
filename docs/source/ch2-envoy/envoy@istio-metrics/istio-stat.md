@@ -174,7 +174,7 @@ meshConfig:
 
 #### 定制：加入 request / response 元信息维度
 
-可以把 request 或 repsonse 里一些基础信息 加入到 指标的维度。如，URL Path，这在需要为相同服务分隔统计不同 REST API 的指标时，相当有用。
+可以把 request 或 response 里一些基础信息 加入到 指标的维度。如，URL Path，这在需要为相同服务分隔统计不同 REST API 的指标时，相当有用。
 
 > 参考 : https://istio.io/latest/docs/tasks/observability/metrics/classify-metrics/
 
