@@ -85,6 +85,10 @@ and productive life. To my dear wife and our amazing kid – thanks for all your
 
 There is an English version: [https://istio-insider.mygraphql.com/en/latest/](https://istio-insider.mygraphql.com/en/latest/)
 
+
+![](wechat-reward-qrcode.jpg)
+
+
 ## 目录
 
 
