@@ -11,13 +11,13 @@ typora-root-url: ../../..
 
 
 ## event
-event 这个词意义大广大，libevent 中的 `event` 对象，到底是什么意思？ 理解 OOP 方法编写的某个对象的功能或定位，有一个窍门，就是看对象的属性名和方法名。从上图看了， `event` 是指在某个 fd(file descriptor 文件描述符/句柄) 上可能会发生的信号，如 Read Ready 、 Write Ready 等等。 注意，这里是可能会发生的事件，包括：未来可能发生、正在发生、曾经发生过的事件。
+event 这个词意义太广大，libevent 中的 `event` 对象，到底是什么意思？ 理解 OOP 方法编写的某个对象的功能或定位，有一个窍门，就是看对象的属性名和方法名。从上图看了， `event` 是指在某个 fd(file descriptor 文件描述符/句柄) 上可能会发生的信号，如 Read Ready 、 Write Ready 等等。 注意，这里是可能会发生的事件，包括：未来可能发生、正在发生、曾经发生过的事件。
 
 应用可能对 `event` 进行很多操作，包括监听或订阅事件，以在事件真正发生后，可以 callback 到应用代码。
 
 ## event_base
 
-可以认为是 `event` 的集合。多数事件驱动型的应用实现，每个工作线程拥有自己的 `event_base` 。并执行自己的 `event_base`的事件循环，包括 Envoy 。
+可以认为是 `event` 的集合，或者说，是 `event` 的发射（发生）基地。多数事件驱动型的应用实现，每个工作线程拥有自己的 `event_base` 。并执行自己的 `event_base`的事件循环，包括 Envoy 。
 
 > http://www.wangafu.net/~nickm/libevent-book/Ref2_eventbase.html
 
