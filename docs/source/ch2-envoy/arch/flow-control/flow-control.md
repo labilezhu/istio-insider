@@ -84,8 +84,12 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 
 > For HTTP/2, when filters, streams, or connections back up, the end result is `readDisable(true)` being called on the source stream. This results in the stream ceasing to consume window, and so not sending further flow control window updates to the peer. This will result in the peer eventually stopping sending data when the available window is consumed (or nghttp2 closing the connection if the peer violates the flow control limit) and so limiting the amount of data Envoy will buffer for each stream. 
+>
+> When `readDisable(FALSE)` is called, any outstanding unconsumed data is immediately consumed, which results in resuming window updates to the peer and the resumption of data.
 
 对于 HTTP/2，当`Filter`、`streams`、 `connection` 拥塞(Above high watermark)时，最终结果都会调用到数据源头`Source stream`上的 `readDisable(true)`。 这会导致`Source stream`停止消耗`HTTP2 Window`，因此不会向对方发送更多的流量控制`HTTP2 Window Update` ; 最终导致对方在可用窗口耗尽时停止发送数据（或者如果对方违反流量控制限制，nghttp2 将关闭连接），这样 Envoy 就可以对每个`steam` 限制 Buffer 的大小。 
+
+当 `Source steam` 上的  `readDisable(FALSE)` 被调用时，任何 Buffer 中未被处理的数据都会立即被处理，最终，会恢复向对端发送窗口更新并最终恢复数据流动。
 
 :::{figure-md} Upstream connection 拥塞与背压
 
@@ -102,9 +106,9 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 
 
-> When `readDisable(false)` is called, any outstanding unconsumed data is immediately consumed, which results in resuming window updates to the peer and the resumption of data.
+> Note that `readDisable(true)` on a stream may be called by multiple entities. It is called when any filter buffers too much, when the stream backs up and has too much data buffered, or the connection has too much data buffered. Because of this, `readDisable()` maintains a count of the number of times it has been called to both enable and disable the stream, resuming reads when each caller has called the equivalent low watermark callback. 
 
-当 `Source steam` 上的  `readDisable(FALSE)` 被调用时，任何 Buffer 中未被处理的数据都会立即被处理，最终，会恢复向对端发送窗口更新并最终恢复数据流动。见：
+请注意，同一个 `stream`的 `readDisable(true)` 可能会被多个使用者重复调用。 当任何 `Filter`、`stream` 、`connection` 缓冲过多数据(Above high watermark)时，均会调用 `stream`的 `readDisable(true)`  。 因此，`stream` 的 `readDisable()` 会记住`readDisable(true)`的次数，并在每个调用者调用等次数的低水位线回调时恢复读取。 见：
 
 ```c++
 void ConnectionImpl::StreamImpl::readDisable(bool disable) {
@@ -126,9 +130,9 @@ void ConnectionImpl::StreamImpl::readDisable(bool disable) {
 }
 ```
 
-> Note that `readDisable(true)` on a stream may be called by multiple entities. It is called when any filter buffers too much, when the stream backs up and has too much data buffered, or the connection has too much data buffered. Because of this, `readDisable()` maintains a count of the number of times it has been called to both enable and disable the stream, resuming reads when each caller has called the equivalent low watermark callback. 
 
-请注意，同一个 `stream`的 `readDisable(true)` 可能会被多个使用者重复调用。 当任何 `Filter`、`stream` 、`connection` 缓冲过多数据(Above high watermark)时，均会调用 `stream`的 `readDisable(true)`  。 因此，`stream` 的 `readDisable()` 会记住`readDisable(true)`的次数，并在每个调用者调用等次数的低水位线回调时恢复读取。 
+
+
 
 > For example, if the TCP window upstream fills up and results in the network buffer backing up, all the streams associated with that connection will `readDisable(true)` their downstream data sources. 
 >
