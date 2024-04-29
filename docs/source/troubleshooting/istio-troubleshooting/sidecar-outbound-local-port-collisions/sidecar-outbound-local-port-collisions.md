@@ -214,7 +214,7 @@ iptables -t mangle -A OUTPUT -p tcp -j ISTIO_OUTBOUND_LOG
 
 ![](./5-1-connect-timed-out-by-collision-ephemeral-port.drawio.svg)
 
-**[Open with Draw.io](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fen%2Flatest%2F_images%2F5-1-connect-timed-out-by-collision-ephemeral-port.drawio.svg)**
+**[用 Draw.io 打开](https://app.diagrams.net/#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fen%2Flatest%2F_images%2F5-1-connect-timed-out-by-collision-ephemeral-port.drawio.svg)**
 
 
 
