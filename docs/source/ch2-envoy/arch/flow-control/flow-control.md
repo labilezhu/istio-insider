@@ -80,7 +80,7 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 
 
 
-#### 最简单的 Upstream connection 拥塞场景
+#### Downstream/Upstream connection 拥塞概述
 
 
 > For HTTP/2, when filters, streams, or connections back up, the end result is `readDisable(true)` being called on the source stream. This results in the stream ceasing to consume window, and so not sending further flow control window updates to the peer. This will result in the peer eventually stopping sending data when the available window is consumed (or nghttp2 closing the connection if the peer violates the flow control limit) and so limiting the amount of data Envoy will buffer for each stream. 
@@ -90,6 +90,16 @@ TCP 和 `TLS 终点` 的流量控制是通过“`Network::ConnectionImpl`” 写
 对于 HTTP/2，当`Filter`、`streams`、 `connection` 拥塞(Above high watermark)时，最终结果都会调用到数据源头`Source stream`上的 `readDisable(true)`。 这会导致`Source stream`停止消耗`HTTP2 Window`，因此不会向对方发送更多的流量控制`HTTP2 Window Update` ; 最终导致对方在可用窗口耗尽时停止发送数据（或者如果对方违反流量控制限制，nghttp2 将关闭连接），这样 Envoy 就可以对每个`steam` 限制 Buffer 的大小。 
 
 当 `Source steam` 上的  `readDisable(FALSE)` 被调用时，任何 Buffer 中未被处理的数据都会立即被处理，最终，会恢复向对端发送窗口更新并最终恢复数据流动。
+
+:::{figure-md} Figure: Downstream connection 拥塞与背压概述
+
+<img src="/ch2-envoy/arch/flow-control/flow-control-1-2-downstream-backs-up-overview.drawio.svg" alt="Figure Downstream connection 拥塞与背压概述">
+
+*Figure: Downstream connection 拥塞与背压概述*
+:::
+*[Open with Draw.io](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fflow-control-1-2-downstream-backs-up-overview.drawio.svg)*
+
+
 
 :::{figure-md} Upstream connection 拥塞与背压
 
