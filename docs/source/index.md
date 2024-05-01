@@ -43,7 +43,7 @@
 
 
 ### 关于作者
-我叫 Mark Zhu，一个中年且头发少的程序员。我不是 Istio 专家，更不是 Istio Committer。连互联网大厂员工也不是。
+我叫 Mark Zhu，一个中年且头发少的程序员。我只是个入门级别的 Istio/Envoy contributor，暂时也是只提出过一些 github issue 和 文档方面的 Pull Request 。
 
 为什么水平有限还学人家写书？因为这句话：
 > 你不需要很厲害才能開始，但你需要開始才會很厲害。
