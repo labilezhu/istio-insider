@@ -359,7 +359,7 @@ For the low watermark path:
 
 ### HTTP and HTTP/2 network upstream network buffer
 
-下面我直接使用英文文档。但我加入了我画的图以方便理解。**同时，我发现了一个官方文档的 BUG 也修正了。**
+下面我直接使用英文文档。但我加入了我画的图以方便理解。**同时，我发现了一个官方文档的 BUG 也自己提 Pull Request 修正了: [Docs: flow control - Add a figure and fix suspected incorrect use of Envoy::Http::ConnectionManagerImpl #33847](https://github.com/envoyproxy/envoy/pull/33847)**
 
 
 
@@ -367,21 +367,34 @@ The upstream network buffer is HTTP/2 data for all streams destined for the Envo
 
 The high watermark path is as follows:
 
-- When `Envoy::Network::ConnectionImpl::write_buffer_` has too much data it calls `Network::ConnectionCallbacks::onAboveWriteBufferHighWatermark()`.
-- When `Envoy::Http::CodecClient` receives `onAboveWriteBufferHighWatermark()` it calls `onUnderlyingConnectionAboveWriteBufferHighWatermark()` on `codec_`.
-- When `Envoy::Http::Http2::ConnectionImpl`  (官方文档这里错用为`Envoy::Http::ConnectionManagerImpl` ) receives `onAboveWriteBufferHighWatermark()` it calls `runHighWatermarkCallbacks()` for each stream of the connection.
-- `runHighWatermarkCallbacks()` results in all subscribers of `Envoy::Http::StreamCallback` receiving an `onAboveWriteBufferHighWatermark()` callback.
-- When `Envoy::Router::Filter` receives `onAboveWriteBufferHighWatermark()` it calls `StreamDecoderFilterCallback::onDecoderFilterAboveWriteBufferHighWatermark()`.
-- When `Envoy::Http::ConnectionManagerImpl` receives `onDecoderFilterAboveWriteBufferHighWatermark()` it calls `readDisable(true)` on the downstream stream to pause data.
+ * When `Envoy::Network::ConnectionImpl::write_buffer_` has too much data it calls
+   `Network::ConnectionCallbacks::onAboveWriteBufferHighWatermark()`.
+ * When `Envoy::Http::CodecClient` receives `onAboveWriteBufferHighWatermark()` it
+   calls `onUnderlyingConnectionAboveWriteBufferHighWatermark()` on `codec_`.
+ * When `Envoy::Http::Http2::ConnectionImpl` or `Envoy::Http::Http1::ConnectionImpl` receives `onUnderlyingConnectionAboveWriteBufferHighWatermark()` it calls
+   `runHighWatermarkCallbacks()` for each stream of the connection eventually.
+ * `runHighWatermarkCallbacks()` results in all subscribers of `Envoy::Http::StreamCallback`
+ receiving an `onAboveWriteBufferHighWatermark()` callback.
+ * When `Envoy::Router::Filter` receives `onAboveWriteBufferHighWatermark()` it
+   calls `StreamDecoderFilterCallback::onDecoderFilterAboveWriteBufferHighWatermark()`.
+ * When `Envoy::Http::ConnectionManagerImpl` receives
+ `onDecoderFilterAboveWriteBufferHighWatermark()` it calls `readDisable(true)` on the downstream
+ stream to pause data.
 
 The low watermark path is as follows:
 
-- When `Envoy::Network::ConnectionImpl::write_buffer_` is drained it calls `Network::ConnectionCallbacks::onBelowWriteBufferLowWatermark()`.
-- When `Envoy::Http::CodecClient` receives `onBelowWriteBufferLowWatermark()` it calls `onUnderlyingConnectionBelowWriteBufferLowWatermark()` on `codec_`.
-- When `Envoy::Http::Http2::ConnectionImpl`*(官方文档这里错用为 `Envoy::Http::ConnectionManagerImpl`)* receives `onBelowWriteBufferLowWatermark()` it calls `runLowWatermarkCallbacks()` for each stream of the connection.
-- `runLowWatermarkCallbacks()` results in all subscribers of `Envoy::Http::StreamCallback` receiving a `onBelowWriteBufferLowWatermark()` callback.
-- When `Envoy::Router::Filter` receives `onBelowWriteBufferLowWatermark()` it calls `StreamDecoderFilterCallback::onDecoderFilterBelowWriteBufferLowWatermark()`.
-- When `Envoy::Http::ConnectionManagerImpl` receives `onDecoderFilterBelowWriteBufferLowWatermark()` it calls `readDisable(false)` on the downstream stream to resume data.
+ * When `Envoy::Network::ConnectionImpl::write_buffer_` is drained it calls
+   `Network::ConnectionCallbacks::onBelowWriteBufferLowWatermark()`.
+ * When `Envoy::Http::CodecClient` receives `onBelowWriteBufferLowWatermark()` it
+   calls `onUnderlyingConnectionBelowWriteBufferLowWatermark()` on `codec_`.
+ * When `Envoy::Http::Http2::ConnectionImpl` or `Envoy::Http::Http1::ConnectionImpl` receives `onUnderlyingConnectionBelowWriteBufferLowWatermark()` it calls
+   `runLowWatermarkCallbacks()` for each stream of the connection eventually.
+ * `runLowWatermarkCallbacks()` results in all subscribers of `Envoy::Http::StreamCallback`
+ receiving a `onBelowWriteBufferLowWatermark()` callback.
+ * When `Envoy::Router::Filter` receives `onBelowWriteBufferLowWatermark()` it
+   calls `StreamDecoderFilterCallback::onDecoderFilterBelowWriteBufferLowWatermark()`.
+ * When `Envoy::Http::ConnectionManagerImpl` receives `onDecoderFilterBelowWriteBufferLowWatermark()`
+   it calls `readDisable(false)` on the downstream stream to resume data.
 
 As with the downstream network buffer, it is important that as new upstream streams are associated with an existing upstream connection over its buffer limits that the new streams are created in the correct state. To handle this, the `Envoy::Http::Http2::ClientConnectionImpl` tracks the state of the underlying `Network::Connection` in `underlying_connection_above_watermark_`. If a new stream is created when the connection is above the high watermark the new stream has `runHighWatermarkCallbacks()` called on it immediately.
 
