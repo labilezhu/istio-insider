@@ -2,7 +2,7 @@
 typora-root-url: ../../..
 ---
 
-# 事件驱动与线程模型
+# 事件驱动
 
 ![event loop](/ch2-envoy/arch/event-driven/event-driven.assets/envoy-event-model-loop.drawio.svg)
 
