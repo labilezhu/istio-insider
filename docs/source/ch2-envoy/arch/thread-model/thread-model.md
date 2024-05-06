@@ -5,6 +5,8 @@
 - [Reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern)
 - [Event-driven architecture (EDA)](https://en.wikipedia.org/wiki/Event-driven_architecture)
 
+> 本节内容假设读者已经了解过 Envoy 的事件驱动模型。如果未有，可以阅读本书的 {doc}`ch2-envoy/arch/event-driven/event-driven`
+
 与 Node.JS 的单线程不同，Envoy 为了充分利用多 Core CPU 的优势，支持多个 Worker Thread 各自跑自己独立的 event loop。而这样的设计是有代价的，因为多个 worker thread / main thread 之间其实不是完全独立的，他们需要共享一些数据，如：
 
 - Upstream Cluster 的 endpoints 、健康状态……

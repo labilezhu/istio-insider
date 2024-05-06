@@ -4,7 +4,13 @@ typora-root-url: ../../..
 
 # 事件驱动
 
-![event loop](/ch2-envoy/arch/event-driven/event-driven.assets/envoy-event-model-loop.drawio.svg)
+:::{figure-md} 图： Event Loop of Envoy
+
+<img src="/ch2-envoy/arch/event-driven/event-driven.assets/envoy-event-model-loop.drawio.svg" alt="图 - Event Loop of Envoy">
+
+*图： Event Loop of Envoy*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy-event-model-loop.drawio.svg)*
 
 不出意外，Envoy 使用了 libevent 这个 C 事件 library， libevent 使用了 Linux Kernel 的 epoll 事件驱动 API。
 
