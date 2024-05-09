@@ -100,6 +100,7 @@ There is an English version: [https://istio-insider.mygraphql.com/en/latest/](ht
 ch0/index
 ch1-istio-arch/index
 ch2-envoy/index
+ch4-istio-data-plane/index
 performance/performance.md
 disruptions/disruptions.md
 observability/observability.md

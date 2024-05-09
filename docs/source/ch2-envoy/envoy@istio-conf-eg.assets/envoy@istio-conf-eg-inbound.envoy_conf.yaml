@@ -2753,14 +2753,14 @@ configs:
       - version_info: 2022-08-28T00:41:03Z/5
         cluster:
           '@type': type.googleapis.com/envoy.config.cluster.v3.Cluster
-          name: outbound|8070||fortio-server.idm-mark.svc.cluster.local
+          name: outbound|8070||fortio-server.myprd-mark.svc.cluster.local
           type: EDS
           eds_cluster_config:
             eds_config:
               ads: {}
               initial_fetch_timeout: 0s
               resource_api_version: V3
-            service_name: outbound|8070||fortio-server.idm-mark.svc.cluster.local
+            service_name: outbound|8070||fortio-server.myprd-mark.svc.cluster.local
           connect_timeout: 10s
           lb_policy: LEAST_REQUEST
           circuit_breakers:
@@ -2776,8 +2776,8 @@ configs:
                 default_original_port: 8070
                 services:
                   - name: fortio-server
-                    namespace: idm-mark
-                    host: fortio-server.idm-mark.svc.cluster.local
+                    namespace: myprd-mark
+                    host: fortio-server.myprd-mark.svc.cluster.local
           common_lb_config:
             locality_weighted_lb_config: {}
           filters:
@@ -2826,7 +2826,7 @@ configs:
                             transport_api_version: V3
                           initial_fetch_timeout: 0s
                           resource_api_version: V3
-                  sni: outbound_.8070_._.fortio-server.idm-mark.svc.cluster.local
+                  sni: outbound_.8070_._.fortio-server.myprd-mark.svc.cluster.local
             - name: tlsMode-disabled
               match: {}
               transport_socket:
@@ -3014,14 +3014,14 @@ configs:
       - version_info: 2022-08-28T00:41:03Z/5
         cluster:
           '@type': type.googleapis.com/envoy.config.cluster.v3.Cluster
-          name: outbound|8079||fortio-server-l2.idm-mark.svc.cluster.local
+          name: outbound|8079||fortio-server-l2.myprd-mark.svc.cluster.local
           type: EDS
           eds_cluster_config:
             eds_config:
               ads: {}
               initial_fetch_timeout: 0s
               resource_api_version: V3
-            service_name: outbound|8079||fortio-server-l2.idm-mark.svc.cluster.local
+            service_name: outbound|8079||fortio-server-l2.myprd-mark.svc.cluster.local
           connect_timeout: 10s
           lb_policy: LEAST_REQUEST
           circuit_breakers:
@@ -3036,8 +3036,8 @@ configs:
               istio:
                 services:
                   - name: fortio-server-l2
-                    host: fortio-server-l2.idm-mark.svc.cluster.local
-                    namespace: idm-mark
+                    host: fortio-server-l2.myprd-mark.svc.cluster.local
+                    namespace: myprd-mark
                 default_original_port: 8079
           common_lb_config:
             locality_weighted_lb_config: {}
@@ -3094,7 +3094,7 @@ configs:
                             transport_api_version: V3
                           initial_fetch_timeout: 0s
                           resource_api_version: V3
-                  sni: outbound_.8079_._.fortio-server-l2.idm-mark.svc.cluster.local
+                  sni: outbound_.8079_._.fortio-server-l2.myprd-mark.svc.cluster.local
             - name: tlsMode-disabled
               match: {}
               transport_socket:
@@ -3198,14 +3198,14 @@ configs:
       - version_info: 2022-08-28T00:41:03Z/5
         cluster:
           '@type': type.googleapis.com/envoy.config.cluster.v3.Cluster
-          name: outbound|8079||fortio-server.idm-mark.svc.cluster.local
+          name: outbound|8079||fortio-server.myprd-mark.svc.cluster.local
           type: EDS
           eds_cluster_config:
             eds_config:
               ads: {}
               initial_fetch_timeout: 0s
               resource_api_version: V3
-            service_name: outbound|8079||fortio-server.idm-mark.svc.cluster.local
+            service_name: outbound|8079||fortio-server.myprd-mark.svc.cluster.local
           connect_timeout: 10s
           lb_policy: LEAST_REQUEST
           circuit_breakers:
@@ -3219,9 +3219,9 @@ configs:
             filter_metadata:
               istio:
                 services:
-                  - namespace: idm-mark
+                  - namespace: myprd-mark
                     name: fortio-server
-                    host: fortio-server.idm-mark.svc.cluster.local
+                    host: fortio-server.myprd-mark.svc.cluster.local
                 default_original_port: 8079
           common_lb_config:
             locality_weighted_lb_config: {}
@@ -3278,7 +3278,7 @@ configs:
                             transport_api_version: V3
                           initial_fetch_timeout: 0s
                           resource_api_version: V3
-                  sni: outbound_.8079_._.fortio-server.idm-mark.svc.cluster.local
+                  sni: outbound_.8079_._.fortio-server.myprd-mark.svc.cluster.local
             - name: tlsMode-disabled
               match: {}
               transport_socket:
@@ -3466,14 +3466,14 @@ configs:
       - version_info: 2022-08-28T00:41:03Z/5
         cluster:
           '@type': type.googleapis.com/envoy.config.cluster.v3.Cluster
-          name: outbound|8080||fortio-server-l2.idm-mark.svc.cluster.local
+          name: outbound|8080||fortio-server-l2.myprd-mark.svc.cluster.local
           type: EDS
           eds_cluster_config:
             eds_config:
               ads: {}
               initial_fetch_timeout: 0s
               resource_api_version: V3
-            service_name: outbound|8080||fortio-server-l2.idm-mark.svc.cluster.local
+            service_name: outbound|8080||fortio-server-l2.myprd-mark.svc.cluster.local
           connect_timeout: 10s
           lb_policy: LEAST_REQUEST
           circuit_breakers:
@@ -3488,9 +3488,9 @@ configs:
               istio:
                 default_original_port: 8080
                 services:
-                  - namespace: idm-mark
+                  - namespace: myprd-mark
                     name: fortio-server-l2
-                    host: fortio-server-l2.idm-mark.svc.cluster.local
+                    host: fortio-server-l2.myprd-mark.svc.cluster.local
           common_lb_config:
             locality_weighted_lb_config: {}
           filters:
@@ -3539,7 +3539,7 @@ configs:
                             transport_api_version: V3
                           initial_fetch_timeout: 0s
                           resource_api_version: V3
-                  sni: outbound_.8080_._.fortio-server-l2.idm-mark.svc.cluster.local
+                  sni: outbound_.8080_._.fortio-server-l2.myprd-mark.svc.cluster.local
             - name: tlsMode-disabled
               match: {}
               transport_socket:
@@ -3636,14 +3636,14 @@ configs:
       - version_info: 2022-08-28T00:41:03Z/5
         cluster:
           '@type': type.googleapis.com/envoy.config.cluster.v3.Cluster
-          name: outbound|8080||fortio-server.idm-mark.svc.cluster.local
+          name: outbound|8080||fortio-server.myprd-mark.svc.cluster.local
           type: EDS
           eds_cluster_config:
             eds_config:
               ads: {}
               initial_fetch_timeout: 0s
               resource_api_version: V3
-            service_name: outbound|8080||fortio-server.idm-mark.svc.cluster.local
+            service_name: outbound|8080||fortio-server.myprd-mark.svc.cluster.local
           connect_timeout: 10s
           lb_policy: LEAST_REQUEST
           circuit_breakers:
@@ -3657,9 +3657,9 @@ configs:
             filter_metadata:
               istio:
                 services:
-                  - host: fortio-server.idm-mark.svc.cluster.local
+                  - host: fortio-server.myprd-mark.svc.cluster.local
                     name: fortio-server
-                    namespace: idm-mark
+                    namespace: myprd-mark
                 default_original_port: 8080
           common_lb_config:
             locality_weighted_lb_config: {}
@@ -3709,7 +3709,7 @@ configs:
                             transport_api_version: V3
                           initial_fetch_timeout: 0s
                           resource_api_version: V3
-                  sni: outbound_.8080_._.fortio-server.idm-mark.svc.cluster.local
+                  sni: outbound_.8080_._.fortio-server.myprd-mark.svc.cluster.local
             - name: tlsMode-disabled
               match: {}
               transport_socket:
@@ -4892,12 +4892,12 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8070||fortio-server.idm-mark.svc.cluster.local
+          cluster_name: outbound|8070||fortio-server.myprd-mark.svc.cluster.local
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8080||fortio-server.idm-mark.svc.cluster.local
+          cluster_name: outbound|8080||fortio-server.myprd-mark.svc.cluster.local
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
@@ -5030,7 +5030,7 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8079||fortio-server-l2.idm-mark.svc.cluster.local
+          cluster_name: outbound|8079||fortio-server-l2.myprd-mark.svc.cluster.local
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
@@ -5171,7 +5171,7 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8080||fortio-server-l2.idm-mark.svc.cluster.local
+          cluster_name: outbound|8080||fortio-server-l2.myprd-mark.svc.cluster.local
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
@@ -5297,7 +5297,7 @@ configs:
             overprovisioning_factor: 140
       - endpoint_config:
           '@type': type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment
-          cluster_name: outbound|8079||fortio-server.idm-mark.svc.cluster.local
+          cluster_name: outbound|8079||fortio-server.myprd-mark.svc.cluster.local
           policy:
             overprovisioning_factor: 140
       - endpoint_config:
@@ -12395,21 +12395,21 @@ configs:
                     operation: fortio-server-l2.default.svc.cluster.local:8079/*
                   name: default
               include_request_attempt_count: true
-            - name: fortio-server-l2.idm-mark.svc.cluster.local:8079
+            - name: fortio-server-l2.myprd-mark.svc.cluster.local:8079
               domains:
-                - fortio-server-l2.idm-mark.svc.cluster.local
-                - fortio-server-l2.idm-mark.svc.cluster.local:8079
-                - fortio-server-l2.idm-mark
-                - fortio-server-l2.idm-mark:8079
-                - fortio-server-l2.idm-mark.svc
-                - fortio-server-l2.idm-mark.svc:8079
+                - fortio-server-l2.myprd-mark.svc.cluster.local
+                - fortio-server-l2.myprd-mark.svc.cluster.local:8079
+                - fortio-server-l2.myprd-mark
+                - fortio-server-l2.myprd-mark:8079
+                - fortio-server-l2.myprd-mark.svc
+                - fortio-server-l2.myprd-mark.svc:8079
                 - 10.111.47.7
                 - 10.111.47.7:8079
               routes:
                 - match:
                     prefix: /
                   route:
-                    cluster: outbound|8079||fortio-server-l2.idm-mark.svc.cluster.local
+                    cluster: outbound|8079||fortio-server-l2.myprd-mark.svc.cluster.local
                     timeout: 0s
                     retry_policy:
                       retry_on: connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes
@@ -12425,7 +12425,7 @@ configs:
                       max_stream_duration: 0s
                       grpc_timeout_header_max: 0s
                   decorator:
-                    operation: fortio-server-l2.idm-mark.svc.cluster.local:8079/*
+                    operation: fortio-server-l2.myprd-mark.svc.cluster.local:8079/*
                   name: default
               include_request_attempt_count: true
             - name: fortio-server-l2.mark.svc.cluster.local:8079
@@ -12463,21 +12463,21 @@ configs:
                     operation: fortio-server-l2.mark.svc.cluster.local:8079/*
                   name: default
               include_request_attempt_count: true
-            - name: fortio-server.idm-mark.svc.cluster.local:8079
+            - name: fortio-server.myprd-mark.svc.cluster.local:8079
               domains:
-                - fortio-server.idm-mark.svc.cluster.local
-                - fortio-server.idm-mark.svc.cluster.local:8079
-                - fortio-server.idm-mark
-                - fortio-server.idm-mark:8079
-                - fortio-server.idm-mark.svc
-                - fortio-server.idm-mark.svc:8079
+                - fortio-server.myprd-mark.svc.cluster.local
+                - fortio-server.myprd-mark.svc.cluster.local:8079
+                - fortio-server.myprd-mark
+                - fortio-server.myprd-mark:8079
+                - fortio-server.myprd-mark.svc
+                - fortio-server.myprd-mark.svc:8079
                 - 10.97.117.127
                 - 10.97.117.127:8079
               routes:
                 - match:
                     prefix: /
                   route:
-                    cluster: outbound|8079||fortio-server.idm-mark.svc.cluster.local
+                    cluster: outbound|8079||fortio-server.myprd-mark.svc.cluster.local
                     timeout: 0s
                     retry_policy:
                       retry_on: connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes
@@ -12493,7 +12493,7 @@ configs:
                       max_stream_duration: 0s
                       grpc_timeout_header_max: 0s
                   decorator:
-                    operation: fortio-server.idm-mark.svc.cluster.local:8079/*
+                    operation: fortio-server.myprd-mark.svc.cluster.local:8079/*
                   name: default
               include_request_attempt_count: true
             - name: fortio-server.mark.svc.cluster.local:8079
@@ -12767,21 +12767,21 @@ configs:
                     operation: fortio-server-l2.default.svc.cluster.local:8080/*
                   name: default
               include_request_attempt_count: true
-            - name: fortio-server-l2.idm-mark.svc.cluster.local:8080
+            - name: fortio-server-l2.myprd-mark.svc.cluster.local:8080
               domains:
-                - fortio-server-l2.idm-mark.svc.cluster.local
-                - fortio-server-l2.idm-mark.svc.cluster.local:8080
-                - fortio-server-l2.idm-mark
-                - fortio-server-l2.idm-mark:8080
-                - fortio-server-l2.idm-mark.svc
-                - fortio-server-l2.idm-mark.svc:8080
+                - fortio-server-l2.myprd-mark.svc.cluster.local
+                - fortio-server-l2.myprd-mark.svc.cluster.local:8080
+                - fortio-server-l2.myprd-mark
+                - fortio-server-l2.myprd-mark:8080
+                - fortio-server-l2.myprd-mark.svc
+                - fortio-server-l2.myprd-mark.svc:8080
                 - 10.111.47.7
                 - 10.111.47.7:8080
               routes:
                 - match:
                     prefix: /
                   route:
-                    cluster: outbound|8080||fortio-server-l2.idm-mark.svc.cluster.local
+                    cluster: outbound|8080||fortio-server-l2.myprd-mark.svc.cluster.local
                     timeout: 0s
                     retry_policy:
                       retry_on: connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes
@@ -12797,7 +12797,7 @@ configs:
                       max_stream_duration: 0s
                       grpc_timeout_header_max: 0s
                   decorator:
-                    operation: fortio-server-l2.idm-mark.svc.cluster.local:8080/*
+                    operation: fortio-server-l2.myprd-mark.svc.cluster.local:8080/*
                   name: default
               include_request_attempt_count: true
             - name: fortio-server-l2.mark.svc.cluster.local:8080
@@ -12835,21 +12835,21 @@ configs:
                     operation: fortio-server-l2.mark.svc.cluster.local:8080/*
                   name: default
               include_request_attempt_count: true
-            - name: fortio-server.idm-mark.svc.cluster.local:8080
+            - name: fortio-server.myprd-mark.svc.cluster.local:8080
               domains:
-                - fortio-server.idm-mark.svc.cluster.local
-                - fortio-server.idm-mark.svc.cluster.local:8080
-                - fortio-server.idm-mark
-                - fortio-server.idm-mark:8080
-                - fortio-server.idm-mark.svc
-                - fortio-server.idm-mark.svc:8080
+                - fortio-server.myprd-mark.svc.cluster.local
+                - fortio-server.myprd-mark.svc.cluster.local:8080
+                - fortio-server.myprd-mark
+                - fortio-server.myprd-mark:8080
+                - fortio-server.myprd-mark.svc
+                - fortio-server.myprd-mark.svc:8080
                 - 10.97.117.127
                 - 10.97.117.127:8080
               routes:
                 - match:
                     prefix: /
                   route:
-                    cluster: outbound|8080||fortio-server.idm-mark.svc.cluster.local
+                    cluster: outbound|8080||fortio-server.myprd-mark.svc.cluster.local
                     timeout: 0s
                     retry_policy:
                       retry_on: connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes
@@ -12865,7 +12865,7 @@ configs:
                       max_stream_duration: 0s
                       grpc_timeout_header_max: 0s
                   decorator:
-                    operation: fortio-server.idm-mark.svc.cluster.local:8080/*
+                    operation: fortio-server.myprd-mark.svc.cluster.local:8080/*
                   name: default
               include_request_attempt_count: true
             - name: fortio-server.mark.svc.cluster.local:8080
@@ -13320,21 +13320,21 @@ configs:
                     max_grpc_timeout: 0s
                   name: allow_any
               include_request_attempt_count: true
-            - name: fortio-server.idm-mark.svc.cluster.local:8070
+            - name: fortio-server.myprd-mark.svc.cluster.local:8070
               domains:
-                - fortio-server.idm-mark.svc.cluster.local
-                - fortio-server.idm-mark.svc.cluster.local:8070
-                - fortio-server.idm-mark
-                - fortio-server.idm-mark:8070
-                - fortio-server.idm-mark.svc
-                - fortio-server.idm-mark.svc:8070
+                - fortio-server.myprd-mark.svc.cluster.local
+                - fortio-server.myprd-mark.svc.cluster.local:8070
+                - fortio-server.myprd-mark
+                - fortio-server.myprd-mark:8070
+                - fortio-server.myprd-mark.svc
+                - fortio-server.myprd-mark.svc:8070
                 - 10.97.117.127
                 - 10.97.117.127:8070
               routes:
                 - match:
                     prefix: /
                   route:
-                    cluster: outbound|8070||fortio-server.idm-mark.svc.cluster.local
+                    cluster: outbound|8070||fortio-server.myprd-mark.svc.cluster.local
                     timeout: 0s
                     retry_policy:
                       retry_on: connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes
@@ -13350,7 +13350,7 @@ configs:
                       max_stream_duration: 0s
                       grpc_timeout_header_max: 0s
                   decorator:
-                    operation: fortio-server.idm-mark.svc.cluster.local:8070/*
+                    operation: fortio-server.myprd-mark.svc.cluster.local:8070/*
                   name: default
               include_request_attempt_count: true
             - name: fortio-server.mark.svc.cluster.local:8070
