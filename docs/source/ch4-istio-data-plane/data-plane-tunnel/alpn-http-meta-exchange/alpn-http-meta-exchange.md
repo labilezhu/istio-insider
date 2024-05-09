@@ -65,11 +65,11 @@ Above section show that outbound and inbound istio-proxy should cooperate to sel
 
 
 
-:::{figure-md} Figure: HTTP meta-data exchange at high level
+:::{figure-md} Figure: HTTP protocol meta-data exchange at high level
 
-<img src="/ch4-istio-data-plane/data-plane-tunnel/alpn-http-meta-exchange/alpn-http-meta-exchange-high-level.drawio.svg" alt="Figure - HTTP meta-data exchange at high level">
+<img src="/ch4-istio-data-plane/data-plane-tunnel/alpn-http-meta-exchange/alpn-http-meta-exchange-high-level.drawio.svg" alt="Figure - HTTP protocol meta-data exchange at high level">
 
-*Figure: HTTP meta-data exchange at high level*
+*Figure: HTTP protocol meta-data exchange at high level*
 :::
 *[Open with Draw.io](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Falpn-http-meta-exchange-high-level.drawio.svg)*
 
@@ -91,61 +91,22 @@ Base on the  `istio.alpn` HTTP filter and `Upstream Cluster` meta-data.
 A troubleshooting example of ALPN HTTP Meta Exchange: {doc}`/troubleshooting/istio-troubleshooting/http_protocol_options-accidentally-disable-http2/http_protocol_options-accidentally-disable-http2`
 
 
+Below figure deep dive into the related source code of Envoy Proxy and Istio Proxy. It show you why under the hood.
+
+
+
+:::{figure-md}
+
+<img src="/troubleshooting/istio-troubleshooting/http_protocol_options-accidentally-disable-http2/upstream-http-protocol-selection-src.drawio.svg" alt="Figure - upstream http protocol selection example">
+
+*Figure: upstream http protocol selection example*
+:::
+*[Open with Draw.io](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fupstream-http-protocol-selection-src.drawio.svg)*
+
+
+
 ## Read more
 - [Better Default Networking – Protocol sniffing](https://docs.google.com/document/d/1l0oVAneaLLp9KjVOQSb3bwnJJpjyxU_xthpMKFM_l7o/edit#heading=h.edsodfixs1x7)
 - [Istio MTLS Smartness Explained](https://devops-insider.mygraphql.com/zh-cn/latest/service-mesh/istio/istio-mtls/istio-mtls-smartness-explained.html#alpn)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
