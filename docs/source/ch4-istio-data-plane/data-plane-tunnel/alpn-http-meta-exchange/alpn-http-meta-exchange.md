@@ -2,11 +2,13 @@
 typora-root-url: ../../..
 ---
 
-# 基于 ALPN/TLS 握手的 HTTP 元信息交换(Meta Exchange)
+# 基于 ALPN/TLS 握手的 HTTP 元信息交换
 
 假如你是一家大公司的 HR，每天都要和不同的同事联系沟通。那么你在开始正式的沟通内容前，要做是什么？ 自我介绍和让对方自我介绍。各自表明自己的身份。这些信息可以来源于正式对话开始前的打招呼中，也来在开始对话前看看对方在 Outlook 上的个人信息。
 
 同样，Istio 为实现服务网格，Istio Proxy 需要在网点互连握手时作元信息交换。故 Istio 在原生 Envoy 上再定制了传输层的规约，以实现元信息交换。
+
+
 
 
 让我们从一个例子开始：
@@ -44,6 +46,8 @@ client side(Outbound) Istio Proxy 可以根据 upstream 服务器支持的 HTTP 
 作为服务器的 "Istio Proxy" 将根据上述 downstream 元数据决定 `Network Filter Chains` 和 `Http Filter Chains` 的选择。
 
 
+
+
 ## 术语
 
 - h2c - `基于 TCP 的 HTTP/2` 或 `HTTP/2 明文（Cleartext）`
@@ -71,17 +75,17 @@ client side(Outbound) Istio Proxy 可以根据 upstream 服务器支持的 HTTP 
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Falpn-http-meta-exchange-high-level.drawio.svg)*
 
 
+
+
 - Outbound istio-proxy
 
-基于 `istio.alpn HTTP Filter`  和 `Upstream Cluster` 元数据。
+  基于 `istio.alpn HTTP Filter`  和 `Upstream Cluster` 元数据。
 
 
 
 - Inbound istio-proxy
 
-基于 `Listener->filter_chains->filter_chain_match->application_protocols` 配置和 Outbound istio-proxy 提供的 ALPN 。
-
-
+  基于 `Listener->filter_chains->filter_chain_match->application_protocols` 配置和 Outbound istio-proxy 提供的 ALPN 。
 
 
 
@@ -105,5 +109,4 @@ ALPN HTTP Meta Exchange 的故障排除示例： {doc}`/troubleshooting/istio-tr
 ## 扩展阅读
 - [Better Default Networking – Protocol sniffing](https://docs.google.com/document/d/1l0oVAneaLLp9KjVOQSb3bwnJJpjyxU_xthpMKFM_l7o/edit#heading=h.edsodfixs1x7)
 - [Istio MTLS Smartness Explained](https://devops-insider.mygraphql.com/zh-cn/latest/service-mesh/istio/istio-mtls/istio-mtls-smartness-explained.html#alpn)
-
 

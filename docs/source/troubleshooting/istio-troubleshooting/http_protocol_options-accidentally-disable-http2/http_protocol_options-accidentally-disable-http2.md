@@ -153,7 +153,7 @@ Transport Layer Security
 
 
 
-### outbound istio-proxy 的 Debug log
+### outbound istio-proxy 的 debug log
 
 打开 outbound istio-proxy 的调试日志：
 
