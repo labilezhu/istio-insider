@@ -14,7 +14,7 @@ typora-root-url: ../../..
 [serviceA app --h2c--> serviceA istio-proxy] ----(http over mTLS)---> [serviceB istio-proxy --h2c--> serviceB app]
 ```
 
-Istio Proxy 的一个基本设计原则是尽早知道新连接的下游/上游元数据。因为这样就能尽早做出一些决定。
+Istio Proxy 的一个基本设计原则是尽早知道新连接的 downstream/upstream 元数据。因为这样就能尽早做出一些决定。
 
 
 
@@ -56,7 +56,7 @@ client side(Outbound) Istio Proxy 可以根据 upstream 服务器支持的 HTTP 
 
 
 
-上节显示，inbound 和 outbound istio-proxy 需要合作协商 HTTP 版本。下图为一个示例的协作流程：
+上面说过，inbound 和 outbound istio-proxy 需要合作协商 HTTP 版本。下图为一个示例的协作流程：
 
 
 

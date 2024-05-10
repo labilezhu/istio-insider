@@ -267,7 +267,7 @@ configs:
 
 
 
-### Envoy upstream cluster 的 meta-dta
+### Envoy upstream cluster 的 meta-data
 
 
 
@@ -364,7 +364,7 @@ spec:
 
 
 
-看来上面的配置是从 [HTTP/1.1 Header Casing - Envoy 官方文档](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/header_casing#stateful-formatters) 复制的。但 Envoy 的开发者可能没有想到 “explicit_http_config” 和 “http_protocol_options” 应用于 Istio 时的影响。
+看来上面的配置是从 [HTTP1.1 Header Casing - Envoy 官方文档](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/header_casing#stateful-formatters) 复制的。但 Envoy 的开发者可能没有想到 “explicit_http_config” 和 “http_protocol_options” 应用于 Istio 时的影响。
 
 
 
@@ -474,7 +474,7 @@ spec:
 
 
 
-## 概括
+## 结语
 
 
 
