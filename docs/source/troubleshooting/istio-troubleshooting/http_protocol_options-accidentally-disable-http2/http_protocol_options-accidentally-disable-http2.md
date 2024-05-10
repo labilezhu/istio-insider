@@ -2,20 +2,20 @@
 typora-root-url: ../../..
 ---
 
-# Preserving HTTP/1 header case across Envoy accidentally disabled HTTP/2 on a Istio mesh mixing HTTP1 and HTTP2
+# 因配置 Envoy 保留 HTTP/1 header 大小写，在混合 HTTP1 和 HTTP2 的 Istio 网格上意外禁用了 HTTP/2
 
-## Motivation
+## 动机
 
-In a word: we want to support HTTP/2 in an Istio environment running HTTP/1.1 for a long time. So we want a HTTP/1.1 and HTTP2 hybrid mesh.
+简单说：我们希望在长期运行 HTTP/1.1 的 Istio 环境中支持 HTTP/2。所以我们需要一个 HTTP/1.1 和 HTTP2 混合网格。
 
-We want to support HTTP/2 in below flow of APIs between services:
+我们希望在服务之间的以下 API 流中支持 HTTP/2：
 
 ```
 [serviceA app --h2c--> serviceA istio-proxy] ----(http2 over mTLS)---> [serviceB istio-proxy --h2c--> serviceB app]
 ```
 
 
-Environment:
+环境:
 
 ```
 service A: 
@@ -28,10 +28,10 @@ service B: 10.110.152.25
 ```
 
 
-## Symptom
+## 症状
 
 
-So we try below curl on Pod A:
+所以我们在 Pod A 上尝试下面的 curl ：
 
 ```bash
 curl -iv http://serviceB:8080/resource1?p1=v1 \
@@ -65,11 +65,11 @@ x-envoy-upstream-service-time: 19
 server: envoy
 ```
 
-It seems the app running on Pod A use HTTP/2. 
+Pod A 上运行的应用程序似乎使用 HTTP/2。
 
 
 
-Let us check if Pod B use HTTP/2 :
+让我们检查 Pod B 是否使用 HTTP/2 ：
 
 ```bash
 kubectl logs --tail=1 -f serviceB-ver-6b54d8c7bc-6vclp -c istio-proxy
@@ -78,45 +78,43 @@ kubectl logs --tail=1 -f serviceB-ver-6b54d8c7bc-6vclp -c istio-proxy
 
 
 ```log
-[2024-05-07T07:18:41.470Z] "GET /resource1?p1=v1 HTTP/1.1" 200 - via_upstream - "-" 0 48 16 14 "-" "curl/8.0.1" "6add007-7242-4983-9862-63cd10b8e5" "serviceB:8080" "[priv8]192.168.88.94[/priv8]:8080" outbound|8080|ver|serviceB.ns.svc.cluster.local [priv8]192.168.33.5[/priv8]:48344 [priv8]10.110.152.25[/priv8]:8080 [priv8]192.168.33.5[/priv8]:36650 - -
+[2024-05-07T07:18:41.470Z] "GET /resource1?p1=v1 HTTP/1.1" 200 - via_upstream - "-" 0 48 16 14 "-" "curl/8.0.1" "6add007-7242-4983-9862-63cd108e5" "serviceB:8080" "[p8]192.168.88.94[/p8]:8080" outbound|8080|ver|serviceB.ns.svc.cluster.local [p8]192.168.33.5[/p8]:48344 [p8]10.110.152.25[/p8]:8080 [p8]192.168.33.5[/p8]:36650 - -
 ```
 
-We can see the istio-proxy of serviceB use HTTP/1.1 protocol.
+我们可以看到 serviceB 的 istio-proxy 使用 HTTP/1.1 协议。
 
 
+## 术语
 
-## Glossary
-
-- h2c - HTTP/2 over TCP or HTTP/2 Cleartext
-- h2 - HTTP/2 over TLS (protocol negotiation via ALPN)
-- ALPN - [`ALPN(Application-Layer Protocol Negotiation)` on TLS](https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation)
+- h2c - `基于 TCP 的 HTTP/2` 或 `HTTP/2 明文（Cleartext）`
+- h2 - `基于 TLS 的 HTTP/2`  (使用 ALPN 作协议协商)
+- ALPN - [基于 TLS 的 `ALPN(Application-Layer Protocol Negotiation 应用层协议协商)`](https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation)
 
 
-## Background knowledge
+## 背景知识
 
-Before the investigation, assuming you have base knowledge of {doc}`/ch4-istio-data-plane/data-plane-tunnel/alpn-http-meta-exchange/alpn-http-meta-exchange` .
+在调查之前，假设您有以下基础知识 : {doc}`/ch4-istio-data-plane/data-plane-tunnel/alpn-http-meta-exchange/alpn-http-meta-exchange` .
 
-:::{figure-md} Figure: HTTP protocol meta-data exchange at high level
+:::{figure-md} 图: HTTP 协议元数据交换概述
 
-<img src="/ch4-istio-data-plane/data-plane-tunnel/alpn-http-meta-exchange/alpn-http-meta-exchange-high-level.drawio.svg" alt="Figure - HTTP protocol meta-data exchange at high level">
+<img src="/ch4-istio-data-plane/data-plane-tunnel/alpn-http-meta-exchange/alpn-http-meta-exchange-high-level.drawio.svg" alt="图 - HTTP 协议元数据交换概述">
 
-*Figure: HTTP protocol meta-data exchange at high level*
+*图: HTTP 协议元数据交换概述*
 :::
-*[Open with Draw.io](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Falpn-http-meta-exchange-high-level.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Falpn-http-meta-exchange-high-level.drawio.svg)*
 
-## Investigate
+## 调查
 
-We know the path of traffic:
+我们知道流量的路径：
 
 ```
 [serviceA app --h2c--> serviceA istio-proxy] ----(http2 over mTLS)---> [serviceB istio-proxy --h2c--> serviceB app]
 ```
 
-We know `serviceA istio-proxy` use `ALPN` to negotiate which version of HTTP used between `serviceB istio-proxy`.  See [Better Default Networking – Protocol sniffing](https://docs.google.com/document/d/1l0oVAneaLLp9KjVOQSb3bwnJJpjyxU_xthpMKFM_l7o/edit#heading=h.edsodfixs1x7)
+我们知道 `serviceA istio-proxy` 使用 ALPN 来与 `serviceB istio-proxy` 协商使用哪个版本的 HTTP。请参阅 [Better Default Networking – Protocol sniffing](https://docs.google.com/document/d/1l0oVAneaLLp9KjVOQSb3bwnJJpjyxU_xthpMKFM_l7o/edit#heading=h.edsodfixs1x7) 。
 
 
-
-So we run tcpdump on `serviceA istio-proxy` to inspect ALPN between 2 istio-proxy(s) :
+因此，我们在 “serviceA istio-proxy” 上运行 tcpdump 来探视两个 istio-proxy 之间的 ALPN：
 
 ```
 ss -K 'dst 192.168.88.94'
@@ -151,37 +149,28 @@ Transport Layer Security
 ...                    
 ```
 
-No expected `istio-h2` or `h2` found.
+未找到预期的 “istio-h2” 或 “h2” 。
 
 
 
-### Debug log of outbound istio-proxy
+### outbound istio-proxy 的 Debug log
 
-Enable debug log of outbound istio-proxy: 
+打开 outbound istio-proxy 的调试日志：
 
 ```bash
 curl -XPOST http://localhost:15000/logging\?filter\=trace
 ```
 
-
-
-Get the log:
+可以看到日志输出:
 
 ```log
 {"level":"debug","time":"2024-05-07T07:18:41.471107Z","scope":"envoy filter","msg":"override with 3 ALPNs"}
 ```
 
-
-
-
-
 ### Evnoy Listener
 
-
-
-So we dump the Envoy configuration of `serviceA istio-proxy` :
-
-Evnoy Listener on `serviceA istio-proxy`:
+因此，我们 dump `serviceA istio-proxy` 的 Envoy 配置：
+`serviceA istio-proxy` 上的 Envoy Listener：
 
 ```yaml
 configs:
@@ -242,16 +231,16 @@ configs:
                               '@type': type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
 ```
 
-If you search `istio alpn filter` on Google, you may not found any thing meaningful. Only some articles:
+如果您在搜索引擎中找 “istio alpn filter”，您可能找不到任何有意义的东西。仅部分文章：
 
 -  [Better Default Networking – Protocol sniffing](https://docs.google.com/document/d/1l0oVAneaLLp9KjVOQSb3bwnJJpjyxU_xthpMKFM_l7o/edit#heading=h.edsodfixs1x7)
 - [Istio MTLS Smartness Explained](https://devops-insider.mygraphql.com/zh-cn/latest/service-mesh/istio/istio-mtls/istio-mtls-smartness-explained.html#alpn)
 
 
 
-So now we know that:
+所以现在我们知道：
 
-- When upstream cluster supported `HTTP11` , below HTTP protocol will be provided in ALPN:
+- 当 upstream cluster 支持 `HTTP11` 时，TLS 流量中的 ALPN 将提供以下 HTTP 协议：
 
 ```
                                 alpn_override:
@@ -262,7 +251,7 @@ So now we know that:
 
 
 
-- When upstream cluster supported `HTTP2` , below HTTP protocol will be provided in ALPN:
+- 当 upstream cluster 支持 `HTTP2` 时，TLS 流量中的 ALPN 将提供以下 HTTP 协议：
 
 ```
                               - upstream_protocol: HTTP2
@@ -274,15 +263,15 @@ So now we know that:
 
 
 
-Look back to above tcpdump output, we know that , `serviceA istio-proxy`  assume upstream cluster supported `HTTP/1.1`.  Why?
+回顾上面的 tcpdump 输出，我们知道，“serviceA istio-proxy” 认为 upstream cluster 只支持 “HTTP/1.1”。为什么？
 
 
 
-### Envoy upstream cluster meta-data declare
+### Envoy upstream cluster 的 meta-dta
 
 
 
-Envoy upstream cluster meta-data declare of  `serviceB` on `serviceA istio-proxy`:
+在 “serviceA istio-proxy” 上的关于 upstream cluster “service B” 的元数据：
 
 ```yaml
     dynamic_active_clusters:
@@ -314,7 +303,7 @@ Envoy upstream cluster meta-data declare of  `serviceB` on `serviceA istio-proxy
 
 
 
-There are 3 methods of Upstream HTTP protocol selection of Envoy:
+Envoy 的 Upstream HTTP 协议选择有 3 种方法：
 
 - [explicit_http_config](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/upstreams/http/v3/http_protocol_options.proto#envoy-v3-api-field-extensions-upstreams-http-v3-httpprotocoloptions-explicit-http-config) : To explicitly configure either HTTP/1 or HTTP/2 **(but not both!)** use `explicit_http_config`
 - [use_downstream_protocol_config](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/upstreams/http/v3/http_protocol_options.proto#envoy-v3-api-field-extensions-upstreams-http-v3-httpprotocoloptions-use-downstream-protocol-config) : This allows switching on protocol based on what protocol the downstream connection used.
@@ -322,13 +311,12 @@ There are 3 methods of Upstream HTTP protocol selection of Envoy:
 
 
 
-## Root cause
+## 问题根源
 
-So now we know the direct cause is `serviceA istio-proxy`  assume upstream cluster supported `HTTP/1.1`, and it is cause by above `explicit_http_config` and  it's sub item `http_protocol_options`. But way `explicit_http_config` existed in the upstream cluster meta-data ? It is generated by native Istio ?
+现在我们知道直接原因是 “serviceA istio-proxy” 假设 upstream cluster 只支持 “HTTP/1.1”，这是由上面的“explicit_http_config” 及其子项 “http_protocol_options” 引起的。 但为何 upstream cluster 元数据中存在“explicit_http_config” ？ 它是由原生 Istio 生成的？
 
 
-
-Let's have a look at the `EnvoyFilter` of Istio:
+我们看一下 Istio 的 EnvoyFilter：
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -376,15 +364,16 @@ spec:
 
 
 
-It seems above configuration is copy from [HTTP/1.1 Header Casing - from official documentation of Envoy](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/header_casing#stateful-formatters).  But developers of Envoy may not think the impaction of `explicit_http_config` and `http_protocol_options` when applied on Istio. 
+看来上面的配置是从 [HTTP/1.1 Header Casing - Envoy 官方文档](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/header_casing#stateful-formatters) 复制的。但 Envoy 的开发者可能没有想到 “explicit_http_config” 和 “http_protocol_options” 应用于 Istio 时的影响。
 
 
 
-There are many github issues about preserve HTTP/1.1 header case :
+Istio 上有很多关于保留 HTTP/1.1 header 大小写的 github issue，下面按时间顺序列出了这些问题：
+
 
 - [Issue: Enable preserve HTTP Header casing #32008](https://github.com/istio/istio/issues/32008#issuecomment-988865470)
 
-  >We do not intend to ever merge this feature into Istio, as we have medium term plans to use HTTP2 ~everywhere and any http2 hop destroys casing. You can apply EnvoyFilter at your own risk, with the knowledge that it *will* break sooner or later
+- [PR: add support for preserving header key case #33030 - Fixes #32008](https://github.com/istio/istio/pull/33030)
 
 - [Istio Technical Oversight Committee Meeting Notes - 2021/06/7](https://docs.google.com/document/d/13lxJqtlaQhmV2EwsNnS6h-_O4pobZQZuMjrzOeMgVI0/edit?usp=sharing)
 
@@ -397,11 +386,24 @@ There are many github issues about preserve HTTP/1.1 header case :
   >   - - For new users, it seems better in all cases to preserve the case. I don't see a need to allow an API to lowercase it
   >     - For existing users, they might have come to rely on the lowercasing. It seems a bit odd, as most apps probably assume title casing if anything, so hopefully when they adopt Istio they fix to being case insensitive instead of assuming lowercase, but I am sure in practice it may break users
 
+- [PR: Revert "add support for preserving header key case" #33122 - Reverts #33030](https://github.com/istio/istio/pull/33122)
+
 - [PR: support HTTP/1.1 case preserve #2817](https://github.com/istio/api/pull/2817)
 
-  
 
-So we can fix it now:
+
+讨论的结论是 Istio 不会正式支持保留 HTTP/1.1 header 大小写：
+
+> [Issue: Enable preserve HTTP Header casing #32008](https://github.com/istio/istio/issues/32008#issuecomment-988865470)
+>
+> We do not intend to ever merge this feature into Istio, as we have medium term plans to use HTTP2 ~everywhere and any http2 hop destroys casing. You can apply EnvoyFilter at your own risk, with the knowledge that it *will* break sooner or later
+
+
+
+因此，我们必须支持通过 “Istio Envoy Filter” 保留 header 大小写。但对于 HTTP/1.1 和 HTTP2 混合网格，如果您遵循 [HTTP/1.1 Header Casing - Envoy 官方文档](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/ header_casing#stateful-formatters) ，并使用 `explicit_http_config`，您可能最终会意外禁用 HTTP/2。所以一般来说 `use_downstream_protocol_config` 是一个更具兼容性和更安全的选择。
+
+
+所以我们现在可以修复它：
 
 ```yaml
 kubectl apply -f - <<"EOF"
@@ -450,23 +452,21 @@ spec:
 
 
 
-We use `use_downstream_protocol_config` here because we want the upstream protocol follow the downstream protocol.
+我们在这里使用 “use_downstream_protocol_config” ，因为我们希望 upstream 协议遵循 downstream 协议。
 
 
 
-Below figure deep dive into the related source code of Envoy Proxy and Istio Proxy. It show you why under the hood.
+下图深入探究了 Envoy Proxy 和 Istio Proxy 的相关源码。尝试展示背后的原因：
 
 
 
+:::{figure-md} 图: upstream http protocol selection troubleshooting
 
+<img src="/troubleshooting/istio-troubleshooting/http_protocol_options-accidentally-disable-http2/upstream-http-protocol-selection-src.drawio.svg" alt="图 - upstream http protocol selection troubleshooting">
 
-:::{figure-md} Figure: upstream http protocol selection troubleshooting
-
-<img src="/troubleshooting/istio-troubleshooting/http_protocol_options-accidentally-disable-http2/upstream-http-protocol-selection-src.drawio.svg" alt="Figure - upstream http protocol selection troubleshooting">
-
-*Figure: upstream http protocol selection troubleshooting*
+*图: upstream http protocol selection troubleshooting*
 :::
-*[Open with Draw.io](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fupstream-http-protocol-selection-src.drawio.svg)*
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fupstream-http-protocol-selection-src.drawio.svg)*
 
 
 
@@ -474,11 +474,11 @@ Below figure deep dive into the related source code of Envoy Proxy and Istio Pro
 
 
 
-## Summary
+## 概括
 
 
 
-Read the official Istio Envoy Filter documentation:  
+阅读 Istio Envoy Filter 官方文档：
 
 > [Envoy Filter](https://istio.io/latest/docs/reference/config/networking/envoy-filter/)
 >
@@ -486,5 +486,5 @@ Read the official Istio Envoy Filter documentation:
 
 
 
-May be we should check all configuration items of Istio Envoy Filters by the documentation  of Envoy before we apply it to Istio.
+也许我们应该在将其应用到 Istio 之前，通过 Envoy 的文档来检查 Istio Envoy Filters 的所有配置项。
 
