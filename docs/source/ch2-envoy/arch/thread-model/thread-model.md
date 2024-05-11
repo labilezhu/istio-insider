@@ -74,7 +74,9 @@ Envoy 使用几种不同类型的线程，如上图所示。下面选择主要�
 
 共享的数据，如果都是加锁写读访问，并发度一定会下降。于是 Envoy 作者在分析数据同步更新的实时一致性要求不高的条件下，参考了 Linux kernel 的 [read-copy-update (RCU)](https://en.wikipedia.org/wiki/Read-copy-update) 设计模式，实现了一套 Thread Local 的数据同步机制。在底层实现上，是基于 C++11 的 `thread_local` 功能，和 libevent 的 `libevent::event_active(&raw_event_, EV_TIMEOUT, 0)` 去实现。
 
-下图在 [Envoy threading model - Matt Klein](https://blog.envoyproxy.io/envoy-threading-model-a8d44b922310) 基础上，尝试说明 Envoy 在源码实现层面，是如何使用 Thread Local 机制实现 thread 之间共享数据的。
+下图在 [Envoy threading model - Matt Klein](https://blog.envoyproxy.io/envoy-threading-model-a8d44b922310) 基础上，尝试以 Cluster Manager 为例，说明 Envoy 在源码实现层面，是如何使用 Thread Local 机制实现 thread 之间共享数据的。
+
+
 
 :::{figure-md} 图: ThreadLocal Classes
 
@@ -83,6 +85,20 @@ Envoy 使用几种不同类型的线程，如上图所示。下面选择主要�
 *图: ThreadLocal Classes*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fthread-local-classes.drawio.svg)*
+
+
+
+上图可以简述如下：
+
+
+
+1. main 线程 初始化 `ThreadLocal::InstanceImpl` 以及每个 `Dispatcher` 注册到 `ThreadLocal::InstanceImpl` 
+2. main 线程 通知所有 worker 线程创建本地的 `ThreadLocalClusterManagerImpl` 
+3. main 线程感知到一个 Cluster 被删除时，通知各个 worker 线程的 `ThreadLocalClusterManagerImpl`  删除这个 Cluster 
+4. worker 线程上的 `TCPProxy` 尝试连接一个 `OnDemand Cluster(未知的 cluster）` 时，获取线程本地的  `ThreadLocalClusterManagerImpl`  
+
+
+
 
 
 ## Ref
