@@ -12,6 +12,8 @@
 - [Reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern)
 - [Event-driven architecture (EDA)](https://en.wikipedia.org/wiki/Event-driven_architecture)
 
+
+
 > 本节内容假设读者已经了解过 Envoy 的事件驱动模型。如果未有，可以阅读本书的 {doc}`/ch2-envoy/arch/event-driven/event-driven`。
 > 本节内容参考了：[Envoy threading model - Matt Klein](https://blog.envoyproxy.io/envoy-threading-model-a8d44b922310) 
 
