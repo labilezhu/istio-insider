@@ -6,7 +6,7 @@ Envoy 的 Upstream 功能，由  `Cluster Manager` / `Load Balancer` / `Connecti
 2. 并在这个`owner thread` 内创建专用的 `Network Filter` 实例。
 3. 之后所有这个 downstream connection 的相关的操作，包括所有的相关的 upstream 操作，都在这个 `owner thread` 上执行。
    
-本书把这些关联的 downstream / upstream 以及相关的 `Network Filter` 实例，称为`Downstream-Upstream-Bundle` 。
+本书把这些关联的 downstream / upstream 以及相关的 `Network Filter` 实例，称为 `Downstream-Upstream-Bundle` 。
 而这个 `owner thread` 的 `Cluster Manager` / `Load Balancer` / `Connection Pool` 实例是在同一 `owner thread` 上的所有 `Downstream-Upstream-Bundle` 所共享的。
 
 ```{toctree}
