@@ -8,7 +8,7 @@
 
 ### TCP Proxy 连接池概述
 
-首先看看概述一下 `Cluster Manager` / `Load Balancer` / `Connection Pool`  / `Network Filter` 的模块协作：
+首先概述一下 `Cluster Manager` / `Load Balancer` / `Connection Pool`  / `Network Filter` 的模块协作：
 
 :::{figure-md} 图：Envoy TCP Proxy connection pool at high level
 :class: full-width
