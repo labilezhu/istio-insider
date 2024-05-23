@@ -1,13 +1,6 @@
 # Istio 与 Envoy 指标
 
-```{toctree}
-:hidden:
-:maxdepth: 3
-envoy-stat.md
-istio-stat.md
-envoy-stat-impl.md
-metrics@req-resp-flow-timeline.md
-```
+
 
 
 指标监控，可能是 DevOps 监控最重要的一环。但同时也可能是最难的一环。你可以从网上找到各种系统和中间件的 Grafana 监控仪表盘，它们大都设计得很漂亮得体，让人感觉监控已经完美无缺。  
@@ -29,32 +22,11 @@ metrics@req-resp-flow-timeline.md
 
 故事说完了，回到本书的主角 Istio 与 Envoy 上。它们的指标说明文档比上面的老爷车开源软件好一些。起码基本每个指标都有一行文字说明，虽然文字一样非常短且模糊。
 
-## Istio 与 Envoy 指标概述
-
-Istio 的 istio-proxy 的数据面指标是 基于 Envoy 的指标构架实现的。所以，后面我将先说 Envoy 的指标架构。
-
-
-```{hint}
-如果你和我一样，是个急性子。那么下图就是 Istio & Envoy 的指标地图了。它说明了指标产生在什么地方。后面内容会一步步推导出这个地图。
+```{toctree}
+:maxdepth: 3
+envoy-istio-metrics-overview.md
+envoy-stat.md
+istio-stat.md
+envoy-stat-impl.md
+metrics@req-resp-flow-timeline.md
 ```
-
-:::{figure-md} 图：Envoy@Istio的指标
-
-<img src="/ch2-envoy/envoy-istio-metrics/index.assets/envoy@istio-metrics.drawio.svg" alt="Inbound与Outbound概念">
-
-*图：Envoy@Istio的指标*
-:::
-*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fenvoy@istio-metrics.drawio.svg)*
-
-
-
-:::{figure-md}
-:class: full-width
-
-<img src="/ch2-envoy/req-resp-flow-timeline/req-resp-flow-timeline.assets/req-resp-flow-timeline.drawio.svg" alt="图：Envoy 请求与响应时序线上的指标">
-
-*图：Envoy 请求与响应时序线上的指标*
-:::
-*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline.drawio.svg)*
-
-
