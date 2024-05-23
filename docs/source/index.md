@@ -89,7 +89,7 @@ There is an English version: [https://istio-insider.mygraphql.com/en/latest/](ht
 ![](wechat-reward-qrcode.jpg)
 
 
-## 目录
+# 目录
 
 
 ```{toctree}
@@ -108,7 +108,7 @@ troubleshooting/troubleshooting.md
 dev-istio/dev-istio.md
 ```
 
-## 附录
+# 附录
 
 ```{toctree}
 :caption: 附录

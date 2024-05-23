@@ -6,10 +6,10 @@ typora-root-url: ../../..
 
 `Listener` 顾名思义，就是被动监听和接受连接的的组件。那么是不是每个 Listener 都会 listen socket ? 我们带着问题往下看。
 
-开始学习 Listener 前，先回顾一下前面章节的 {doc}`/ch2-envoy/envoy@istio-conf-eg` 中的例子。
+开始学习 Listener 前，先回顾一下前面章节的 {doc}`/ch2-envoy/envoy-istio-conf-eg` 中的例子。
 
 ```{note}
-这里下载 Envoy 的配置 yaml {download}`envoy@istio-conf-eg-inbound.envoy_conf.yaml </ch2-envoy/envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.envoy_conf.yaml>` .
+这里下载 Envoy 的配置 yaml {download}`envoy@istio-conf-eg-inbound.envoy_conf.yaml </ch2-envoy/envoy-istio-conf-eg.assets/envoy@istio-conf-eg-inbound.envoy_conf.yaml>` .
 ```
 
 :::{figure-md}
@@ -23,7 +23,7 @@ typora-root-url: ../../..
 
 :::{figure-md}
 :class: full-width
-<img src="/ch2-envoy/envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.drawio.svg" alt="Inbound与Outbound概念">
+<img src="/ch2-envoy/envoy-istio-conf-eg.assets/envoy@istio-conf-eg-inbound.drawio.svg" alt="Inbound与Outbound概念">
 
 *图：Istio里的 Envoy Inbound配置举例*
 :::
@@ -31,7 +31,7 @@ typora-root-url: ../../..
 
 :::{figure-md}
 :class: full-width
-<img src="/ch2-envoy/envoy@istio-conf-eg.assets/envoy@istio-conf-eg-outbound.drawio.svg" alt="图：Istio里的 Envoy Outbound 配置举例">
+<img src="/ch2-envoy/envoy-istio-conf-eg.assets/envoy@istio-conf-eg-outbound.drawio.svg" alt="图：Istio里的 Envoy Outbound 配置举例">
 
 *图：Istio里的 Envoy Outbound 配置举例*
 :::

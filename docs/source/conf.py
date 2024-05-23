@@ -63,7 +63,10 @@ numfig = False
 language = 'zh_CN'
 
 # -- Options for EPUB output
-epub_show_urls = 'footnote'
+epub_show_urls = 'no'
+epub_tocscope = 'includehidden'
+epub_cover = ('_static/book-cover-800.png', '')
+epub_tocdup = False
 
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]

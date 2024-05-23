@@ -30,7 +30,7 @@ Istio 的 istio-proxy 的数据面指标是 基于 Envoy 的指标构架实现�
 
 :::{figure-md} 图：Envoy@Istio的指标
 
-<img src="/ch2-envoy/envoy@istio-metrics/index.assets/envoy@istio-metrics.drawio.svg" alt="Inbound与Outbound概念">
+<img src="/ch2-envoy/envoy-istio-metrics/index.assets/envoy@istio-metrics.drawio.svg" alt="Inbound与Outbound概念">
 
 *图：Envoy@Istio的指标*
 :::

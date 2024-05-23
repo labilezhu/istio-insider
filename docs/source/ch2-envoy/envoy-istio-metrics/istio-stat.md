@@ -561,7 +561,7 @@ bootstrap:
 :::{figure-md} 图：Istio-Proxy 指标地图
 :class: full-width
 
-<img src="/ch2-envoy/envoy@istio-metrics/index.assets/envoy@istio-metrics.drawio.svg" alt="Inbound与Outbound概念">
+<img src="/ch2-envoy/envoy-istio-metrics/index.assets/envoy@istio-metrics.drawio.svg" alt="Inbound与Outbound概念">
 
 *图：Istio-Proxy 指标地图*
 :::

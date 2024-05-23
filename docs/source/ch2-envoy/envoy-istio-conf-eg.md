@@ -29,7 +29,7 @@ yq eval -P > envoy@istio-conf-eg-inbound.envoy_conf.yaml
 ```
 
 ```{note}
-这里下载 {download}`envoy@istio-conf-eg-inbound.envoy_conf.yaml </ch2-envoy/envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.envoy_conf.yaml>` .
+这里下载 {download}`envoy@istio-conf-eg-inbound.envoy_conf.yaml </ch2-envoy/envoy-istio-conf-eg.assets/envoy@istio-conf-eg-inbound.envoy_conf.yaml>` .
 ```
 
 下面先不展开说明配置文件，直接看分析过程，最后，会回归到这个配置中。
@@ -40,7 +40,7 @@ yq eval -P > envoy@istio-conf-eg-inbound.envoy_conf.yaml
 
 :::{figure-md} 图：Istio里的 Envoy Inbound 配置举例
 :class: full-width
-<img src="envoy@istio-conf-eg.assets/envoy@istio-conf-eg-inbound.drawio.svg" alt="图：Istio里的 Envoy Inbound 配置举例">
+<img src="envoy-istio-conf-eg.assets/envoy@istio-conf-eg-inbound.drawio.svg" alt="图：Istio里的 Envoy Inbound 配置举例">
 
 *图：Istio里的 Envoy Inbound 配置举例*
 :::
@@ -224,7 +224,7 @@ envoy pool	[C12991] destroying stream: 0 remaining
 
 :::{figure-md} 图：Istio里的 Envoy Inbound 组件与日志
 :class: full-width
-<img src="envoy@istio-conf-eg.assets/log-envoy@istio-conf-eg-inbound.drawio.svg" alt="图：Istio里的 Envoy Inbound 组件与日志">
+<img src="envoy-istio-conf-eg.assets/log-envoy@istio-conf-eg-inbound.drawio.svg" alt="图：Istio里的 Envoy Inbound 组件与日志">
 
 *图：Istio里的 Envoy Inbound 组件与日志*
 :::
@@ -237,7 +237,7 @@ envoy pool	[C12991] destroying stream: 0 remaining
 
 :::{figure-md} 图：Istio里的 Envoy Outbound 配置举例
 :class: full-width
-<img src="envoy@istio-conf-eg.assets/envoy@istio-conf-eg-outbound.drawio.svg" alt="图：Istio里的 Envoy Outbound 配置举例">
+<img src="envoy-istio-conf-eg.assets/envoy@istio-conf-eg-outbound.drawio.svg" alt="图：Istio里的 Envoy Outbound 配置举例">
 
 *图：Istio里的 Envoy Outbound 配置举例*
 :::

@@ -2,7 +2,7 @@
 
 ## 再说 upstream/upstream
 
-让我们回到 {doc}`/ch2-envoy/envoy@istio-conf-eg` 的例子：
+让我们回到 {doc}`/ch2-envoy/envoy-istio-conf-eg` 的例子：
 
 
 :::{figure-md}
