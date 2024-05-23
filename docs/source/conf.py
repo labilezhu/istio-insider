@@ -68,6 +68,7 @@ epub_tocscope = 'includehidden'
 epub_cover = ('_static/book-cover-800.png', '')
 epub_tocdup = False
 epub_tocdepth = 4
+epub_use_index = False
 
 
 html_static_path = ["_static"]
