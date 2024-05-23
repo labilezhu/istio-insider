@@ -1,5 +1,15 @@
 # Istio 与 Envoy 指标
 
+```{toctree}
+:hidden:
+:maxdepth: 3
+envoy-stat.md
+istio-stat.md
+envoy-stat-impl.md
+metrics@req-resp-flow-timeline.md
+```
+
+
 指标监控，可能是 DevOps 监控最重要的一环。但同时也可能是最难的一环。你可以从网上找到各种系统和中间件的 Grafana 监控仪表盘，它们大都设计得很漂亮得体，让人感觉监控已经完美无缺。  
 
 但是，不知道你是否与我有同样的经历：在系统遇到问题时，手头有一大堆指标和监控仪表盘。
@@ -48,10 +58,3 @@ Istio 的 istio-proxy 的数据面指标是 基于 Envoy 的指标构架实现�
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline.drawio.svg)*
 
 
-```{toctree}
-:maxdepth: 1
-envoy-stat.md
-istio-stat.md
-envoy-stat-impl.md
-metrics@req-resp-flow-timeline.md
-```
