@@ -28,5 +28,5 @@ envoy-istio-metrics-overview.md
 envoy-stat.md
 istio-stat.md
 envoy-stat-impl.md
-metrics@req-resp-flow-timeline.md
+metrics-req-resp-flow-timeline.md
 ```

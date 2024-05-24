@@ -210,8 +210,8 @@ Envoy 还包括一个可配置的看门狗系统，它可以在 Envoy 没有响�
 > https://github.com/envoyproxy/envoy/issues/11391
 > https://github.com/envoyproxy/envoy/issues/11388
 
- ### Event loop 
- [Envoy 文档: Event loop](https://www.envoyproxy.io/docs/envoy/latest/operations/performance)
+### Event loop 
+[Envoy 文档: Event loop](https://www.envoyproxy.io/docs/envoy/latest/operations/performance)
 
 Envoy 架构旨在通过在少量线程上运行事件循环来优化可扩展性和资源利用率。 `“main”` 线程负责控制面处理，每个 `“worker”` 线程分担数据面的一部分任务。 Envoy 公开了两个统计信息来监控所有这些线程事件循环的性能。
 
