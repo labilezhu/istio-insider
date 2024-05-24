@@ -1,8 +1,5 @@
 # Istio 与 Envoy 指标
 
-
-
-
 指标监控，可能是 DevOps 监控最重要的一环。但同时也可能是最难的一环。你可以从网上找到各种系统和中间件的 Grafana 监控仪表盘，它们大都设计得很漂亮得体，让人感觉监控已经完美无缺。  
 
 但是，不知道你是否与我有同样的经历：在系统遇到问题时，手头有一大堆指标和监控仪表盘。
@@ -24,9 +21,10 @@
 
 ```{toctree}
 :maxdepth: 3
+:includehidden:
 envoy-istio-metrics-overview.md
+metrics-req-resp-flow-timeline.md
 envoy-stat.md
 istio-stat.md
 envoy-stat-impl.md
-metrics-req-resp-flow-timeline.md
 ```
