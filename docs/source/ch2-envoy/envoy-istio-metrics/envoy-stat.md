@@ -250,7 +250,7 @@ Watch Dog 和 Event loop 都是解决与监控事件处理延迟与时效的工�
 
 [Envoy 文档:config.bootstrap.v3.Bootstrap proto](https://github.com/envoyproxy/envoy/blob/255af425e1d51066cc8b69a39208b70e18d07073/api/envoy/config/bootstrap/v3/bootstrap.proto#L44)
 
-```json
+```
 {
   "node": {...},
   "static_resources": {...},
@@ -308,7 +308,7 @@ Watch Dog 和 Event loop 都是解决与监控事件处理延迟与时效的工�
 
 用于禁用/开启统计指标计算与产出的配置。
 
-```json
+```
 {
   "reject_all": ...,
   "exclusion_list": {...},

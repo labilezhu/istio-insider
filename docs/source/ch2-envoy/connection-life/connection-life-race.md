@@ -231,21 +231,21 @@ Envoy 社区在这个问题有一些讨论，只能减少可能，不可能完�
 > 即系限制一个 Upstream 连接在一个 epoll event cycle 中，只能承载一个 HTTP Request。即一个连接不能在同一个 epoll event cycle 中被多个 HTTP Request re-use 。这样可以减少 kernel 中已经是 `CLOSE_WAIT` 状态（取到 FIN） 的请求，Envoy user-space 未感知到且 re-use 来发请求的可能性。
 >
 > [https://github.com/envoyproxy/envoy/pull/2871/files](https://github.com/envoyproxy/envoy/pull/2871/files)
-
-```cpp
-@@ -209,25 +215,48 @@ void ConnPoolImpl::onResponseComplete(ActiveClient& client) {
-    host_->cluster().stats().upstream_cx_max_requests_.inc();
-    onDownstreamReset(client);
-  } else {
--    processIdleClient(client);
-    // Upstream connection might be closed right after response is complete. Setting delay=true
-    // here to attach pending requests in next dispatcher loop to handle that case.
-    // https://github.com/envoyproxy/envoy/issues/2715
-+    processIdleClient(client, true);
-  }
-}
-```
-
+>
+> ```
+> @@ -209,25 +215,48 @@ void ConnPoolImpl::onResponseComplete(ActiveClient& client) {
+>     host_->cluster().stats().upstream_cx_max_requests_.inc();
+>     onDownstreamReset(client);
+>   } else {
+> -    processIdleClient(client);
+>     // Upstream connection might be closed right after response is complete. Setting delay=true
+>     // here to attach pending requests in next dispatcher loop to handle that case.
+>     // https://github.com/envoyproxy/envoy/issues/2715
+> +    processIdleClient(client, true);
+>   }
+> }
+> ```
+>
 > 一些描述：[https://github.com/envoyproxy/envoy/issues/23625#issuecomment-1301108769](https://github.com/envoyproxy/envoy/issues/23625#issuecomment-1301108769)
 >
 > There's an inherent race condition that an upstream can close a connection at any point and Envoy may not yet know, assign it to be used, and find out it is closed. We attempt to avoid that by returning all connections to the pool to give the kernel a chance to inform us of `FINs` but can't avoid the race entirely. 
