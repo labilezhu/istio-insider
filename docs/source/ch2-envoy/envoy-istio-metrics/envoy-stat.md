@@ -283,7 +283,7 @@ Watch Dog 和 Event loop 都是解决与监控事件处理延迟与时效的工�
 
 [Envoy 文档:config-metrics-v3-statsconfig](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/stats.proto#config-metrics-v3-statsconfig)
 
-```json
+```
 {
   "stats_tags": [],
   "use_all_default_tags": {...},

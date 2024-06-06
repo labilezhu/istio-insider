@@ -367,11 +367,11 @@ Please update `/home/.cache/bazel/_bazel_root/1e0bb3bee2d09d2e4ad3523530d3b40c` 
   - `Remote Containers: Attach to Running Container` 可以替换为 [`VSCode-server`](https://github.com/coder/code-server) k8s 服务，它的好处是，可以通过任何网络浏览器轻松访问。 不再需要具有 X11 桌面/VSCode GUI 应用程序和 docker 或 ssh 连接的节点。 只需将 `VSCode-server` 发布为 k8s 服务并在开发者电脑的网络浏览器上访问它。
 
 
-:::{figure-md} 图： 使用 lldb 远程调试 istio-proxy
+:::{figure-md} 图： 使用 lldb 远程调试 istio-proxy 2
 :class: full-width
 
-<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="图： 使用 lldb 远程调试 istio-proxy">
+<img src="/dev-istio/dev-istio-proxy/debug-istio-proxy/remote-lldb-istio-proxy.drawio.svg" alt="图： 使用 lldb 远程调试 istio-proxy 2">
 
-*图： 使用 lldb 远程调试 istio-proxy*
+*图： 使用 lldb 远程调试 istio-proxy 2*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Fremote-lldb-istio-proxy.drawio.svg)*

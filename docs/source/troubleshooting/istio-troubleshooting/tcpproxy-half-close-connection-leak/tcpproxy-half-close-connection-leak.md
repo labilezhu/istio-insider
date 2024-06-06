@@ -109,7 +109,7 @@ kubectl -it exec netshoot-0 -- nc -l -k 7777
 
 enable `nf_log_all_netns` on worker node:
 
-```bas
+```bash
 sle:/proc/sys # sudo su
 sle:/proc/sys # echo 1 > /proc/sys/net/netfilter/nf_log_all_netns
 ```
