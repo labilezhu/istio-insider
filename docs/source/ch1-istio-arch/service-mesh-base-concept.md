@@ -39,8 +39,8 @@
 <img src="service-mesh-base-concept.assets/inbound-outbound-concept.drawio.svg" alt="Inbound与Outbound概念">
 
 *图：Inbound与Outbound概念*
-[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Finbound-outbound-concept.drawio.svg)
 :::
+[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Finbound-outbound-concept.drawio.svg)
 
 
 
