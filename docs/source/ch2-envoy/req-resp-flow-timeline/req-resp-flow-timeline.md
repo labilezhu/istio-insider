@@ -70,14 +70,24 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
  - 双屏，一屏看图，一屏看文档，是本书的正确阅读姿势。如果你在用手机看，那么，忽略我吧 🤦
 ```
 
-:::{figure-md} 图：Envoy 请求与响应调度
+:::{figure-md} 图：Envoy HTTP1 请求与响应调度
 :class: full-width
 
-<img src="/ch2-envoy/req-resp-flow-timeline/req-resp-flow-timeline.assets/req-resp-flow-timeline-schedule.drawio.svg" alt="图：Envoy 请求与响应调度">
+<img src="/ch2-envoy/req-resp-flow-timeline/req-resp-flow-timeline.assets/req-resp-flow-timeline-schedule.drawio.svg" alt="图：Envoy HTTP1 请求与响应调度">
 
-*图：Envoy 请求与响应调度*
+*图：Envoy HTTP1 请求与响应调度*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline-schedule.drawio.svg)*
+
+
+:::{figure-md} 图：Envoy HTTP/2 请求与响应调度
+:class: full-width
+
+<img src="/ch2-envoy/req-resp-flow-timeline/req-resp-flow-timeline.assets/life-of-a-request-overview-h2.drawio.svg" alt="图：Envoy HTTP/2 请求与响应调度">
+
+*图：Envoy HTTP/2 请求与响应调度*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Flife-of-a-request-overview-h2.drawio.svg)*
 
 ### 相关组件
 
