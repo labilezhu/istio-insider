@@ -14,4 +14,5 @@ Envoy 的 Upstream 功能，由  `Cluster Manager` / `Load Balancer` / `Connecti
 
 ```{toctree}
 connection-pooling/connection-pooling.md
+circuit-breaking/circuit-breaking.md
 ```

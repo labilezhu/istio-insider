@@ -13,7 +13,6 @@ envoy-high-level-flow/envoy-high-level-flow.md
 arch/arch.md
 req-resp-flow-timeline/req-resp-flow-timeline.md
 connection-life/connection-life.md
-circuit-breaking/circuit-breaking.md
 envoy-istio-metrics/index.md
 upstream/upstream.md
 ```
