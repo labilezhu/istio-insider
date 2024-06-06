@@ -139,14 +139,24 @@ Envoy 应用了 `事件驱动` 设计模式。`事件驱动` 的程序，相对�
 
 先说说请求组件流转部分，流程图可以从相关的文档推理为（未完全验证，存在部分推理）：
 
-:::{figure-md} 图：Envoy 请求调度流程图
+:::{figure-md} 图：Envoy HTTP1 请求调度流程图
 :class: full-width
 
-<img src="/ch2-envoy/req-resp-flow-timeline/req-resp-flow-timeline.assets/req-resp-flow-timeline-flowchart.drawio.svg" alt="图：Envoy 请求与响应时序线">
+<img src="/ch2-envoy/req-resp-flow-timeline/req-resp-flow-timeline.assets/req-resp-flow-timeline-flowchart.drawio.svg" alt="图：Envoy HTTP1 请求与响应时序线">
 
-*图：Envoy 请求调度流程图*
+*图：Envoy HTTP1 请求调度流程图*
 :::
 *[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline-flowchart.drawio.svg)*
+
+
+:::{figure-md} 图：Envoy HTTP/2 请求调度流程图
+:class: full-width
+
+<img src="/ch2-envoy/req-resp-flow-timeline/req-resp-flow-timeline.assets/req-resp-flow-timeline-flowchart-h2.drawio.svg" alt="图：Envoy HTTP/2 请求与响应时序线">
+
+*图：Envoy HTTP/2 请求调度流程图*
+:::
+*[用 Draw.io 打开](https://app.diagrams.net/?ui=sketch#Uhttps%3A%2F%2Fistio-insider.mygraphql.com%2Fzh_CN%2Flatest%2F_images%2Freq-resp-flow-timeline-flowchart-h2.drawio.svg)*
 
 ## 请求与响应调度时序线
 
