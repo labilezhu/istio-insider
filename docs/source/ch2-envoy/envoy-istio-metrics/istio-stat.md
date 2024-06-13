@@ -148,7 +148,7 @@ spec:
 
 2. 使用以下命令将以下 annotation 应用到所有注入的 pod，其中包含要提取到 Prometheus [时间序列](https://en.wikipedia.org/wiki/Time_series) 的维度列表：
 
-仅当您的维度不在 [DefaultStatTags 列表] 中时才需要此步骤（https://github.com/istio/istio/blob/release-1.14/pkg/bootstrap/config.go）
+仅当您的维度不在 [DefaultStatTags 列表](https://github.com/istio/istio/blob/release-1.14/pkg/bootstrap/config.go) 中时才需要此步骤。
 
 ```yaml
 apiVersion: apps/v1
