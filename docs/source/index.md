@@ -44,7 +44,7 @@
 
 
 
-本书同步在以下平台发行：
+本书同步在以下平台发布：
 
 - [Istio & Envoy Insider English Edition on Amazon Kindle](https://www.amazon.com/dp/B0D6KZ3RNN)
 - [《Istio & Envoy 内幕》中文版本 @ salttiger.com](https://salttiger.com/istio-envoy-%e5%86%85%e5%b9%95/#more-22178)
@@ -55,8 +55,8 @@
 
 
 
-
 ### 关于作者
+
 我叫 Mark Zhu，一个中年且头发少的程序员。我只是个入门级别的 Istio/Envoy contributor，暂时也是只提出过一些 github issue 和 文档方面的 Pull Request 。
 
 为什么水平有限还学人家写书？因为这句话：
