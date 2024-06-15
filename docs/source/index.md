@@ -46,7 +46,7 @@
 
 本书同步在以下平台发行：
 
-- [Istio & Envoy Insider English Edition on Amazon Kindle](https://www.amazon.com/dp/B0D6KZ3RNN))
+- [Istio & Envoy Insider English Edition on Amazon Kindle](https://www.amazon.com/dp/B0D6KZ3RNN)
 - [《Istio & Envoy 内幕》中文版本 @ salttiger.com](https://salttiger.com/istio-envoy-%e5%86%85%e5%b9%95/#more-22178)
 
 
@@ -91,6 +91,7 @@ and productive life. To my dear wife and our amazing kid – thanks for all your
 无论是文字还是图片，如果转载或修改，请注明原出处。
 
 ### 意见反馈
+
 由于自称是开源交互图书，读者的反馈当然非常重要。如果你发现书中的错误，或者有更好的建议，不妨来这里提 Issue:  
 [https://github.com/labilezhu/istio-insider/issues](https://github.com/labilezhu/istio-insider/issues)
 
