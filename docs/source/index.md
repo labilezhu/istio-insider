@@ -37,9 +37,23 @@
 本书主要讲 Istio/Envoy 的设计、实现机制。假设读者已经有一定的 Istio 使用经验。并有兴趣进一步研究其实现机理。
 
 ### 书的访问地址
+
 - [https://istio-insider.mygraphql.com](https://istio-insider.mygraphql.com)
 - [https://istio-insider.readthedocs.io](https://istio-insider.readthedocs.io)
 - [https://istio-insider.rtfd.io](https://istio-insider.rtfd.io)
+
+
+
+本书同步在以下平台发行：
+
+- [Istio & Envoy Insider English Edition on Amazon Kindle](https://www.amazon.com/dp/B0D6KZ3RNN))
+- [《Istio & Envoy 内幕》中文版本 @ salttiger.com](https://salttiger.com/istio-envoy-%e5%86%85%e5%b9%95/#more-22178)
+
+
+
+在这里感谢 https://salttiger.com/ 站长为本书提供了更多被读者了解的机会。在大平台被垄断的时代，为知识提供了一个平凡人可及的平台更是难得。
+
+
 
 
 ### 关于作者
@@ -69,6 +83,7 @@ Blog: [https://blog.mygraphql.com/](https://blog.mygraphql.com/)
 - [使众行者](https://github.com/tanjunchen)：对阅读体验和排版提出很多非常好的意见。
 
 ### Dedication 💞
+
 First, to my dear parents, for showing me how to live a happy
 and productive life. To my dear wife and our amazing kid – thanks for all your love and patience.
 
