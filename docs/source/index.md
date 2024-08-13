@@ -117,6 +117,7 @@ ch0/index
 ch1-istio-arch/index
 ch2-envoy/index
 ch4-istio-data-plane/index
+ch5-istio-ambient/ch5-istio-ambient.md
 performance/performance.md
 disruptions/disruptions.md
 observability/observability.md
