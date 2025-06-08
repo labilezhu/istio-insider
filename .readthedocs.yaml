@@ -16,6 +16,8 @@ build:
 
 sphinx:
   fail_on_warning: false
+  # Path to your Sphinx configuration file.
+  configuration: docs/source/conf.py
 
 # Optionally declare the Python requirements required to build your docs
 python:
