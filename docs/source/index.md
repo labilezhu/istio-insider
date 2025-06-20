@@ -30,7 +30,7 @@
 > 🤷 : [Yet, another](https://en.wikipedia.org/wiki/Yet_another) Istio User Guide?  
 > 🙅 : No!
 
-
+如果你要专注地研究原生的 Envoy Proxy，而非 Istio，建议阅读我的另一本书：[《Envoy 内幕》](https://envoy-insider.mygraphql.com/zh-cn/latest/index.html)。这本书是《Istio & Envoy 内幕》的姊妹篇，专注于原生 Envoy Proxy 的设计与实现。
 
 ### 读者对象
 

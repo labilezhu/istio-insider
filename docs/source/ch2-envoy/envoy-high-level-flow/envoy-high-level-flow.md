@@ -18,7 +18,7 @@
  - inbound : 入站（被调用）
  - outbound : 出站（对外调用）
 
-但单单从 Envoy 实现角度看，其实很少使用 `inbound` 或 `outbound` `这个概念的。inbound`/`outbound` 主要是 Istio 里的概念。详见： {doc}`/ch1-istio-arch/service-mesh-base-concept`
+但单单从 Envoy 实现角度看，其实很少使用 `inbound` 或 `outbound` 这个概念的。`inbound`/`outbound` 主要是 Istio 里的概念。详见： {doc}`/ch1-istio-arch/service-mesh-base-concept`
  一节。 Envoy 主要使用 `upstream` 与 `downstream` 的概念。  
 
 对于 `fortio-server(pod)` 的 inbound:
