@@ -43,6 +43,7 @@ html_theme_options = {
     "show_navbar_depth": 1,
     "show_toc_level": 1,
     "logo_only": True,
+    "navbar_start": ["my-header.html"],
 }
 
 intersphinx_mapping = {
